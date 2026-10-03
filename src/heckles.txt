@@ -53,7 +53,7 @@ chant2|MORE! HOUSE! MORE! PROBLEMS!|More! House! More! Problems!|CHANT start|1
 mmp1|Morehouse, more problems, motherfucker!|Morehouse! More problems, mother fucker!|start ambient|
 a_title|MOREHOUSE MORE PROBLEMS!|Morehouse! More! Problems!|ANNOUNCE|
 poppa|Big Poppa Weasel in the fucking building! Joe's fucked!|Big Poppa Weasel, in the fucking building! Joe's fucked!|BOSS|
-notorious|The Notorious Weasel, motherfucker! Bow down, Joe!|The Notorious Weasel, mother fucker! Bow down, Joe!|BOSS|
+bestteam|The Wilson Weasels, motherfucker! Bow to the best team in the league, Joe!|The Wilson Weasels, mother fucker! Bow to the best team in the league, Joe!|BOSS|
 spread|Spread love, it's the Weasel way! Now eat shit, Joe!|Spread love! It's the Weasel way! Now eat shit, Joe!|ambient end BOSSHIT|
 surv1|Survive, Joe! Oh wait, you can't.|Survive, Joe! Oh wait. You can't.|start ambient|
 surv2|One more season, Joe! You said that last year!||start ambient|
@@ -68,8 +68,8 @@ star3|Joe found hope! It won't last.||STAR|
 star4|Enjoy that hope, Joe! The Weasel's coming!||STAR|
 boss1|Here comes the Weasel Dynasty! Joe's fucked!|Here comes the Weasel Dynasty! Joe's fucked!|BOSS|
 boss2|Mahomes is raining on your parade, Joe!||BOSSHIT|
-boss3|The Weasel has more trophies than you have wins!||BOSSHIT|
-boss4|Bow to the champ, Morehouse!||BOSSHIT|
+boss3|The Weasels' bench is better than your starters!|The Weasels bench is better than your starters!|BOSSHIT|
+boss4|Bow to the best team in the league, Morehouse!||BOSSHIT|
 boss5|CeeDee Lamb just dunked on your whole rebuild!|CeeDee Lamb just dunked on your whole rebuild!|BOSSHIT|
 boss6|Lamar's juking your entire roster, Joe!||BOSSHIT|
 boss7|CMC is running through your shit like it's nothing!|C M C is running through your shit like it's nothing!|BOSSHIT|
@@ -79,11 +79,13 @@ a_go|SURVIVE ONE MORE SEASON, JOE! GOOD FUCKING LUCK!|Survive one more season, J
 a_t1|TRACK 1: YEAR 4 OF THE REBUILD|Track one! Year four of the rebuild!|ANNOUNCE|
 a_t4|TRACK 4: SURVIVE THE TRADE DEADLINE|Track four! Survive the trade deadline!|ANNOUNCE|
 a_boss|BOSS TRACK: THE WEASEL DYNASTY|Boss track! The Weasel Dynasty!|ANNOUNCE|
-a_champ|WILSON WEASELS: STILL CHAMPS!|Wilson Weasels! Still champs!|ANNOUNCE|
+a_best|WILSON WEASELS: STILL THE BEST!|Wilson Weasels! Still the best!|ANNOUNCE|
 a_firesale|FIRE SALE! EVERYTHING MUST GO!|Fire sale! Everything must go!|ANNOUNCE|
 a_waiver|WAIVER WIRE PICKUP!|Waiver wire pickup!|ANNOUNCE|
 a_desp|DESPERATE TRADE OFFER!|Desperate trade offer!|ANNOUNCE|
 a_hope|FALSE HOPE!|False hope!|ANNOUNCE|
 a_season|ONE MORE SEASON!|One more season!|ANNOUNCE|
 a_phase|THE WEASEL IS PISSED!|The Weasel is pissed!|ANNOUNCE|
-a_joewin|JOE WON A GAME?! THE WEASEL IS STILL CHAMP.|Joe won a game? The Weasel is still champ.|ANNOUNCE|
+a_joewin|JOE WON A GAME?! THE WEASELS ARE STILL THE BEST.|Joe won a game? The Weasels are still the best.|ANNOUNCE|
+boss8|Power rankings #1, baby!|Power rankings number one, baby!|BOSSHIT WILSON|
+waah|Somebody call a WAAAAHMBULANCE!|Somebody call a waaaah mbulance!|WAAH|

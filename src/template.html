@@ -5,19 +5,22 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#12061f">
-<meta name="description" content="Mo Morehouse, Mo Problems. Play as Joe Morehouse, mid-rebuild, fighting off his own problems until the Wilson Weasels dynasty shows up. A SHADYNASTY Production.">
+<meta name="description" content="Play as Joe. 99 problems and still broke. Survive Joe Morehouse's endless rebuild in a 90s-rap arcade shooter. Mo Morehouse, Mo Problems. A SHADYNASTY Production.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="SHADYNASTY">
-<meta property="og:title" content="MOREHOUSE MORE PROBLEMS: Notorious W.E.A.S.E.L.">
-<meta property="og:description" content="Mo Morehouse, Mo Problems. You are Joe, mid-rebuild, trying to survive one more season. The Wilson Weasels are still champs.">
-<meta property="og:url" content="https://howibrettyourmother.github.io/notorious-weasel/">
-<meta property="og:image" content="https://howibrettyourmother.github.io/notorious-weasel/og.png">
+<meta property="og:title" content="MOREHOUSE MORE PROBLEMS: Survive Joe's Rebuild">
+<meta property="og:description" content="Play as Joe. 99 problems and still broke. Survive the rebuild until the Wilson Weasels dynasty shows up. Mo Morehouse, Mo Problems.">
+<meta property="og:url" content="https://howibrettyourmother.github.io/mo-morehouse-mo-problems/">
+<meta property="og:image" content="https://howibrettyourmother.github.io/mo-morehouse-mo-problems/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="MOREHOUSE MORE PROBLEMS title screen: sad Joe the GM surrounded by his problems, with the crowned Wilson Weasels, the best team in the league">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="MOREHOUSE MORE PROBLEMS: Notorious W.E.A.S.E.L.">
-<meta name="twitter:description" content="Mo Morehouse, Mo Problems. Survive one more season, Joe. The Weasel is still champ.">
-<meta name="twitter:image" content="https://howibrettyourmother.github.io/notorious-weasel/og.png">
+<meta name="twitter:title" content="MOREHOUSE MORE PROBLEMS: Survive Joe's Rebuild">
+<meta name="twitter:description" content="Play as Joe. 99 problems and still broke. Mo Morehouse, Mo Problems.">
+<meta name="twitter:image" content="https://howibrettyourmother.github.io/mo-morehouse-mo-problems/og.png">
 <link rel="icon" href="data:,">
-<title>MOREHOUSE MORE PROBLEMS: Notorious W.E.A.S.E.L. - A SHADYNASTY Production</title>
+<title>MOREHOUSE MORE PROBLEMS: Survive Joe's Rebuild</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0;background:#12061f;height:100%;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;font-family:"Arial Black",Impact,Arial,sans-serif;color:#fff}
@@ -56,7 +59,7 @@ canvas{display:block;touch-action:none;border-radius:6px;box-shadow:0 0 24px rgb
 "use strict";
 /*__AUDIO__*/
 // ====================================================================================
-// MOREHOUSE MORE PROBLEMS: NOTORIOUS W.E.A.S.E.L. - vertical shooter. You are Joe. The Weasel is the champ.
+// MOREHOUSE MORE PROBLEMS - vertical shooter. You are Joe. The Weasels are the best team in the league.
 // ====================================================================================
 const DEBUG=/[?&]debug=1\b/.test(location.search);
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
@@ -154,7 +157,7 @@ const KIND={
   lamar:{hp:2,pts:300,w:36,h:44,grp:'BOSSHIT',word:['JUKED!','LAMAR LOLS!'],num:8,col:'#241773',trim:'#9e7c0c',name:'LAMAR',big:1},
   cmc:{hp:2,pts:300,w:36,h:44,grp:'BOSSHIT',word:['RAN THROUGH YA!','CMC TOO!'],num:23,col:'#aa0000',trim:'#b3995d',name:'CMC',big:1}
 };
-const CHAMPS=['mahomes','lamb','lamar','cmc'];
+const WSTARS=['mahomes','lamb','lamar','cmc'];
 const TRACKS=[
   {n:'TRACK 1',t:'YEAR 4 OF THE REBUILD',k:'a_t1',rows:[['pick4','year4','pick4','year4','pick4'],['year4','trade','year4','trade','year4']]},
   {n:'TRACK 2',t:'MO PICKS MO PROBLEMS',k:'a_t2',rows:[['darnold','pick4','darnold','pick4','darnold'],['pick4','year4','pick4','year4','pick4'],['pick4','pick4','pick4','pick4','pick4']]},
@@ -166,7 +169,7 @@ const POW={spread:{l:'WAIVER WIRE PICKUP',k:'a_waiver',tag:'WAIVER'},rapid:{l:'D
 const QUOTES=['"MO MOREHOUSE, MO PROBLEMS"','"IT WAS ALL A DREAM... JOE USED TO READ ROTOWORLD MAGAZINE"','"SURVIVE, JOE! OH WAIT, YOU CAN\'T."','"JUICY? NAH, JOE\'S ROSTER IS DRY"','"SPREAD LOVE, IT\'S THE WEASEL WAY"','"READY TO REBUILD... AGAIN"'];
 const ROASTS=['IT WAS ALL A DREAM... JOE USED TO READ ROTOWORLD MAGAZINE','JUICY? NAH, JOE\'S ROSTER IS DRY AS SHIT','RICHES TO RAGS. MOSTLY RAGS.','REBUILD YEAR 4. SAME SHIT, NEW CALENDAR.',
   'CALEB IS STILL HOLDING IT. IN A PORTA-POTTY.','MARVIN HARRISON JR.: GENERATIONAL BULLSHIT','KYLE PITTS BREAKOUT METER: 99%... RESET','SPREAD LOVE, IT\'S THE WEASEL WAY. NOW EAT SHIT.',
-  'SURVIVE, JOE! OH WAIT, YOU CAN\'T.','YOUR HOPE WAS A WAIVER WIRE PICKUP','THE WEASEL HAS MORE TROPHIES THAN YOU HAVE WINS'];
+  'SURVIVE, JOE! OH WAIT, YOU CAN\'T.','YOUR HOPE WAS A WAIVER WIRE PICKUP','THE WEASELS\' BENCH IS BETTER THAN YOUR STARTERS'];
 // ---------- state ----------
 let state='title',stateT=0,gT=0,score=0,problems=0,lives=3,combo=0,comboBest=0,comboT=0,meter=0,trackI=0,loop=0,trackT=0,timeScale=1,slowT=0,finT=0,shake=0,flash=0,flashCol='#fff';
 let player=null,balls=[],enemies=[],eshots=[],stars=[],parts=[],pops=[],potties=[],banner=null,caption=null,boss=null,balloon=null,fireCD=0,starT=8,diveT=3,formX=0,formY=0,formDir=1,nextAmb=10,bossesBeat=0,potCount=0,finishers=0,finMode='weasel',firesales=0,reached=0,hits=0,runId=0,soundAsked=false,endReason='',roast='',lastAir=0,lastHurtHk=0,noSpawn=false,trackCleared=false,ptr=null;
@@ -205,13 +208,13 @@ function startTrack(i){trackI=i;trackT=0;reached=Math.max(reached,loop*5+i+1);tr
 function mkEnemy(k,fx,fy){const d=KIND[k];return{k,d,fx,fy,x:fx,y:-60,hp:d.hp+(loop&&d.hp>1?1:0),max:d.hp+(loop&&d.hp>1?1:0),fl:0,t:R()*6,mode:'form',enter:0,ex:0,ey:0,edel:0,et:0,shotT:rnd(2,5),flipped:0,meter:R()*80,dv:null}}
 function speed(){return 1+loop*0.35+trackI*0.06}
 function spawnBoss(){const hp=240+loop*120;boss={x:W/2,y:-160,ty:165,hp,max:hp,t:0,fl:0,shotT:2.2,dir:1,phase:0,taunt:0,lunge:0,lx:0,dead:0,first:1};AUD.SFX.bossSting();airhorn();
-  setTimeout(()=>{if(state==='play')AUD.heckle('BOSS',true)},1800);setTimeout(()=>{if(state==='play'&&boss&&!boss.dead)showBanner('WILSON WEASELS: LEAGUE CHAMPS',GOLD)},2600)}
+  setTimeout(()=>{if(state==='play')AUD.heckle('BOSS',true)},1800);setTimeout(()=>{if(state==='play'&&boss&&!boss.dead)showBanner('WILSON WEASELS: BEST TEAM IN THE LEAGUE',GOLD)},2600)}
 function spawnBalloon(){balloon={x:-80,y:140,hp:14+loop*6,max:14+loop*6,t:0,sc:1,fl:0};AUD.heckle('BALLOON',true);showBanner('GIANT REBUILD YEAR 5 BALLOON!',RED)}
 function spawnStar(type,x,y){type=type||pick(['spread','spread','rapid','rapid','shield','life']);if(type==='life'&&lives>=5)type='rapid';stars.push({type,x:x==null?rnd(30,W-30):x,y:y==null?-20:y,t:R()*6,vy:rnd(60,80)})}
 // ---------- start / end ----------
 function startGame(){resetRun();hsEntering=false;hsPanel.style.display='none';go('intro');AUD.SFX.scratch();AUD.sting('a_go',{quiet:true});showBanner('SURVIVE ONE MORE SEASON, JOE',GOLD,true);AUD.setTheme('main');updateOverlays()}
 function endGame(why){if(state==='end')return;endReason=why||'';roast=pick(ROASTS);if(score>hi){hi=score;try{localStorage.setItem('nw_hi',hi)}catch(e){}}
-  go('end');timeScale=1;slowT=0;AUD.SFX.trombone();AUD.endingDelay(2.2);AUD.setTheme('ending');AUD.sting('a_over',{quiet:true,delay:0.3});setTimeout(()=>{if(state==='end')AUD.sting('a_champ',{quiet:true})},4300);setTimeout(()=>{if(state==='end')AUD.heckle('end',true)},7600);
+  go('end');timeScale=1;slowT=0;AUD.SFX.trombone();AUD.endingDelay(2.2);AUD.setTheme('ending');AUD.sting('a_over',{quiet:true,delay:0.3});setTimeout(()=>{if(state==='end')AUD.sting('a_best',{quiet:true})},4300);setTimeout(()=>{if(state==='end')AUD.heckle('end',true)},7600);
   burst(W/2,H*0.3,60,8);if(lbQualifies(score))setTimeout(()=>{if(state==='end')showHS()},1300);updateOverlays()}
 // ---------- combat ----------
 function addCombo(n){combo++;comboT=2.6;if(combo>comboBest)comboBest=combo;meter=Math.min(100,meter+n);if(meter>=100)fireSale()}
@@ -228,7 +231,7 @@ function killEnemy(e,quiet){e.dead=1;problems++;const mult=1+Math.min(4,Math.flo
 function hurtPlayer(src){if(player.inv>0||state!=='play'||player.dead)return;
   if(player.shieldT>0){player.shieldT=0;player.inv=1;AUD.SFX.ghostEat();pop(player.x,player.y-40,'FALSE HOPE BLOCKED IT... THIS TIME',GOLD,12);return}
   lives--;player.inv=2.2;combo=0;meter=Math.max(0,meter-40);shake=10;flash=1;flashCol='#f00';AUD.SFX.hurt();AUD.SFX.laugh(0.8);
-  pop(player.x,player.y-44,src||'OUCH!',RED,15);const n=performance.now();if(n-lastHurtHk>3000){lastHurtHk=n;AUD.heckle('HURT',true)}
+  pop(player.x,player.y-44,src||'OUCH!',RED,15);if(lives===1)setTimeout(waahmbulance,900);const n=performance.now();if(n-lastHurtHk>3000){lastHurtHk=n;AUD.heckle('HURT',true)}
   if(lives<=0){player.dead=1;burst(player.x,player.y,40,10);AUD.SFX.death();weaselTaunt('GAME OVER');setTimeout(()=>endGame(boss&&!boss.dead?'THE WEASEL DYNASTY ENDED YOUR SEASON':'JOE\'S OWN PROBLEMS ENDED HIS SEASON'),2500)}}
 function fireSale(){meter=0;firesales++;shake=12;flash=1;flashCol='#ffd400';airhorn();setTimeout(()=>airhorn(),350);AUD.SFX.scratch();AUD.sting('a_firesale',{quiet:true,throttle:3000});AUD.SFX.cheer(1);
   showBanner('SHIT COMBO! FIRE SALE: EVERYTHING MUST GO!',GOLD,true);
@@ -237,13 +240,15 @@ function fireSale(){meter=0;firesales++;shake=12;flash=1;flashCol='#ffd400';airh
   if(balloon){balloon.hp=0;popBalloon()}
   burst(W/2,H*0.45,70,12)}
 // the Weasel's slow-mo EAT SHIT taunt at Joe (boss phases + game over)
+function waahmbulance(){const n=performance.now();if(n-lastWaah<12000||state!=='play')return;lastWaah=n;waahN++;amb={x:-90,t:0};
+  AUD.sting('waah',{quiet:true});caption={t:'Somebody call a WAAAAHMBULANCE!',life:3.4};for(let i=0;i<6;i++){AUD.SFX.tone(i%2?740:980,0.32,'square',0.035,0,i*0.36)}}
 function weaselTaunt(why){finT=2.4;finMode='weasel';slowT=1.9;finishers++;shake=16;flash=1;flashCol='#fff';AUD.SFX.slowmo();AUD.SFX.scratch();AUD.sting('a_eatshit',{quiet:true,rate:0.78});
   airhorn();setTimeout(()=>airhorn(),450);AUD.SFX.eatShitChant(0.2);AUD.SFX.laugh(1.3);burst(W/2,H*0.4,60,10);tauntWhy=why||''}
 function popBalloon(){if(!balloon)return;const b=balloon;score+=2500;problems++;burst(b.x,b.y,90,16);AUD.SFX.bigPop();airhorn();setTimeout(()=>airhorn(),300);AUD.heckle('BALLOONPOP',true);
   pop(b.x,b.y,'+2500 REBUILD POPPED!',GOLD,17);if(R()<0.5)setTimeout(()=>AUD.heckle('CHANT',true),1500);shake=12;balloon=null;addCombo(20);spawnStar(null,b.x,b.y)}
 function killBoss(){if(!boss||boss.dead)return;boss.dead=1;bossesBeat++;problems++;score+=15000*(loop+1);shake=14;flash=1;flashCol='#fff';
   airhorn();setTimeout(()=>airhorn(),400);AUD.sting('a_joewin',{quiet:true});setTimeout(()=>AUD.heckle('BOSSDIE',true),3000);AUD.SFX.cheer(1.2);
-  burst(boss.x,boss.y,120,20);pop(boss.x,boss.y-70,'+'+(15000*(loop+1))+' JOE WON ONE GAME?!',GOLD,18);showBanner('JOE WON A GAME?! THE WEASEL IS STILL CHAMP.',GOLD,true);eshots=[];
+  burst(boss.x,boss.y,120,20);pop(boss.x,boss.y-70,'+'+(15000*(loop+1))+' JOE WON ONE GAME?!',GOLD,18);showBanner('JOE WON A GAME?! THE WEASELS ARE STILL THE BEST.',GOLD,true);eshots=[];
   for(const e of enemies)e.dead=1;
   setTimeout(()=>{if(state==='play'){boss=null;loop++;startTrack(0)}},3800)}
 // ---------- input: drag anywhere to move (relative), auto-fire ----------
@@ -312,12 +317,13 @@ function step(rdt){
   // boss
   if(boss)updBoss(dt,p);
   // enemy shots
-  for(const s of eshots){s.x+=s.vx*dt;s.y+=s.vy*dt;s.r+=dt*8;if(!p.dead&&p.inv<=0&&Math.hypot(s.x-p.x,s.y-p.y)<16){s.dead=1;hurtPlayer(s.k==='int'?'PICKED OFF!':s.k==='ring'?'RINGED BY THE CHAMP!':s.k==='trade'?'TRADE OFFER TO THE FACE!':'SACKED!')}}
+  for(const s of eshots){s.x+=s.vx*dt;s.y+=s.vy*dt;s.r+=dt*8;if(!p.dead&&p.inv<=0&&Math.hypot(s.x-p.x,s.y-p.y)<16){s.dead=1;hurtPlayer(s.k==='int'?'PICKED OFF!':s.k==='ring'?'CASH TO THE FACE!':s.k==='trade'?'TRADE OFFER TO THE FACE!':'SACKED!')}}
   eshots=eshots.filter(s=>!s.dead&&s.y<H+20&&s.y>-40&&s.x>-30&&s.x<W+30);
   // gold Brett stars (catch, don't shoot)
   starT-=dt;if(starT<=0){starT=boss?rnd(6,9):rnd(9,13);spawnStar()}
   for(const s of stars){s.t+=dt;s.y+=s.vy*dt;s.x+=Math.sin(s.t*2)*20*dt;if(Math.hypot(s.x-p.x,s.y-p.y)<34){s.dead=1;catchStar(s)}}
   stars=stars.filter(s=>!s.dead&&s.y<H+30);
+  if(amb){amb.t+=rdt;amb.x+=150*rdt;if(amb.x>W+100)amb=null}
   for(const pt of potties)pt.t+=dt;potties=potties.filter(pt=>pt.t<2.2);
   // track clear
   if(!TRACKS[trackI].boss&&!trackCleared&&enemies.length===0&&trackT>2&&!balloon){trackCleared=true;score+=500*(trackI+1);showBanner('TRACK CLEARED! +'+500*(trackI+1),GOLD);AUD.SFX.bonus();AUD.SFX.cheer(1);
@@ -332,17 +338,17 @@ function catchStar(s){const P=POW[s.type];AUD.SFX.power();AUD.SFX.bonus();score+
 function updBoss(dt,p){const b=boss;b.t+=dt;b.fl=Math.max(0,b.fl-dt);
   if(b.dead){b.y+=dt*40;return}
   const ph=b.hp<b.max*0.33?2:b.hp<b.max*0.66?1:0;
-  if(ph>b.phase){b.phase=ph;b.taunt=2.6;eshots=[];weaselTaunt('PHASE');setTimeout(()=>{if(state==='play'){AUD.sting('a_phase',{quiet:true});showBanner(ph===1?'THE WEASEL IS PISSED! MORE TROPHIES!':'DYNASTY MODE: MAHOMES, LAMB, LAMAR & CMC!',RED,true)}},1900)}
+  if(ph>b.phase){b.phase=ph;b.taunt=2.6;eshots=[];weaselTaunt('PHASE');setTimeout(()=>{if(state==='play')waahmbulance()},4200);setTimeout(()=>{if(state==='play'){AUD.sting('a_phase',{quiet:true});showBanner(ph===1?'THE WEASEL IS PISSED! POWER RANKINGS #1 MODE!':'DYNASTY MODE: MAHOMES, LAMB, LAMAR & CMC!',RED,true)}},1900)}
   if(b.taunt>0){b.taunt-=dt;b.y+=(b.ty-b.y)*Math.min(1,dt*2);return}
   const agg=1+b.phase*0.45,sp=Math.min(1.5,speed());
   if(b.lunge>0){b.lunge-=dt;const u=1-b.lunge/1.4;b.y=b.ty+Math.sin(u*Math.PI)*(p.y-b.ty-70);b.x+=(b.lx-b.x)*Math.min(1,dt*3)}
   else{b.y+=(b.ty-b.y)*Math.min(1,dt*1.5);b.x+=b.dir*(60+30*b.phase)*dt*sp;if(b.x>W-70){b.x=W-70;b.dir=-1}if(b.x<70){b.x=70;b.dir=1}}
   b.shotT-=dt;if(b.shotT<=0&&b.y>60&&b.lunge<=0){b.shotT=rnd(0.9,1.5)/agg/sp;const r=b.first?0:R();b.first=0;
     if(r<0.42){// rain Brett's stars down on Joe
-      const n=1+b.phase+(R()<0.5?1:0);for(let i=0;i<n;i++){const k=pick(CHAMPS);const e=mkEnemy(k,0,0);e.x=clamp(b.x+rnd(-120,120),24,W-24);e.y=b.y+40;rainN++;e.mode='rain';e.dv={t:0,vy:rnd(95,130)*sp*(1+b.phase*0.15),home:30+b.phase*15};enemies.push(e)}
+      const n=1+b.phase+(R()<0.5?1:0);for(let i=0;i<n;i++){const k=pick(WSTARS);const e=mkEnemy(k,0,0);e.x=clamp(b.x+rnd(-120,120),24,W-24);e.y=b.y+40;rainN++;e.mode='rain';e.dv={t:0,vy:rnd(95,130)*sp*(1+b.phase*0.15),home:30+b.phase*15};enemies.push(e)}
       if(R()<0.5)AUD.heckle('BOSSHIT');AUD.SFX.ohh()}
     else if(r<0.8){const n=3+b.phase*2;for(let i=0;i<n;i++){const a=Math.atan2(p.y-b.y,p.x-b.x)+(i-(n-1)/2)*0.2;eshots.push({x:b.x,y:b.y+40,vx:Math.cos(a)*170*sp,vy:Math.sin(a)*170*sp,k:'ring',r:0})}AUD.SFX.bonus()}
-    else if(b.phase>=1){b.lunge=1.4;b.lx=p.x;AUD.SFX.airhorn();pop(b.x,b.y+60,'THE CHAMP IS COMING!',RED,13)}
+    else if(b.phase>=1){b.lunge=1.4;b.lx=p.x;AUD.SFX.airhorn();pop(b.x,b.y+60,'THE BEST TEAM IS COMING!',RED,13)}
     else{eshots.push({x:b.x,y:b.y+40,vx:rnd(-40,40),vy:140,k:'trade',r:0});AUD.SFX.intThrow()}}
   for(const bl of balls){if(bl.hit)continue;if(Math.abs(bl.x-b.x)<50&&Math.abs(bl.y-b.y)<56){bl.hit=1;hits++;
     if(b.taunt>0){pop(bl.x,bl.y,'NOPE',GOLD,9);continue}
@@ -372,7 +378,7 @@ function drawJoe(x,y,sc,t,glow,sad){ctx.save();ctx.translate(x,y);ctx.scale(sc,s
   if(glow){ctx.fillStyle='rgba(255,212,0,.25)';ctx.beginPath();ctx.arc(0,0,38,0,7);ctx.fill()}
   // body: red GM polo + clipboard
   ctx.fillStyle='#c0141b';rr4(-18,4,36,28,10);ctx.fill();ctx.strokeStyle='#7a0a0f';ctx.lineWidth=1.5;ctx.stroke();txt('GM',0,18,10,GOLD,null,'#400');
-  ctx.fillStyle='#d9b77a';ctx.fillRect(14,8,14,18);ctx.fillStyle='#fff';ctx.fillRect(15.5,11,11,13);txt('v4',21,18,6,RED);
+  ctx.fillStyle='#d9b77a';ctx.fillRect(14,8,14,18);ctx.fillStyle='#fff';ctx.fillRect(15.5,11,11,13);txt('PLAN',21,15,4.2,'#333');txt('???',21,21,5,RED);
   football(-20,20,-0.6+Math.sin(t*6)*0.15,5);
   // head
   ctx.fillStyle='#f0c8a0';ctx.beginPath();ctx.arc(0,-10,15,0,7);ctx.fill();
@@ -414,41 +420,52 @@ function drawBalloon(b){ctx.save();ctx.translate(b.x,b.y);const s=b.sc;ctx.strok
   ctx.fillStyle='rgba(255,255,255,.35)';ctx.beginPath();ctx.ellipse(-16,-16,10,6,-0.6,0,7);ctx.fill();ctx.fillStyle=RED;ctx.beginPath();ctx.moveTo(-5,38);ctx.lineTo(5,38);ctx.lineTo(0,45);ctx.fill();
   txt('REBUILD',0,-10,11,'#fff',null,'#600');txt('YEAR 5',0,8,15,GOLD,null,'#600');txt('INFLATABLE',0,24,6,'#fff');ctx.restore();
   ctx.fillStyle='#222';ctx.fillRect(b.x-30,b.y-40*s-12,60,4);ctx.fillStyle=RED;ctx.fillRect(b.x-30,b.y-40*s-12,60*b.hp/b.max,4)}
-function trophy(x,y,s,t){ctx.save();ctx.translate(x,y);ctx.scale(s,s);ctx.fillStyle=goldGrad(-20,20);ctx.beginPath();ctx.moveTo(-12,-18);ctx.lineTo(12,-18);ctx.quadraticCurveTo(12,2,0,4);ctx.quadraticCurveTo(-12,2,-12,-18);ctx.fill();
-  ctx.strokeStyle=GOLD;ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(-12,-11,5,Math.PI*0.5,Math.PI*1.5);ctx.stroke();ctx.beginPath();ctx.arc(12,-11,5,-Math.PI*0.5,Math.PI*0.5);ctx.stroke();
-  ctx.fillStyle=goldGrad(4,20);ctx.fillRect(-3,4,6,8);ctx.fillRect(-9,12,18,6);ctx.fillStyle='#5a3a00';txt('#1',0,-9,8,'#5a3a00');
-  if(((t*4+x)|0)%5===0){ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(-5,-13,1.6,0,7);ctx.fill()}ctx.restore()}
+function foamFinger(x,y,s,t){ctx.save();ctx.translate(x,y);ctx.scale(s,s);ctx.rotate(Math.sin(t*3+x)*0.12);
+  ctx.fillStyle='#e3262e';ctx.strokeStyle='#600';ctx.lineWidth=1.5;rr4(-12,-6,24,26,6);ctx.fill();ctx.stroke();rr4(-5,-30,10,28,5);ctx.fill();ctx.stroke();
+  ctx.fillStyle=GOLD;ctx.fillRect(-14,18,28,8);txt('#1',0,7,11,'#fff',null,'#600');ctx.restore()}
+function cashStack(x,y,s,t){ctx.save();ctx.translate(x,y);ctx.scale(s,s);for(let i=0;i<4;i++){ctx.fillStyle=i%2?'#2e8b3a':'#3fae4c';ctx.fillRect(-14,8-i*6,28,6);ctx.strokeStyle='#145a1e';ctx.lineWidth=1;ctx.strokeRect(-14,8-i*6,28,6)}
+  ctx.fillStyle='#c9f2c9';ctx.fillRect(-4,-10,8,24);txt('$',0,-14,10,'#7dff4a',null,'#145a1e');ctx.restore()}
+function prBelt(x,y,w){ctx.save();ctx.fillStyle='#2a1a00';ctx.fillRect(x-w/2,y-5,w,10);ctx.fillStyle=goldGrad(y-11,y+11);rr4(x-20,y-11,40,22,6);ctx.fill();ctx.strokeStyle='#5a3a00';ctx.lineWidth=1;ctx.stroke();
+  txt('POWER',x,y-5,5,'#5a3a00');txt('RANKINGS #1',x,y+3,4.6,'#5a3a00');ctx.restore()}
 function drawBoss(b){const t=b.t;ctx.save();const bx=b.x,by=b.y;
-  // 90s video set: boombox stage behind the champ
+  // 90s video set: boombox stage behind the best team in the league
   const th=1+Math.abs(Math.sin(t*Math.PI*98/60))*0.08;
   ctx.fillStyle='rgba(255,212,0,'+(0.16+Math.sin(t*4)*0.06)+')';ctx.beginPath();ctx.arc(bx,by,96,0,7);ctx.fill();
   for(let i=0;i<8;i++){const a=t*0.6+i*Math.PI/4;ctx.strokeStyle='rgba(255,212,0,.18)';ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(bx+Math.cos(a)*60,by+Math.sin(a)*60);ctx.lineTo(bx+Math.cos(a)*120,by+Math.sin(a)*120);ctx.stroke()}
   ctx.fillStyle='#2b2b33';rr4(bx-100,by-20,200,70,10);ctx.fill();ctx.strokeStyle='#9aa';ctx.lineWidth=2;ctx.stroke();
   for(const sx of[-70,70]){ctx.fillStyle='#111';ctx.beginPath();ctx.arc(bx+sx,by+15,26*th,0,7);ctx.fill();ctx.strokeStyle='#777';ctx.stroke();ctx.fillStyle='#333';ctx.beginPath();ctx.arc(bx+sx,by+15,12*th,0,7);ctx.fill();ctx.fillStyle=GOLD;ctx.beginPath();ctx.arc(bx+sx,by+15,4,0,7);ctx.fill()}
-  // trophies
-  trophy(bx-78,by-40,1.1,t);trophy(bx+78,by-40,1.1,t);trophy(bx-46,by+52,0.8,t);trophy(bx+46,by+52,0.8,t);
+  // #1 foam fingers + stacks of cash
+  foamFinger(bx-80,by-36,1.15,t);foamFinger(bx+80,by-36,1.15,t);cashStack(bx-48,by+50,0.85,t);cashStack(bx+48,by+50,0.85,t);
   // the Weasel: Coogi body, gold chains, photo face, giant crown
   ctx.save();if(b.lunge>0)ctx.rotate(Math.sin(t*20)*0.04);
   coogi(bx,by+10,70,40);
   ctx.save();ctx.beginPath();ctx.arc(bx,by-14,34,0,7);ctx.clip();if(FACE.complete&&FACE.naturalWidth)ctx.drawImage(FACE,bx-34,by-48,68,68);ctx.restore();
   ctx.strokeStyle=b.fl>0?'#fff':GOLD;ctx.lineWidth=4;ctx.beginPath();ctx.arc(bx,by-14,34,0,7);ctx.stroke();
   if(b.fl>0){ctx.fillStyle='rgba(255,255,255,.35)';ctx.beginPath();ctx.arc(bx,by-14,34,0,7);ctx.fill()}
-  chain(bx,by+18,52,t);chain(bx,by+12,40,t+0.4);crown(bx,by-44,44);
+  chain(bx,by+18,52,t);chain(bx,by+12,40,t+0.4);prBelt(bx,by+40,70);crown(bx,by-44,44);
   ctx.restore();
   fit('WILSON WEASELS',bx,by+66,10,150,GOLD,'#000');
   if(b.taunt>0){ctx.strokeStyle='rgba(255,212,0,.8)';ctx.lineWidth=3;ctx.beginPath();ctx.arc(bx,by-5,62+Math.sin(t*10)*4,0,7);ctx.stroke();txt('UNTOUCHABLE',bx,by-78,10,GOLD,null,'#000')}
   ctx.restore();
   // HP
   const hw=W-40;ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(20,62,hw,12);ctx.fillStyle=GOLD;ctx.fillRect(21,63,(hw-2)*Math.max(0,b.hp)/b.max,10);
-  ctx.fillStyle='#000';ctx.fillRect(20+hw*0.33,62,2,12);ctx.fillRect(20+hw*0.66,62,2,12);txt('THE WEASEL DYNASTY \u2022 LEAGUE CHAMP \u2022 PHASE '+(b.phase+1)+'/3',W/2,68,8,'#fff',null,'#000')}
+  ctx.fillStyle='#000';ctx.fillRect(20+hw*0.33,62,2,12);ctx.fillRect(20+hw*0.66,62,2,12);fit('FINAL BOSS: THE WILSON WEASELS (BEST TEAM IN THE LEAGUE) \u2022 PHASE '+(b.phase+1)+'/3',W/2,68,8,W-48,'#fff','#000')}
 function drawShot(s){if(s.k==='int'){football(s.x,s.y,s.r,5,RED);txt('INT',s.x,s.y-10,7,'#fff',null,RED)}
-  else if(s.k==='ring'){ctx.strokeStyle=RED;ctx.lineWidth=3;ctx.beginPath();ctx.arc(s.x,s.y,6,0,7);ctx.stroke();ctx.fillStyle=GOLD;ctx.beginPath();ctx.arc(s.x,s.y-6,2.5,0,7);ctx.fill()}
+  else if(s.k==='ring'){ctx.save();ctx.translate(s.x,s.y);ctx.rotate(Math.sin(s.r)*0.5);ctx.fillStyle='#3fae4c';ctx.strokeStyle=RED;ctx.lineWidth=2;ctx.fillRect(-9,-5,18,10);ctx.strokeRect(-9,-5,18,10);txt('$',0,0,8,'#fff',null,'#145a1e');ctx.restore()}
   else if(s.k==='sack'){ctx.fillStyle=RED;ctx.beginPath();ctx.arc(s.x,s.y,6,0,7);ctx.fill();txt('SACK',s.x,s.y-10,6,'#fff',null,RED)}
   else if(s.k==='trade'){ctx.save();ctx.translate(s.x,s.y);ctx.rotate(Math.sin(s.r)*0.4);ctx.fillStyle='#fff';ctx.fillRect(-14,-9,28,18);ctx.strokeStyle=RED;ctx.lineWidth=2;ctx.strokeRect(-14,-9,28,18);txt('TRADE',0,-2,6,RED);txt('OFFER',0,5,6,RED);ctx.restore()}
   else{ctx.fillStyle='#9be35a';ctx.strokeStyle=RED;ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(s.x,s.y,6,8,0,0,7);ctx.fill();ctx.stroke()}}
 function drawStar(s,x,y,sc){x=x==null?s.x:x;y=y==null?s.y:y;sc=sc||1;ctx.save();ctx.translate(x,y);ctx.rotate(Math.sin(s.t*3)*0.25);ctx.scale(sc,sc);ctx.shadowColor=GOLD;ctx.shadowBlur=14;
   ctx.fillStyle=goldGrad(-16,16);ctx.beginPath();for(let i=0;i<10;i++){const r=i%2?7.5:17,a=-Math.PI/2+i*Math.PI/5;ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r)}ctx.closePath();ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle='#7a5200';ctx.lineWidth=1.2;ctx.stroke();
   txt('HOPE',0,2,6,'#5a3a00');ctx.restore();if(s.type)txt(POW[s.type].tag,x,y+22,7,GOLD,null,'#000')}
+function drawAmb(a){const y=H*0.72,x=a.x;ctx.save();ctx.translate(x,y+Math.sin(a.t*20)*1.2);
+  ctx.fillStyle='#fff';rr4(-46,-30,92,34,6);ctx.fill();ctx.strokeStyle='#333';ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle='#fff';rr4(26,-22,26,26,5);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#9fd8ff';ctx.fillRect(32,-18,14,10);ctx.fillStyle=RED;ctx.fillRect(-46,-8,98,4);ctx.fillRect(-42,-27,3,9);ctx.fillRect(-45,-24,9,3);
+  fit('WAAAHMBULANCE',-4,-15,9,58,RED);
+  const on=((a.t*8)|0)%2;ctx.fillStyle=on?RED:'#2f6bff';ctx.fillRect(-10,-36,9,6);ctx.fillStyle=on?'#2f6bff':RED;ctx.fillRect(1,-36,9,6);
+  ctx.globalAlpha=0.35;ctx.fillStyle=on?RED:'#2f6bff';ctx.beginPath();ctx.arc(on?-6:6,-33,16,0,7);ctx.fill();ctx.globalAlpha=1;
+  ctx.fillStyle='#222';for(const wx of[-28,30]){ctx.beginPath();ctx.arc(wx,5,8,0,7);ctx.fill();ctx.fillStyle='#aaa';ctx.beginPath();ctx.arc(wx,5,3,0,7);ctx.fill();ctx.fillStyle='#222'}
+  ctx.restore()}
 function drawPotty(pt){const u=Math.min(1,pt.t/0.35),y=pt.y-60*(1-u);ctx.save();ctx.translate(pt.x,y);ctx.fillStyle='#2f6bff';rr4(-16,-26,32,50,4);ctx.fill();ctx.strokeStyle='#123a9a';ctx.lineWidth=2;ctx.stroke();
   ctx.fillStyle='#1d4fd6';ctx.fillRect(-16,-30,32,6);ctx.fillStyle=pt.t>0.4?RED:'#7dff4a';ctx.fillRect(-8,-20,16,5);txt(pt.t>0.4?'OCCUPIED':'VACANT',0,-17.5,4,'#fff');txt('18',0,4,10,'#fff',null,'#123a9a');
   if(pt.t>0.5){ctx.globalAlpha=Math.max(0,1-(pt.t-1.6)/0.6);txt('SACKED INTO A',0,-42,8,GOLD,null,'#000');txt('PORTA-POTTY!',0,-32,10,GOLD,null,'#000')}ctx.restore()}
@@ -480,18 +497,18 @@ function sticker(x,y,w,rot){ctx.save();ctx.translate(x,y);ctx.rotate(rot);const 
 function drawTitle(){const t=vhsT;ctx.drawImage(bgC,0,0,W,H);
   txt('A SHADYNASTY PRODUCTION',W/2-30,20,10,GOLD,'center','#000');
   shinyText('MOREHOUSE',W/2,54,48,W-24,t);shinyText('MORE PROBLEMS',W/2,96,38,W-20,t+0.7);
-  fit('FEAT. THE NOTORIOUS W.E.A.S.E.L.',W/2,124,12,W-40,'#fff','#000');
+  fit('A SURVIVAL SHOOTER \u2022 PLAY AS JOE \u2022 SURVIVE THE REBUILD',W/2,124,12,W-30,'#fff','#000');
   ctx.save();ctx.translate(W/2,148);ctx.rotate(-0.03);ctx.fillStyle=RED;rr4(-160,-15,320,30,6);ctx.fill();ctx.strokeStyle=GOLD;ctx.lineWidth=2;ctx.stroke();fit('MO MOREHOUSE, MO PROBLEMS',0,1,20,300,'#fff','#600');ctx.restore();
-  // JOE center stage, surrounded by his own problems; the champ looms above
+  // JOE center stage, surrounded by his own problems; the best team in the league looms above
   const cy0=172,ch0=Math.min(250,H*0.33),jx=W/2-20,jy=cy0+ch0*0.62;
   ctx.fillStyle='rgba(255,255,255,.08)';ctx.beginPath();ctx.moveTo(jx-30,cy0);ctx.lineTo(jx+30,cy0);ctx.lineTo(jx+90,jy+60);ctx.lineTo(jx-90,jy+60);ctx.fill();
-  // champ weasel photo (top-right)
-  const pw=96,ph=144,px=W-pw-14,py=cy0+2;ctx.save();ctx.translate(px+pw/2,py+ph/2);ctx.rotate(0.06+Math.sin(t*1.3)*0.02);
-  ctx.fillStyle=goldGrad(-ph/2-5,ph/2+5);rr4(-pw/2-5,-ph/2-5,pw+10,ph+10,8);ctx.fill();rr4(-pw/2,-ph/2,pw,ph,5);ctx.save();ctx.clip();if(PHOTO.complete&&PHOTO.naturalWidth)ctx.drawImage(PHOTO,-pw/2,-ph/2,pw,ph);ctx.restore();
-  crown(0,-ph/2+8,40);chain(0,ph/2-20,52,t);ctx.fillStyle='rgba(0,0,0,.7)';ctx.fillRect(-pw/2,ph/2-16,pw,16);fit('FINAL BOSS: THE CHAMP',0,ph/2-8,8,pw-6,GOLD);ctx.restore();
-  trophy(px-6,py+ph+18,0.9,t);trophy(px+pw+2,py+ph+22,0.7,t);
   // orbiting problems
   const orb=['caleb','mhj','pitts','darnold','trade','year4'];orb.forEach((k,i)=>{const a=t*0.7+i*Math.PI*2/orb.length;const e={x:jx+Math.cos(a)*92,y:jy-10+Math.sin(a)*58,d:KIND[k],hp:KIND[k].hp,max:1,fl:0,t:t,mode:'form',k,meter:(t*40)%100,flipped:0};ctx.save();ctx.globalAlpha=Math.sin(a)>-0.2?1:0.55;drawEnemy(e);ctx.restore()});
+  // best-team weasel photo (top-right)
+  const pw=96,ph=144,px=W-pw-14,py=cy0+2;ctx.save();ctx.translate(px+pw/2,py+ph/2);ctx.rotate(0.06+Math.sin(t*1.3)*0.02);
+  ctx.fillStyle=goldGrad(-ph/2-5,ph/2+5);rr4(-pw/2-5,-ph/2-5,pw+10,ph+10,8);ctx.fill();rr4(-pw/2,-ph/2,pw,ph,5);ctx.save();ctx.clip();if(PHOTO.complete&&PHOTO.naturalWidth)ctx.drawImage(PHOTO,-pw/2,-ph/2,pw,ph);ctx.restore();
+  crown(0,-ph/2+8,40);chain(0,ph/2-44,52,t);ctx.fillStyle='rgba(0,0,0,.8)';ctx.fillRect(-pw/2,ph/2-34,pw,34);fit('FINAL BOSS:',0,ph/2-27,7.5,pw-6,'#fff');fit('THE WILSON WEASELS',0,ph/2-17,8.5,pw-6,GOLD);fit('(BEST TEAM IN THE LEAGUE)',0,ph/2-7,7,pw-6,GOLD);ctx.restore();
+  foamFinger(px-8,py+ph+12,0.85,t);cashStack(px+pw-2,py+ph+20,0.8,t);
   drawJoe(jx,jy+Math.sin(t*3)*3,2.4,t,false,true);
   fit('YOU ARE JOE. MID-REBUILD. SURVIVE ONE MORE SEASON.',W/2,cy0+ch0+12,10,W-16,'#fff','#000');
   sticker(48,cy0+ch0-28,58,-0.14);
@@ -510,17 +527,17 @@ function drawTitle(){const t=vhsT;ctx.drawImage(bgC,0,0,W,H);
   drawParts();drawVHS();vhsOSD(8,8,'PLAY');}
 function drawEnd(){const t=vhsT;ctx.drawImage(bgC,0,0,W,H);ctx.fillStyle='rgba(10,3,20,.6)';ctx.fillRect(0,0,W,H);
   ctx.save();ctx.translate(W/2-10,52);ctx.rotate(-0.035);fit('MOREHOUSE:',0,-16,30,W-90,RED,'#000');fit('99 PROBLEMS AND STILL BROKE',0,14,22,W-30,'#fff',RED);ctx.restore();
-  ctx.save();ctx.translate(W/2,96);ctx.fillStyle='rgba(0,0,0,.6)';rr4(-150,-15,300,30,8);ctx.fill();ctx.restore();shinyText('WILSON WEASELS: STILL CHAMPS',W/2,97,21,W-36,t);
-  // champ weasel gloating over a crying Joe
+  ctx.save();ctx.translate(W/2,96);ctx.fillStyle='rgba(0,0,0,.6)';rr4(-150,-15,300,30,8);ctx.fill();ctx.restore();shinyText('WILSON WEASELS: STILL THE BEST',W/2,97,21,W-36,t);
+  // best-team weasel gloating over a crying Joe
   const wy=176;ctx.fillStyle='rgba(255,212,0,.2)';ctx.beginPath();ctx.arc(W/2+50,wy,58,0,7);ctx.fill();
-  trophy(W/2+2,wy+34,0.9,t);trophy(W/2+102,wy+34,0.9,t);drawWeasel(W/2+52,wy+Math.sin(t*4)*3,1.6,t,false);
+  foamFinger(W/2+2,wy+30,0.9,t);cashStack(W/2+104,wy+40,0.9,t);drawWeasel(W/2+52,wy+Math.sin(t*4)*3,1.6,t,false);prBelt(W/2+52,wy+58,80);
   drawJoe(W/2-92,wy+28,1.25,t,false,true);txt('JOE',W/2-92,wy+76,9,'#aaa');
   ctx.fillStyle='#fff';rr4(14,wy-70,170,46,12);ctx.fill();ctx.beginPath();ctx.moveTo(150,wy-26);ctx.lineTo(196,wy-34);ctx.lineTo(166,wy-24);ctx.fill();
   wrapTxt(pick2(['EAT SHIT, JOE. SPREAD LOVE, IT\'S THE WEASEL WAY.','JUICY? NAH. YOUR ROSTER IS DRY, JOE.','SEE YOU IN 2031. BRING TISSUES.']),99,wy-55,9.5,158,'#111');
   let y=wy+100;
   fit('YOU GAVE MOREHOUSE '+problems+' MORE PROBLEMS',W/2,y,15,W-20,'#fff','#000');y+=19;
   fit('MO PROBLEMS: '+problems+'  \u2022  SCORE '+score.toLocaleString('en-US')+'  \u2022  SHIT COMBO x'+comboBest,W/2,y,11,W-20,GOLD,'#000');y+=16;
-  fit('TRACKS SURVIVED: '+Math.max(0,reached-1)+'  \u2022  CALEB FLUSHED x'+potCount+'  \u2022  FIRE SALES x'+firesales+(bossesBeat?'  \u2022  WEASEL BEATEN x'+bossesBeat+' (STILL CHAMP)':''),W/2,y,9,W-20,'#7dff4a','#000');y+=14;
+  fit('TRACKS SURVIVED: '+Math.max(0,reached-1)+'  \u2022  CALEB FLUSHED x'+potCount+'  \u2022  FIRE SALES x'+firesales+(bossesBeat?'  \u2022  WEASEL BEATEN x'+bossesBeat+' (STILL THE BEST)':''),W/2,y,9,W-20,'#7dff4a','#000');y+=14;
   const v1=Math.max(0.37,Math.round(1000000*Math.pow(0.5,score/2500)*100)/100);fit('JOE\'S DYNASTY VALUE: $1,000,000 \u2192 $'+v1.toLocaleString('en-US',{maximumFractionDigits:2}),W/2,y,10,W-20,'#ff8a8a','#000');y+=14;
   fit(endReason,W/2,y,9,W-20,'#aaa');y+=13;
   ctx.save();ctx.globalAlpha=0.95;const nl=wrapTxt('\u201C'+roast+'\u201D',W/2,y+3,10.5,W-30,'#36e0ff','#000');ctx.restore();y+=16+nl*13;
@@ -532,7 +549,7 @@ function drawEnd(){const t=vhsT;ctx.drawImage(bgC,0,0,W,H);ctx.fillStyle='rgba(1
     txt(e?e.s.toLocaleString('en-US'):'',W-110,yy,fs,hl?GOLD:'#fff','right');txt(e?(e.p||0)+' PROB':'',W-46,yy,fs*0.8,'#888','right')}
   drawParts();drawVHS();vhsOSD(8,8,'STOP');
   if(R()<0.05)burst(rnd(20,W-20),-10,6,R()<0.3?1:0)}
-let endQuoteI=0,tauntWhy='',rainN=0;function pick2(a){if(state==='end'&&stateT<0.05)endQuoteI=(R()*a.length)|0;return a[endQuoteI%a.length]}
+let endQuoteI=0,tauntWhy='',rainN=0,amb=null,waahN=0,lastWaah=-1e9;function pick2(a){if(state==='end'&&stateT<0.05)endQuoteI=(R()*a.length)|0;return a[endQuoteI%a.length]}
 function draw(){
   ctx.setTransform(S*DPR,0,0,S*DPR,0,0);ctx.clearRect(0,0,W,H);
   if(state==='title'){drawTitle();drawBanner();return}
@@ -547,6 +564,7 @@ function draw(){
   for(const s of stars)drawStar(s);
   for(const s of eshots)drawShot(s);
   const p=player;if(p&&!p.dead&&!(p.inv>0&&((vhsT*14)|0)%2)){if(p.shieldT>0){ctx.strokeStyle='rgba(54,224,255,.7)';ctx.lineWidth=3;ctx.beginPath();ctx.arc(p.x,p.y,36+Math.sin(vhsT*8)*2,0,7);ctx.stroke()}drawJoe(p.x,p.y,1,vhsT,p.rapidT>0||p.spreadT>0,lives<=1)}
+  if(amb)drawAmb(amb);
   drawParts();drawPops();drawHUD();drawBanner();drawCaption();
   if(state==='intro'){fit(stateT<0.55?'READY...':stateT<1.1?'SET...':'SURVIVE!',W/2,H*0.55,44,W-30,GOLD,RED)}
   ctx.restore();
@@ -557,7 +575,7 @@ function draw(){
     ctx.rotate(-0.08);shinyText('EAT',0,-34,70,W-40,vhsT);shinyText('SHIT',0,34,78,W-30,vhsT+0.5);
     txt(tauntWhy==='GAME OVER'?'- THE WEASEL, TO JOE. SEASON OVER.':'- THE WEASEL, TO JOE',0,86,12,'#fff',null,'#000');ctx.restore()}
   if(flash>0){ctx.fillStyle=flashCol;ctx.globalAlpha=flash*0.35;ctx.fillRect(0,0,W,H);ctx.globalAlpha=1}
-  drawVHS();if(state==='play'&&TRACKS[trackI].boss)vhsOSD(8,H-90,'CHAMP CAM')
+  drawVHS();if(state==='play'&&TRACKS[trackI].boss)vhsOSD(8,H-90,'BEST TEAM CAM')
 }
 // ---------- overlays ----------
 const shareBtn=document.getElementById('shareBtn'),againBtn=document.getElementById('againBtn'),hsPanel=document.getElementById('hsPanel'),hsIn=document.getElementById('hsIn');
@@ -565,8 +583,8 @@ function placeButtons(){const y=(H-62)*S;shareBtn.style.cssText+=`;left:${10*S}p
 let ovlOn=null;
 function updateOverlays(){const show=state==='end'&&stateT>1.2&&!hsEntering;if(show!==ovlOn){ovlOn=show;shareBtn.style.display=againBtn.style.display=show?'block':'none';if(show)shareLabel()}}
 function shareLabel(t){shareBtn.textContent=t||('\u{1F4E3} I GAVE MOREHOUSE '+problems+' MORE PROBLEMS')}
-const SHARE_URL=location.protocol==='https:'?location.origin+location.pathname:'https://howibrettyourmother.github.io/notorious-weasel/';
-function shareText(){return 'I gave Morehouse '+problems+' more problems ('+score.toLocaleString('en-US')+' pts, survived '+Math.max(0,reached-1)+' tracks as Joe'+(comboBest>=10?', x'+comboBest+' shit combo':'')+') in MOREHOUSE MORE PROBLEMS: Notorious W.E.A.S.E.L. Mo Morehouse, mo problems. 99 problems and still broke. Wilson Weasels: still champs. Your turn:'}
+const SHARE_URL=location.protocol==='https:'?location.origin+location.pathname:'https://howibrettyourmother.github.io/mo-morehouse-mo-problems/';
+function shareText(){return 'I gave Morehouse '+problems+' more problems ('+score.toLocaleString('en-US')+' pts, survived '+Math.max(0,reached-1)+' tracks as Joe'+(comboBest>=10?', x'+comboBest+' shit combo':'')+') in MOREHOUSE MORE PROBLEMS. Mo Morehouse, mo problems. 99 problems and still broke. Wilson Weasels: still the best team in the league. Your turn:'}
 function legacyCopy(full){let ok=false;try{const ta=document.createElement('textarea');ta.value=full;ta.setAttribute('readonly','');ta.style.cssText='position:fixed;left:-9999px;top:0;opacity:0';document.body.appendChild(ta);ta.select();ta.setSelectionRange(0,full.length);ok=document.execCommand('copy');ta.remove()}catch(e){}
   shareLabel(ok?'\u2705 COPIED! PASTE IN THE CHAT':'\u{1F4E3} '+problems+' PROBLEMS - COPY FAILED')}
 function copyShare(full){try{if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(full).then(()=>shareLabel('\u2705 COPIED! PASTE IN THE CHAT'),()=>legacyCopy(full));return}}catch(e){}legacyCopy(full)}
@@ -593,7 +611,7 @@ if(DEBUG){window.__NW={get state(){return state},get score(){return score},get p
   clientOf(x,y){const r=cv.getBoundingClientRect();return{x:r.left+x/W*r.width,y:r.top+y/H*r.height}},
   spawn(k,x,y){const e=mkEnemy(k,x,y);e.x=x;e.y=y;enemies.push(e);return enemies.length},clearAll(){enemies=[];eshots=[];stars=[];balloon=null},hold(){trackCleared=true;starT=1e9;diveT=1e9},
   star(type,x,y){spawnStar(type,x,y)},shot(k,x,y){eshots.push({x,y,vx:0,vy:120,k,r:0})},bossGo(){enemies=[];trackI=4;spawnBoss();boss.y=boss.ty},setBossHp(v){boss.hp=v},balloonGo(x){spawnBalloon();balloon.x=x||W/2},
-  track(i){startTrack(i)},end(){endGame('FINAL WHISTLE')},fin(){fireSale()},get firesales(){return firesales},get finMode(){return finMode},noInv(){player.inv=0;player.shieldT=0},get bossPhase(){return boss&&boss.phase},get bossTaunt(){return boss&&boss.taunt},get rain(){return rainN},movePlayer(x,y){player.x=x;player.y=y},freezeEnemies(){for(const e of enemies){e.enter=0;e.mode='frozen'}}};
+  track(i){startTrack(i)},end(){endGame('FINAL WHISTLE')},fin(){fireSale()},get firesales(){return firesales},get finMode(){return finMode},noInv(){player.inv=0;player.shieldT=0},get bossPhase(){return boss&&boss.phase},get bossTaunt(){return boss&&boss.taunt},get rain(){return rainN},get waahN(){return waahN},get amb(){return !!amb},waah(){lastWaah=-1e9;waahmbulance()},movePlayer(x,y){player.x=x;player.y=y},freezeEnemies(){for(const e of enemies){e.enter=0;e.mode='frozen'}}};
   console.log('debug mode')}
 </script>
 </body>
