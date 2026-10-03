@@ -185,7 +185,7 @@ const cleanIni=v=>(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,3);
 function lbSubmit(ini){ini=cleanIni(ini)||'???';try{localStorage.setItem('nw_ini',ini)}catch(e){}const a=lbLoad();const e={i:ini,s:score,p:problems,id:runId};a.push(e);a.sort((x,y)=>y.s-x.s);
   const b=a.slice(0,10);savedRank=b.indexOf(e);try{localStorage.setItem('nw_lb',JSON.stringify(b.map(x=>({i:x.i,s:x.s,p:x.p}))))}catch(err){}}
 // ---------- audio glue ----------
-AUD.onSay=(text,ann)=>{if(ann)showBanner(text,GOLD);else caption={t:text,life:2.6}};
+AUD.onSay=(text,ann,dur)=>{caption={t:text,life:Math.max(1.6,(dur||2)+0.4),ann:!!ann};if(/WAAAAHMBULANCE/.test(text)&&state==='play')startAmb()};
 function showBanner(t,c,big){banner={t,c:c||GOLD,life:big?2.4:1.8,max:big?2.4:1.8,big:!!big}}
 function airhorn(){const n=performance.now();if(n-lastAir<380)return;lastAir=n;AUD.SFX.airhorn()}
 // ---------- particles: confetti + toilet paper ----------
@@ -214,7 +214,7 @@ function spawnStar(type,x,y){type=type||pick(['spread','spread','rapid','rapid',
 // ---------- start / end ----------
 function startGame(){resetRun();hsEntering=false;hsPanel.style.display='none';go('intro');AUD.SFX.scratch();AUD.sting('a_go',{quiet:true});showBanner('SURVIVE ONE MORE SEASON, JOE',GOLD,true);AUD.setTheme('main');updateOverlays()}
 function endGame(why){if(state==='end')return;endReason=why||'';roast=pick(ROASTS);if(score>hi){hi=score;try{localStorage.setItem('nw_hi',hi)}catch(e){}}
-  go('end');timeScale=1;slowT=0;AUD.SFX.trombone();AUD.endingDelay(2.2);AUD.setTheme('ending');AUD.sting('a_over',{quiet:true,delay:0.3});setTimeout(()=>{if(state==='end')AUD.sting('a_best',{quiet:true})},4300);setTimeout(()=>{if(state==='end')AUD.heckle('end',true)},7600);
+  go('end');timeScale=1;slowT=0;AUD.SFX.trombone();AUD.endingDelay(2.2);AUD.setTheme('ending');AUD.sting('a_over',{quiet:true,delay:0.3});setTimeout(()=>{if(state==='end'){AUD.sting('nohouse',{quiet:true});showBanner('MOREHOUSE? MORE LIKE NO HOUSE.',RED,true)}},3500);setTimeout(()=>{if(state==='end')AUD.sting('a_best',{quiet:true})},6600);setTimeout(()=>{if(state==='end')AUD.heckle('end',true)},9800);
   burst(W/2,H*0.3,60,8);if(lbQualifies(score))setTimeout(()=>{if(state==='end')showHS()},1300);updateOverlays()}
 // ---------- combat ----------
 function addCombo(n){combo++;comboT=2.6;if(combo>comboBest)comboBest=combo;meter=Math.min(100,meter+n);if(meter>=100)fireSale()}
@@ -234,14 +234,14 @@ function hurtPlayer(src){if(player.inv>0||state!=='play'||player.dead)return;
   pop(player.x,player.y-44,src||'OUCH!',RED,15);if(lives===1)setTimeout(waahmbulance,900);const n=performance.now();if(n-lastHurtHk>3000){lastHurtHk=n;AUD.heckle('HURT',true)}
   if(lives<=0){player.dead=1;burst(player.x,player.y,40,10);AUD.SFX.death();weaselTaunt('GAME OVER');setTimeout(()=>endGame(boss&&!boss.dead?'THE WEASEL DYNASTY ENDED YOUR SEASON':'JOE\'S OWN PROBLEMS ENDED HIS SEASON'),2500)}}
 function fireSale(){meter=0;firesales++;shake=12;flash=1;flashCol='#ffd400';airhorn();setTimeout(()=>airhorn(),350);AUD.SFX.scratch();AUD.sting('a_firesale',{quiet:true,throttle:3000});AUD.SFX.cheer(1);
-  showBanner('SHIT COMBO! FIRE SALE: EVERYTHING MUST GO!',GOLD,true);
+  showBanner('SHIT COMBO! FIRE SALE: EVERYTHING MUST GO!',GOLD,true);setTimeout(()=>{if(state==='play')AUD.sting('bitch',{quiet:true,throttle:20000})},1200);
   for(const e of enemies)if(!e.dead&&e.y>-20){killEnemy(e,true)}
   eshots=[];if(boss&&!boss.dead&&boss.taunt<=0){boss.hp-=Math.round(boss.max*0.05);boss.fl=0.3;if(boss.hp<=0)killBoss()}
   if(balloon){balloon.hp=0;popBalloon()}
   burst(W/2,H*0.45,70,12)}
 // the Weasel's slow-mo EAT SHIT taunt at Joe (boss phases + game over)
-function waahmbulance(){const n=performance.now();if(n-lastWaah<12000||state!=='play')return;lastWaah=n;waahN++;amb={x:-90,t:0};
-  AUD.sting('waah',{quiet:true});caption={t:'Somebody call a WAAAAHMBULANCE!',life:3.4};for(let i=0;i<6;i++){AUD.SFX.tone(i%2?740:980,0.32,'square',0.035,0,i*0.36)}}
+function waahmbulance(){const n=performance.now();if(n-lastWaah<12000||state!=='play')return;lastWaah=n;waahN++;if(!AUD.sting('waah',{quiet:true}))startAmb()}
+function startAmb(){if(amb)return;amb={x:-90,t:0};for(let i=0;i<6;i++){AUD.SFX.tone(i%2?740:980,0.32,'square',0.035,0,i*0.36)}}
 function weaselTaunt(why){finT=2.4;finMode='weasel';slowT=1.9;finishers++;shake=16;flash=1;flashCol='#fff';AUD.SFX.slowmo();AUD.SFX.scratch();AUD.sting('a_eatshit',{quiet:true,rate:0.78});
   airhorn();setTimeout(()=>airhorn(),450);AUD.SFX.eatShitChant(0.2);AUD.SFX.laugh(1.3);burst(W/2,H*0.4,60,10);tauntWhy=why||''}
 function popBalloon(){if(!balloon)return;const b=balloon;score+=2500;problems++;burst(b.x,b.y,90,16);AUD.SFX.bigPop();airhorn();setTimeout(()=>airhorn(),300);AUD.heckle('BALLOONPOP',true);
@@ -488,8 +488,8 @@ function drawHUD(){ctx.fillStyle='rgba(10,3,20,.55)';ctx.fillRect(0,0,W,58);
 function chainIcon(x,y){ctx.strokeStyle=GOLD;ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y-5,6,0.2,Math.PI-0.2);ctx.stroke();ctx.fillStyle=GOLD;ctx.beginPath();ctx.arc(x,y+2,3.5,0,7);ctx.fill()}
 function drawBanner(){if(!banner)return;const a=Math.min(1,banner.life*3,(banner.max-banner.life)*6+0.2);ctx.save();ctx.globalAlpha=a;const y=banner.big?H*0.56:H*0.62;
   ctx.fillStyle='rgba(0,0,0,.65)';ctx.fillRect(0,y-22,W,44);ctx.fillStyle=banner.c;ctx.fillRect(0,y-22,W,3);ctx.fillRect(0,y+19,W,3);fit(banner.t,W/2,y,banner.big?22:18,W-20,banner.c,'#000');ctx.restore()}
-function drawCaption(){if(!caption)return;ctx.save();ctx.globalAlpha=Math.min(1,caption.life*2);const y=88;ctx.font='900 11px '+FONT;const w=Math.min(W-16,ctx.measureText(caption.t).width+46);
-  ctx.fillStyle='rgba(0,0,0,.75)';rr4(W/2-w/2,y-12,w,24,12);ctx.fill();ctx.strokeStyle=GOLD;ctx.lineWidth=1.5;ctx.stroke();fit('\u{1F4E2} '+caption.t,W/2,y,11,w-14,'#fff');ctx.restore()}
+function drawCaption(){if(!caption)return;ctx.save();ctx.globalAlpha=Math.min(1,caption.life*2);const y=88;ctx.font='900 12px '+FONT;const w=Math.min(W-12,ctx.measureText(caption.t).width+48);
+  ctx.fillStyle='rgba(0,0,0,.75)';rr4(W/2-w/2,y-12,w,24,12);ctx.fill();ctx.strokeStyle=caption.ann?RED:GOLD;ctx.lineWidth=1.5;ctx.stroke();fit('\u{1F4E2} '+caption.t,W/2,y,12,w-14,caption.ann?GOLD:'#fff');ctx.restore()}
 // ---------- title / end ----------
 function sticker(x,y,w,rot){ctx.save();ctx.translate(x,y);ctx.rotate(rot);const h=w*0.6;ctx.fillStyle='#000';ctx.fillRect(-w/2,-h/2,w,h);ctx.fillStyle='#fff';ctx.fillRect(-w/2+3,-h/2+3,w-6,h-6);
   ctx.fillStyle='#000';ctx.fillRect(-w/2+5,-h/2+5,w-10,h*0.22);txt('PARENTAL',0,-h/2+5+h*0.11,w*0.13,'#fff');txt('ADVISORY',0,-h*0.05,w*0.2,'#000');
@@ -527,9 +527,9 @@ function drawTitle(){const t=vhsT;ctx.drawImage(bgC,0,0,W,H);
   drawParts();drawVHS();vhsOSD(8,8,'PLAY');}
 function drawEnd(){const t=vhsT;ctx.drawImage(bgC,0,0,W,H);ctx.fillStyle='rgba(10,3,20,.6)';ctx.fillRect(0,0,W,H);
   ctx.save();ctx.translate(W/2-10,52);ctx.rotate(-0.035);fit('MOREHOUSE:',0,-16,30,W-90,RED,'#000');fit('99 PROBLEMS AND STILL BROKE',0,14,22,W-30,'#fff',RED);ctx.restore();
-  ctx.save();ctx.translate(W/2,96);ctx.fillStyle='rgba(0,0,0,.6)';rr4(-150,-15,300,30,8);ctx.fill();ctx.restore();shinyText('WILSON WEASELS: STILL THE BEST',W/2,97,21,W-36,t);
+  ctx.save();ctx.translate(W/2,96);ctx.fillStyle='rgba(0,0,0,.6)';rr4(-150,-15,300,30,8);ctx.fill();ctx.restore();shinyText('WILSON WEASELS: STILL THE BEST',W/2,97,21,W-36,t);ctx.save();ctx.translate(W/2,124);ctx.rotate(0.02);fit('MOREHOUSE? MORE LIKE NO HOUSE.',0,0,17,W-30,'#ff6b6b','#000');ctx.restore();
   // best-team weasel gloating over a crying Joe
-  const wy=176;ctx.fillStyle='rgba(255,212,0,.2)';ctx.beginPath();ctx.arc(W/2+50,wy,58,0,7);ctx.fill();
+  const wy=196;ctx.fillStyle='rgba(255,212,0,.2)';ctx.beginPath();ctx.arc(W/2+50,wy,58,0,7);ctx.fill();
   foamFinger(W/2+2,wy+30,0.9,t);cashStack(W/2+104,wy+40,0.9,t);drawWeasel(W/2+52,wy+Math.sin(t*4)*3,1.6,t,false);prBelt(W/2+52,wy+58,80);
   drawJoe(W/2-92,wy+28,1.25,t,false,true);txt('JOE',W/2-92,wy+76,9,'#aaa');
   ctx.fillStyle='#fff';rr4(14,wy-70,170,46,12);ctx.fill();ctx.beginPath();ctx.moveTo(150,wy-26);ctx.lineTo(196,wy-34);ctx.lineTo(166,wy-24);ctx.fill();
@@ -611,7 +611,7 @@ if(DEBUG){window.__NW={get state(){return state},get score(){return score},get p
   clientOf(x,y){const r=cv.getBoundingClientRect();return{x:r.left+x/W*r.width,y:r.top+y/H*r.height}},
   spawn(k,x,y){const e=mkEnemy(k,x,y);e.x=x;e.y=y;enemies.push(e);return enemies.length},clearAll(){enemies=[];eshots=[];stars=[];balloon=null},hold(){trackCleared=true;starT=1e9;diveT=1e9},
   star(type,x,y){spawnStar(type,x,y)},shot(k,x,y){eshots.push({x,y,vx:0,vy:120,k,r:0})},bossGo(){enemies=[];trackI=4;spawnBoss();boss.y=boss.ty},setBossHp(v){boss.hp=v},balloonGo(x){spawnBalloon();balloon.x=x||W/2},
-  track(i){startTrack(i)},end(){endGame('FINAL WHISTLE')},fin(){fireSale()},get firesales(){return firesales},get finMode(){return finMode},noInv(){player.inv=0;player.shieldT=0},get bossPhase(){return boss&&boss.phase},get bossTaunt(){return boss&&boss.taunt},get rain(){return rainN},get waahN(){return waahN},get amb(){return !!amb},waah(){lastWaah=-1e9;waahmbulance()},movePlayer(x,y){player.x=x;player.y=y},freezeEnemies(){for(const e of enemies){e.enter=0;e.mode='frozen'}}};
+  track(i){startTrack(i)},end(){endGame('FINAL WHISTLE')},fin(){fireSale()},get firesales(){return firesales},get finMode(){return finMode},noInv(){player.inv=0;player.shieldT=0},get bossPhase(){return boss&&boss.phase},get bossTaunt(){return boss&&boss.taunt},get rain(){return rainN},get waahN(){return waahN},get caption(){return caption&&caption.t},get amb(){return !!amb},waah(){lastWaah=-1e9;waahmbulance()},movePlayer(x,y){player.x=x;player.y=y},freezeEnemies(){for(const e of enemies){e.enter=0;e.mode='frozen'}}};
   console.log('debug mode')}
 </script>
 </body>

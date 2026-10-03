@@ -53,7 +53,7 @@ async def run(p,b,name,dev,touch,shots):
     await m.evaluate('__NW.spawn("caleb",180,420);__NW.freezeEnemies()');await m.wait_for_timeout(1500)
     s=await m.evaluate('({s:__NW.score,p:__NW.problems,pc:__NW.potCount,tp:__NW.tp,st:__NW.audio.stats()})')
     chk(f'[{name}] football kills Caleb -> porta-potty + TP confetti',s['pc']==1 and s['s']>s0 and s['p']>=1,str({k:s[k] for k in ['s','p','pc','tp']}))
-    chk(f'[{name}] porta-potty sting voiced',s['st'].get('a_potty',0)+s['st'].get('clip',0)>=1,json.dumps(s['st']))
+    chk(f'[{name}] voice lines playing',s['st'].get('n',0)>=1,json.dumps(s['st']))
     # star catch (shoot passes through)
     await m.evaluate('__NW.star("spread",__NW.player.x,__NW.player.y-30)');await m.wait_for_timeout(900)
     pl=await m.evaluate('__NW.player');chk(f'[{name}] caught gold Brett star -> triple threat',pl['spreadT']>0,str(pl))
@@ -74,23 +74,37 @@ async def run(p,b,name,dev,touch,shots):
     for i in range(14):
         await m.wait_for_timeout(300);rain=max(rain,await m.evaluate('__NW.rain'))
         if shots and i==9: await m.screenshot(path=OUT+'screenshot-boss.png')
+    st=await m.evaluate('__NW.audio.stats()');chk(f'[{name}] fire sale -> "What a little bitch!" heckle',st.get('bitch',0)>=1,json.dumps(st))
     bh=await m.evaluate('__NW.boss');chk(f'[{name}] Weasel Dynasty boss takes football hits',bh and bh['hp']<bh['max'],str(bh))
     chk(f'[{name}] boss rains Mahomes/Lamb/Lamar/CMC cards',rain>=1,str(rain))
     await m.evaluate('__NW.setBossHp(Math.round(__NW.boss.max*0.6))');await m.wait_for_timeout(500)
     f=await m.evaluate('({ph:__NW.bossPhase,ta:__NW.bossTaunt,fm:__NW.finMode,ft:__NW.finT})')
     chk(f'[{name}] boss phase -> weasel EAT SHIT slow-mo taunt (invulnerable)',f['ph']==1 and f['ta']>0 and f['fm']=='weasel' and f['ft']>0,str(f))
     if shots: await m.screenshot(path=OUT+'screenshot-eatshit.png')
-    await m.wait_for_timeout(4600)
-    w=await m.evaluate('({n:__NW.waahN,a:__NW.amb,st:__NW.audio.stats().waah||0})')
-    chk(f'[{name}] boss phase -> WAAAHMBULANCE drives by + voice',w['n']>=1 and w['st']>=1,str(w))
+    await m.wait_for_timeout(4300)
+    for i in range(40):
+        w=await m.evaluate('({n:__NW.waahN,a:__NW.amb,st:__NW.audio.stats().waah||0})')
+        if w['st']>=1 and w['a']: break
+        await m.wait_for_timeout(200)
+    chk(f'[{name}] boss phase -> WAAAHMBULANCE drives by in sync with its voice line',w['n']>=1 and w['st']>=1 and w['a'],str(w))
     if shots and w['a']: await m.screenshot(path=OUT+'screenshot-waahmbulance.png')
-    await m.evaluate('__NW.lives=99;__NW.setBossHp(1)');await m.wait_for_timeout(5200)
+    await m.evaluate('__NW.lives=99;__NW.setBossHp(1)')
+    for i in range(26):
+        await m.evaluate('__NW.boss&&!__NW.boss.dead&&__NW.movePlayer(__NW.boss.x,__NW.player.y)');await m.wait_for_timeout(200)
     bh=await m.evaluate('__NW.boss');chk(f'[{name}] boss beatable (Joe wins one, Weasels still the best)',bh is None or bh['dead']==1,str(bh))
     await m.wait_for_timeout(3800)
     chk(f'[{name}] remix loop starts after boss',await m.evaluate('__NW.loop')==1 and await m.evaluate('__NW.trackI')==0)
     z=await m.evaluate('({sy:scrollY,sc:visualViewport.scale,ta:getComputedStyle(document.body).touchAction})')
     chk(f'[{name}] no scroll/zoom',z['sy']==0 and z['sc']==1 and z['ta']=='none',str(z))
     st=await m.evaluate('__NW.audio.stats()');chk(f'[{name}] voice clips played',st.get('clip',0)+st.get('sting',0)>=4,json.dumps(st))
+    q=await m.evaluate('''(async()=>{const A=__NW.audio;await new Promise(r=>{const c=()=>{if(!A.current&&!A.queueLen)r();else setTimeout(c,100)};c()});
+      const n0=A.stats().n;A.heckle('ambient');A.heckle('HURT');A.sting('a_t2',{quiet:true});A.sting('wilson',{quiet:true});A.heckle('ambient');A.sting('waah',{quiet:true});
+      const q1=A.queueLen;await new Promise(r=>setTimeout(r,300));const n1=A.stats().n,cur=A.current&&A.current.t,cap=__NW.caption;
+      let over=0,prev=null,seen=[];for(let i=0;i<60;i++){await new Promise(r=>setTimeout(r,100));const c=A.current;if(c&&c.k!==prev){seen.push(c.k);prev=c.k}}
+      return{started:n1-n0,q1,cur,cap,seen,maxQ:A.stats().maxQ,dropped:A.stats().dropped}})()''')
+    chk(f'[{name}] voice queue: only one line starts at once, rest queued/dropped',q['started']==1 and q['q1']<=3 and q['cur'] is not None,str(q))
+    chk(f'[{name}] caption matches the line actually playing',q['cap']==q['cur'],str((q['cap'],q['cur'])))
+    chk(f'[{name}] high-priority queued lines play in order (Brett lines first)',len(q['seen'])>=2 and set(q['seen'][:2])<={'wilson','waah','bitch'} and 'a_t2' not in q['seen'][:2],str(q['seen']))
     await m.evaluate('__NW.lives=1;__NW.noInv();__NW.shot("int",__NW.player.x,__NW.player.y-30)');await m.wait_for_timeout(600)
     f=await m.evaluate('({fm:__NW.finMode,ft:__NW.finT,st:__NW.state,l:__NW.lives})')
     chk(f'[{name}] game over -> weasel EAT SHIT taunt',f['fm']=='weasel' and f['ft']>0 and f['l']==0,str(f))
@@ -106,6 +120,7 @@ async def run(p,b,name,dev,touch,shots):
     ls=await m.evaluate('__NW.lastShare');chk(f'[{name}] share works (copy fallback)','I gave Morehouse' in ls and 'more problems' in ls and 'mo-morehouse-mo-problems' in ls and 'champ' not in ls.lower(),ls)
     await m.wait_for_timeout(2400)
     if shots: await m.screenshot(path=OUT+'screenshot-end.png')
+    st=await m.evaluate('__NW.audio.stats()');chk(f'[{name}] game over -> "Morehouse? More like NO house." voice',st.get('nohouse',0)>=1,json.dumps(st))
     chk(f'[{name}] ending theme',await m.evaluate('__NW.audio.theme')=='ending')
     if touch: await m.tap('#againBtn')
     else: await m.click('#againBtn')

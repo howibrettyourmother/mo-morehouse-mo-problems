@@ -89,3 +89,5 @@ a_phase|THE WEASEL IS PISSED!|The Weasel is pissed!|ANNOUNCE|
 a_joewin|JOE WON A GAME?! THE WEASELS ARE STILL THE BEST.|Joe won a game? The Weasels are still the best.|ANNOUNCE|
 boss8|Power rankings #1, baby!|Power rankings number one, baby!|BOSSHIT WILSON|
 waah|Somebody call a WAAAAHMBULANCE!|Somebody call a waaaah mbulance!|WAAH|
+nohouse|Morehouse? More like NO house.|Morehouse? More like, no house!|end ambient|
+bitch|What a little bitch!|What a little bitch!|HURT|

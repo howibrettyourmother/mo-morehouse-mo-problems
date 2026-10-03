@@ -189,6 +189,14 @@ const AUD=(()=>{
     sniff:safe(()=>{const t=now();[0,0.18].forEach(d=>{const g=gain(0,sfxBus);env(g,t+d,0.03,0.06,0.08,0.18);noiseSrc(t+d,0.2,filt('bandpass',2600,2,g))})}),
     tone:safe((f,d,type,v,slide,delay)=>toneRaw(f,d,type,v,slide,delay))
   };
+  // ---- SFX limiter: per-sound throttles, one BIG sound at a time, max 6 SFX per 150ms ----
+  {const TH={airhorn:900,bigPop:450,splat:45,chomp:40,throwF:80,bossHit:250,cheer:1100,boo:1100,laugh:1400,ohh:900,flush:700,scratch:350,slowmo:1200,eatShitChant:1800,mmpChant:1800,sackChant:1800,
+     power:300,bonus:200,ghostEat:300,intThrow:250,squeak:60,sniff:400,hurt:300,death:800,trombone:2000,sadHorn:2000,stamp:200,start:300,bossSting:800};
+   const BIG={airhorn:1.25,bigPop:0.6,slowmo:1.4,bossHit:0.5,flush:1.3,bossSting:1.3,death:1.4};const last={};let win=[],bigUntil=0;
+   for(const k of Object.keys(SFXi)){if(k==='tone')continue;const f=SFXi[k];SFXi[k]=function(){const n=performance.now();if(n-(last[k]||-1e9)<(TH[k]||60)){stats.sfxDrop=(stats.sfxDrop||0)+1;return}
+     win=win.filter(x=>n-x<150);if(win.length>=6){stats.sfxDrop=(stats.sfxDrop||0)+1;return}
+     if(BIG[k]){if(n<bigUntil){stats.sfxDrop=(stats.sfxDrop||0)+1;return}bigUntil=n+BIG[k]*1000}
+     last[k]=n;win.push(n);return f.apply(null,arguments)}}}
     // ---------- music sequencer ----------
   const NOTE={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
   function nf(s){const m=/^([A-G])(#|b)?(\d)$/.exec(s);if(!m)return 0;const n=NOTE[m[1]]+(m[2]==='#'?1:m[2]==='b'?-1:0)+(+m[3]+1)*12;return 440*Math.pow(2,(n-69)/12)}
@@ -297,49 +305,41 @@ const AUD=(()=>{
     const copies=chant?[[1,0,1],[0.93,0.03,0.7],[1.08,0.05,0.7],[0.97,0.08,0.6],[1.04,0.11,0.55]]:rate0?[[rate0,0,1],[rate0*0.5,0,0.5]]:[[rr(0.96,1.06),0,1]];
     for(const[rate,dl,v]of copies){const s=C.createBufferSource();s.buffer=b;s.playbackRate.value=rate;s.connect(gain(v,hp));s.start(t+dl)}
     // duck music while the fan yells
-    const dur=b.duration/(rate0||1)+0.2;musicBus.gain.cancelScheduledValues(t);musicBus.gain.setTargetAtTime(musicOn?0.2:0,t,0.05);musicBus.gain.setTargetAtTime(musicOn?0.42:0,t+dur,0.3);
+    // duck music + SFX + crowd ~55% while the voice line plays
+    const dur=b.duration/(rate0||1)+0.15,T=now();for(const[bus,v]of[[musicBus,musicOn?0.42:0],[sfxBus,0.75],[crowdBus,0.85]]){bus.gain.cancelScheduledValues(T);bus.gain.setTargetAtTime(v*0.45,T,0.04);bus.gain.setTargetAtTime(v,t+dur,0.25)}
     if(chant)SFXi.cheer(0.6);
     return true;
   }
-  // ---- signature stings: bypass the random heckle pool, cut any browser voice, and reserve the voice channel so nothing talks over them ----
-  const stingLast={};
-  function sting(k,o){
-    try{
-      o=o||{};if(document.hidden)return false;
-      const n=performance.now();if(n-(stingLast[k]||-1e9)<(o.throttle||0))return false;
-      const h=HECKLES.find(x=>x.k===k);if(!h)return false;
-      if(onSay&&!o.quiet)try{onSay(h.t,h.g.includes('ANNOUNCE'))}catch(e){}
-      if(!C||muted){stingLast[k]=n;return false}
-      try{if('speechSynthesis' in window)speechSynthesis.cancel()}catch(e){}
-      const delay=o.delay||0;let ok=false,dur=1.5;
-      if(clips[k]){ok=playClip(k,!!o.chant,delay,o.vol,o.rate);dur=clips[k].duration/(o.rate||1)}
-      else{const fire=()=>say(h.s||h.t);if(delay){setTimeout(fire,delay*1000);ok=true}else ok=fire()}
-      if(!ok)return false;
-      stingLast[k]=n;stats.n++;stats.sting=(stats.sting||0)+1;stats[k]=(stats[k]||0)+1;stats.last=h.t;
-      lastHeckle=n+(delay+dur)*1000;   // hold off random heckles until the sting has landed
-      return true;
-    }catch(e){console.warn('sting',e);return false}
-  }
-  let onSay=null;
-  function heckle(ev,force){
-    try{
-      if(document.hidden)return null;
-      const n=performance.now(),gap=force?1400:4200;if(n-lastHeckle<gap)return null;
-      let pool=HECKLES.filter(h=>h.g.split(' ').includes(ev));
-      if(!pool.length)return null;
-      const fresh=pool.filter(h=>!recent.includes(h));if(fresh.length)pool=fresh;
-      const h=pick(pool);let ok=false;
-      if(C&&!muted){if(h.k&&clips[h.k])ok=playClip(h.k,h.chant);if(!ok)ok=say(h.s||h.t)}
-      stats.n++;stats[ok?(clips[h.k]?'clip':'speech'):'text']=(stats[ok?(clips[h.k]?'clip':'speech'):'text']||0)+1;stats.last=h.t;
-      lastHeckle=n;recent.push(h);if(recent.length>10)recent.shift();
-      if(onSay)try{onSay(h.t,h.g.includes('ANNOUNCE'))}catch(e){}
-      return h.t;
-    }catch(e){console.warn('heckle',e);return null}
-  }
+  // ---- SINGLE VOICE QUEUE: one line at a time, short gap, 2.5-4s cooldown for random heckles, priorities, stale low-prio lines dropped ----
+  const stingLast={};let onSay=null;const Q=[];let busyUntil=0,lastEnd=-1e9,cool=3000,curLine=null;
+  const P3=new Set(['waah','bitch','nohouse','wilson','wilson2','bestteam','boss8','a_over','a_best','a_eatshit','a_joewin','poppa','boss1','bossdie']);
+  function prioOf(h,base){if(P3.has(h.k))return 3;if(h.g.split(' ').some(g=>g==='BOSS'||g==='BOSSHIT'||g==='BOSSDIE'||g==='WILSON'||g==='end'))return Math.max(base,2);return base}
+  function startLine(e){const h=e.h;let ok=false,dur=1.8;
+    if(C&&!muted){try{if('speechSynthesis' in window)speechSynthesis.cancel()}catch(x){}
+      if(clips[h.k]){ok=playClip(h.k,!!(e.o.chant||h.chant),0,e.o.vol,e.o.rate);dur=clips[h.k].duration/(e.o.rate||1)}else ok=say(h.s||h.t)}
+    const n=performance.now();busyUntil=n+dur*1000;lastEnd=busyUntil;cool=rr(2500,4000);
+    stats.n++;const kind=ok?(clips[h.k]?'clip':'speech'):'text';stats[kind]=(stats[kind]||0)+1;if(e.sting)stats.sting=(stats.sting||0)+1;stats[h.k]=(stats[h.k]||0)+1;stats.last=h.t;
+    stats.maxQ=Math.max(stats.maxQ||0,Q.length);curLine={k:h.k,t:h.t,until:busyUntil};
+    if(onSay)try{onSay(h.t,h.g.includes('ANNOUNCE'),dur)}catch(x){}}
+  function canStart(e,n){if(n<busyUntil+300||n<e.at)return false;if(e.p<=1&&n<lastEnd+cool)return false;return true}
+  function request(h,o,p,isSting){if(document.hidden)return false;o=o||{};const n=performance.now(),d=(o.delay||0)*1000;
+    const e={h,o,p,at:n+d,exp:n+d+(p>=3?6000:p>=2?3200:0),sting:isSting};
+    if(!Q.length&&canStart(e,n)){startLine(e);return true}
+    if(p<=1){stats.dropped=(stats.dropped||0)+1;return false}   // stale low-priority lines are dropped, never queued
+    for(let i=Q.length-1;i>=0;i--)if(Q[i].h.k===h.k)Q.splice(i,1);
+    Q.push(e);Q.sort((a,b)=>b.p-a.p||a.at-b.at);while(Q.length>3){Q.pop();stats.dropped=(stats.dropped||0)+1}return Q.includes(e)}
+  function pump(){if(!Q.length)return;const n=performance.now();for(let i=Q.length-1;i>=0;i--)if(n>Q[i].exp){Q.splice(i,1);stats.dropped=(stats.dropped||0)+1}
+    const i=Q.findIndex(e=>canStart(e,n));if(i>=0)startLine(Q.splice(i,1)[0])}
+  setInterval(()=>{try{pump()}catch(e){}},40);
+  function sting(k,o){try{o=o||{};const n=performance.now();if(n-(stingLast[k]||-1e9)<(o.throttle||0))return false;const h=HECKLES.find(x=>x.k===k);if(!h)return false;
+      const ok=request(h,o,o.prio||(P3.has(k)?3:2),true);if(ok)stingLast[k]=n;return ok}catch(e){console.warn('sting',e);return false}}
+  function heckle(ev){try{if(document.hidden)return null;let pool=HECKLES.filter(h=>h.g.split(' ').includes(ev));if(!pool.length)return null;
+      const fresh=pool.filter(h=>!recent.includes(h));if(fresh.length)pool=fresh;const h=pick(pool);
+      if(!request(h,{},prioOf(h,ev==='ambient'?0:1),false))return null;recent.push(h);if(recent.length>10)recent.shift();return h.t}catch(e){console.warn('heckle',e);return null}}
   function setMuted(m){muted=m;localStorage.setItem('nw_muted',m?'1':'0');if(C){master.gain.setTargetAtTime(m?0:0.9,now(),0.03)}if(m){try{speechSynthesis.cancel()}catch(e){}}}
   function setMusic(on){musicOn=on;localStorage.setItem('nw_music',on?'1':'0');if(C)musicBus.gain.setTargetAtTime(on?0.42:0,now(),0.05)}
   return{unlock,heckle,sting,setTheme,setMuted,setMusic,SFX:SFXi,
     get unlocked(){return unlocked&&!!C},get running(){return !!C&&C.state==='running'},get muted(){return muted},get musicOn(){return musicOn},
-    get theme(){return curName},stats:()=>stats,get clipCount(){return Object.keys(clips).length},get errors(){return errors},
+    get theme(){return curName},get queueLen(){return Q.length},get current(){return curLine&&performance.now()<curLine.until?curLine:null},stats:()=>stats,get clipCount(){return Object.keys(clips).length},get errors(){return errors},
     set ambience(v){ambTarget=v},set onSay(f){onSay=f},unlockAge:()=>performance.now()-unlockedAt,endingDelay(s){startDelay=s},ctx:()=>C};
 })();
