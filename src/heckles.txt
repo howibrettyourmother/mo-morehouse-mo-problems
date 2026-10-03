@@ -1,0 +1,74 @@
+m_mo|Mo Morehouse, mo fucking problems!|Mo Morehouse! Mo fucking problems!|start ambient|
+dream|It was all a dream... Joe used to read Rotoworld magazine!|It was all a dream. Joe used to read Roto World magazine!|start ambient|
+ready|Ready to rebuild? AGAIN? Holy shit, Joe!|Ready to rebuild? Again? Holy shit, Joe!|start ambient|
+poppa|Big Poppa Weasel in the fucking building!|Big Poppa Weasel, in the fucking building!|start STAR ambient|
+juicy|Juicy? Nah, Joe's roster is dry as shit!|Juicy? Nah! Joe's roster is dry as shit!|ambient end|
+spread|Spread love, it's the Weasel way! Now eat shit, Joe!|Spread love! It's the Weasel way! Now eat shit, Joe!|ambient STAR end|
+notorious|The Notorious Weasel, motherfucker!|The Notorious Weasel, mother fucker!|start STAR|
+caleb1|Caleb, throw the fucking ball!|Kaleb! Throw the fucking ball!|CALEB|
+caleb2|Sacked into a porta-potty! Holy shit!|Sacked into a porta potty! Holy shit!|CALEB|
+caleb3|Caleb's been holding that shit since Week One!|Kaleb's been holding that shit since week one!|CALEB|
+caleb4|Number one pick, my ass!||CALEB|
+caleb5|Sack! Sack! Sack!||CALEB|1
+caleb6|Caleb's taking a dump in the pocket!|Kaleb's taking a dump in the pocket!|CALEB|
+caleb7|Flush him! Flush that bitch-ass pocket presence!|Flush him! Flush that bitch ass pocket presence!|CALEB|
+mhj1|Generational bust! Generational bullshit!||MHJ|
+mhj2|Joe paid a first for this shit!|Joe paid a first round pick for this shit!|MHJ|
+mhj3|M.H.J.: Most Horseshit Jersey!|M H J! Most horse shit jersey!|MHJ|
+mhj4|Generational? Generationally fucked!|Generational? Generationally fucked!|MHJ|
+pitts1|Pitts breakout meter: still fucking loading!|Pitts breakout meter! Still fucking loading!|PITTS|
+pitts2|Year six of the Pitts breakout, dumbass!|Year six of the Pitts breakout, dumb ass!|PITTS|
+pitts3|Ninety-nine percent... aaand it reset. Fuck!|Ninety nine percent! And it reset! Fuck!|PITTS|
+int1|Darnold threw another pick! Dodge that shit!||INT|
+int2|Darnold sees ghosts and throws to 'em!|Darnold sees ghosts and throws to them!|INT|
+int3|Pick six! Jesus fucking Christ, Sam!|Pick six! Jesus fucking Christ, Sam!|INT|
+trade1|Trade rejected! Nobody wants your shit, Joe!||TRADE|
+trade2|Who the fuck accepts that trade?||TRADE|
+trade3|Two fourths for Bijan? Get the fuck outta here!|Two fourths for Bijan? Get the fuck out of here!|TRADE|
+pick1|Another 4th-rounder? Wipe your ass with it!|Another fourth rounder? Wipe your ass with it!|PICK|
+pick2|Fourth-round picks: Joe's retirement plan!|Fourth round picks! Joe's retirement plan!|PICK|
+y4a|Rebuild Year Four! Same shit, new calendar!|Rebuild year four! Same shit! New calendar!|YEAR4|
+y4b|Flip the calendar! Year Five, baby!|Flip the calendar! Year five, baby!|YEAR4|
+bal1|Holy shit, a giant Rebuild Year Five balloon!|Holy shit! A giant rebuild year five balloon!|BALLOON|
+bal2|Pop that fucking balloon!||BALLOON|
+balpop|BOOM! The rebuild just popped!|Boom! The rebuild just popped!|BALLOONPOP|
+boss1|Here comes Joe! He's already crying!||BOSS|
+boss2|Look at the snot rivers! Holy shit!||BOSSHIT|
+boss3|Turn off the boombox, Joe! Nobody's listening!||BOSSHIT|
+boss4|Cry me a fucking river, Morehouse!||BOSSHIT|
+boss5|Joe's crying so hard he flooded the war room!||BOSSHIT|
+boss6|Wipe your nose, you rebuilding motherfucker!|Wipe your nose, you rebuilding mother fucker!|BOSSHIT|
+hurt1|Ow! Joe's garbage hit the Weasel!||HURT|
+hurt2|Don't let that shit touch you!||HURT|
+hurt3|Dammit! Dodge the red shit!||HURT|
+star1|Gold Brett star! Wilson is awesome!||STAR|
+star2|Catch that gold, baby!||STAR|
+wilson|Wilson is awesome!||WILSON STAR ambient|
+wilson2|Wilson Weasels, motherfucker!|Wilson Weasels, mother fucker!|WILSON STAR|
+amb1|Joe's roster smells like a porta-potty!||ambient|
+amb2|Your bench is a flaming dumpster of shit, Joe!||ambient|
+amb3|Rebuilding since dial-up internet!|Rebuilding since dial up internet!|ambient|
+amb4|Fraud! Fraud! Fraud!||ambient|1
+amb5|SHADYNASTY charity case!|Shady Nasty charity case!|ambient end|
+amb6|Joe couldn't win a fucking bye week!||ambient|
+amb7|Riches to rags, baby! Mostly rags!||ambient end|
+end1|Morehouse: still broke!|Morehouse! Still broke!|end|
+end2|See you in 2031, Joe!|See you in twenty thirty one, Joe!|end|
+end3|Ha ha ha! Eat shit, Morehouse!||end|
+chant|MO! HOUSE! MO! PROBLEMS!|Mo! House! Mo! Problems!|CHANT|1
+a_go|READY TO REBUILD? HELL NO! DROP IT!|Ready to rebuild? Hell no! Drop it!|ANNOUNCE|
+a_t1|TRACK 1: THE REBUILD (INTRO)|Track one! The rebuild!|ANNOUNCE|
+a_t2|TRACK 2: MO PICKS, MO PROBLEMS|Track two! Mo picks, mo problems!|ANNOUNCE|
+a_t3|TRACK 3: GENERATIONAL BUST|Track three! Generational bust!|ANNOUNCE|
+a_t4|TRACK 4: BIG POPPA WEASEL|Track four! Big Poppa Weasel!|ANNOUNCE|
+a_boss|BOSS TRACK: THE CRYING GM|Boss track! The crying G M!|ANNOUNCE|
+a_remix|THE REMIX! FASTER, MOTHERFUCKER!|The remix! Faster, mother fucker!|ANNOUNCE|
+a_combo|SHIT COMBO!|Shit combo!|ANNOUNCE|
+a_eatshit|EAT. SHIT.|Eat! Shit!|ANNOUNCE|
+a_over|MOREHOUSE: STILL BROKE!|Morehouse! Still broke!|ANNOUNCE|
+a_life|EXTRA LIFE, BABY!|Extra life, baby!|ANNOUNCE|
+a_spread|TRIPLE THREAT!|Triple threat!|ANNOUNCE|
+a_rapid|BIG POPPA RAPID FIRE!|Big Poppa rapid fire!|ANNOUNCE|
+a_shield|COOGI ARMOR!|Coogi armor!|ANNOUNCE|
+a_mmp|MO MOREHOUSE, MO PROBLEMS!|Mo Morehouse! Mo problems!|ANNOUNCE|
+a_potty|SACKED INTO A PORTA-POTTY!|Sacked into a porta potty!|ANNOUNCE|
