@@ -405,7 +405,7 @@ const AUD=(()=>{
   // test hook: runs the exact same selection on a private bag set (n picks, each one 'played')
   function simPicks(ev,n){const B={},rec=[],out=[];for(let j=0;j<n;j++){const r=nextFrom(B,ev,rec);if(!r){out.push(null);continue}r.bag.splice(r.i,1);out.push(r.h.k);rec.push(r.h.k);while(rec.length>WINDOW)rec.shift()}return out}
   function heckle(ev){try{if(document.hidden)return null;const r=nextFrom(bags,ev,recent);if(!r)return null;
-      const h=r.h;if(!request(h,{},prioOf(h,ev==='ambient'?0:1),false))return null;r.bag.splice(r.bag.indexOf(h),1);return h.t}catch(e){console.warn('heckle',e);return null}}
+      const h=r.h;if(!request(h,{},prioOf(h,ev==='ambient'?0:(ev==='CALEB'||ev==='NAILS')?2:1),false))return null;r.bag.splice(r.bag.indexOf(h),1);return h.t}catch(e){console.warn('heckle',e);return null}}
   function setMuted(m){muted=m;localStorage.setItem('nw_muted',m?'1':'0');if(C){master.gain.setTargetAtTime(m?0:0.9,now(),0.03)}if(m){try{speechSynthesis.cancel()}catch(e){}}}
   function setMusic(on){musicOn=on;if(on&&C&&curName&&!musicSrc)startSong(curName,now()+0.05);localStorage.setItem('nw_music',on?'1':'0');if(C)musicBus.gain.setTargetAtTime(on?0.42:0,now(),0.05)}
   return{unlock,heckle,sting,setTheme,setMuted,setMusic,SFX:SFXi,
