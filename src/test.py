@@ -8,7 +8,7 @@ LIVE=len(sys.argv)>1
 # leaderboard: live runs use the real Worker's isolated 'test' board; local runs use `wrangler dev` on :8799 (local KV)
 API='https://morehouse-scores.brettwilson08.workers.dev' if LIVE else 'http://127.0.0.1:8799'
 QS='?debug=1&lbboard=test'+('' if LIVE else '&lbapi='+urllib.parse.quote(API,safe=''))
-def board(): return json.loads(urllib.request.urlopen(API+'/scores?board=test&mode=all&limit=200',timeout=20).read().decode())
+def board(): return json.loads(urllib.request.urlopen(urllib.request.Request(API+'/scores?board=test&mode=all&limit=200',headers={'User-Agent':'mmp-test/1.0'}),timeout=20).read().decode())  # CF blocks the default Python-urllib UA
 ok=True
 def chk(n,c,info=''):
     global ok;ok&=bool(c);print(('PASS ' if c else 'FAIL ')+n,info)
