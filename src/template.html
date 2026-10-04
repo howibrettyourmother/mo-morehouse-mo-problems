@@ -119,7 +119,10 @@ function layout(){
 }
 window.addEventListener('resize',layout);window.addEventListener('orientationchange',()=>setTimeout(layout,200));
 // ---------- text helpers ----------
+let TB=null,TBlast=[];
 function txt(s,x,y,sz,col,al,stroke,font){ctx.font=(font||'900 ')+sz+'px '+FONT;ctx.textAlign=al||'center';ctx.textBaseline='middle';
+  if(TB&&s){const w=ctx.measureText(s).width,a=ctx.textAlign,x0=a==='left'?x:a==='right'?x-w:x-w/2,m=ctx.getTransform(),P=[[x0,y-sz*0.5],[x0+w,y-sz*0.5],[x0,y+sz*0.5],[x0+w,y+sz*0.5]].map(([u,v])=>[(m.a*u+m.c*v+m.e)/DPR,(m.b*u+m.d*v+m.f)/DPR]);
+    TB.push({s:String(s),l:Math.min(...P.map(q=>q[0])),r:Math.max(...P.map(q=>q[0])),t:Math.min(...P.map(q=>q[1])),b:Math.max(...P.map(q=>q[1]))})}
   if(stroke){ctx.lineJoin='round';ctx.lineWidth=Math.max(2,sz/5);ctx.strokeStyle=stroke;ctx.strokeText(s,x,y)}ctx.fillStyle=col;ctx.fillText(s,x,y)}
 function fit(s,x,y,sz,maxW,col,stroke,al){ctx.font='900 '+sz+'px '+FONT;const w=ctx.measureText(s).width;if(w>maxW)sz=sz*maxW/w;txt(s,x,y,sz,col,al||'center',stroke)}
 function wrapTxt(s,x,y,sz,maxW,col,stroke){ctx.font='900 '+sz+'px '+FONT;const words=s.split(' ');let line='',lines=[];for(const w of words){const t=line?line+' '+w:w;if(ctx.measureText(t).width>maxW&&line){lines.push(line);line=w}else line=t}lines.push(line);
@@ -660,13 +663,18 @@ function drawCaption(){if(!caption)return;ctx.save();ctx.globalAlpha=Math.min(1,
 function sticker(x,y,w,rot){ctx.save();ctx.translate(x,y);ctx.rotate(rot);const h=w*0.6;ctx.fillStyle='#000';ctx.fillRect(-w/2,-h/2,w,h);ctx.fillStyle='#fff';ctx.fillRect(-w/2+3,-h/2+3,w-6,h-6);
   ctx.fillStyle='#000';ctx.fillRect(-w/2+5,-h/2+5,w-10,h*0.22);txt('PARENTAL',0,-h/2+5+h*0.11,w*0.13,'#fff');txt('ADVISORY',0,-h*0.05,w*0.2,'#000');
   ctx.fillStyle='#000';ctx.fillRect(-w/2+5,h/2-5-h*0.3,w-10,h*0.3);txt('EXPLICIT REBUILD',0,h/2-5-h*0.15,w*0.105,'#fff');ctx.restore()}
-function drawTitle(){const t=vhsT;ctx.drawImage(bgC,0,0,W,H);
+// Title layout, shared by drawTitle() and placeButtons(): bottom-up so the button row always fits inside the canvas (the safe area).
+// TAP button (by +-23) -> LEAGUE #1 row (by+35) -> MODE / LEADERBOARD / TANK WATCH (top by+45, 44 CSS px tall). Short screens drop the quote line, then the hint line, then shrink Joe's stage.
+function titleLayout(){const bh=44/S,byMax=H-3-bh-45;let ch0=Math.min(250,H*0.33),cy=172+ch0+26,ch=68,showQ=true,showD=true;
+  let by=Math.min(byMax,cy+ch+62);if(by<cy+ch+61){showQ=false;if(by<cy+ch+44){showD=false;if(by<cy+ch+26){const d=cy+ch+26-by;ch0=Math.max(150,ch0-d);cy=172+ch0+26;by=Math.min(byMax,cy+ch+26)}}}
+  return{ch0,cy,ch,by,showQ,showD,ly:by+35,ty:by+45}}
+function drawTitle(){const t=vhsT,TL=titleLayout();ctx.drawImage(bgC,0,0,W,H);
   txt('A SHADYNASTY PRODUCTION',W/2-30,20,10,GOLD,'center','#000');
   shinyText('MOREHOUSE',W/2,54,48,W-24,t);shinyText('MORE PROBLEMS',W/2,96,38,W-20,t+0.7);
   fit('A SURVIVAL SHOOTER \u2022 PLAY AS JOE \u2022 SURVIVE THE REBUILD',W/2,124,12,W-30,'#fff','#000');
   ctx.save();ctx.translate(W/2,148);ctx.rotate(-0.03);ctx.fillStyle=RED;rr4(-160,-15,320,30,6);ctx.fill();ctx.strokeStyle=GOLD;ctx.lineWidth=2;ctx.stroke();fit('MO MOREHOUSE, MO PROBLEMS',0,1,20,300,'#fff','#600');ctx.restore();
   // JOE center stage, surrounded by his own problems; the best team in the league looms above
-  const cy0=172,ch0=Math.min(250,H*0.33),jx=W/2-20,jy=cy0+ch0*0.62;
+  const cy0=172,ch0=TL.ch0,jx=W/2-20,jy=cy0+ch0*0.62;
   ctx.fillStyle='rgba(255,255,255,.08)';ctx.beginPath();ctx.moveTo(jx-30,cy0);ctx.lineTo(jx+30,cy0);ctx.lineTo(jx+90,jy+60);ctx.lineTo(jx-90,jy+60);ctx.fill();
   // orbiting problems
   const orb=['caleb','mhj','pitts','darnold','trade','year4'];orb.forEach((k,i)=>{const a=t*0.7+i*Math.PI*2/orb.length;const e={x:jx+Math.cos(a)*92,y:jy-10+Math.sin(a)*58,d:KIND[k],hp:KIND[k].hp,max:1,fl:0,t:t,mode:'form',k,meter:(t*40)%100,flipped:0};ctx.save();ctx.globalAlpha=Math.sin(a)>-0.2?1:0.55;drawEnemy(e);ctx.restore()});
@@ -679,17 +687,17 @@ function drawTitle(){const t=vhsT;ctx.drawImage(bgC,0,0,W,H);
   fit('YOU ARE JOE. MID-REBUILD. SURVIVE ONE MORE SEASON.',W/2,cy0+ch0+12,10,W-16,'#fff','#000');
   sticker(48,cy0+ch0-28,58,-0.14);
   // rules cards: RED = SHOOT, GOLD = CATCH
-  const cy=cy0+ch0+26,ch=68;
+  const cy=TL.cy,ch=TL.ch;
   ctx.fillStyle='rgba(58,6,8,.85)';rr4(14,cy,160,ch,10);ctx.fill();ctx.strokeStyle=RED;ctx.lineWidth=3;ctx.stroke();
   drawEnemy({x:48,y:cy+34,d:KIND.pick4,hp:1,max:1,fl:0,t:t,mode:'form',k:'pick4'});
   football(98,cy+40+Math.sin(t*6)*3,t*8,6);txt('RED = SHOOT',112,cy+15,11,RED,'center','#000');txt('YOUR PROBLEMS',124,cy+56,8,'#fff');
   ctx.fillStyle='rgba(60,45,0,.85)';rr4(186,cy,160,ch,10);ctx.fill();ctx.strokeStyle=GOLD;ctx.lineWidth=3;ctx.stroke();
   drawStar({t:t},222,cy+36,1.15);txt('GOLD = CATCH',290,cy+15,11,GOLD,'center','#000');txt('RARE HOPE',292,cy+35,9,'#fff');txt('(WAIVER WIRE, LOL)',292,cy+51,7,'#ffe58a');
-  fit('DRAG TO MOVE \u2022 FOOTBALLS AUTO-FIRE \u2022 FILL THE SHIT COMBO',W/2,cy+ch+14,10,W-16,'#ddd','#000');
-  const q=QUOTES[((t/3.2)|0)%QUOTES.length];fit(q,W/2,cy+ch+31,10,W-16,'#36e0ff','#000');
-  const by=Math.min(H-34-44,cy+ch+62);const pulse=1+Math.sin(t*5)*0.03;ctx.save();ctx.translate(W/2,by);ctx.scale(pulse,pulse);ctx.fillStyle=soundAsked?'#b8860b':RED;rr4(-130,-23,260,46,23);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.stroke();
+  if(TL.showD)fit('DRAG TO MOVE \u2022 FOOTBALLS AUTO-FIRE \u2022 FILL THE SHIT COMBO',W/2,cy+ch+14,10,W-16,'#ddd','#000');
+  if(TL.showQ){const q=QUOTES[((t/3.2)|0)%QUOTES.length];fit(q,W/2,cy+ch+31,10,W-16,'#36e0ff','#000')}
+  const by=TL.by;const pulse=1+Math.sin(t*5)*0.03;ctx.save();ctx.translate(W/2,by);ctx.scale(pulse,pulse);ctx.fillStyle=soundAsked?'#b8860b':RED;rr4(-130,-23,260,46,23);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.stroke();
   txt(soundAsked?'TAP TO SURVIVE \u{1F3C8}':'TAP FOR SOUND \u{1F50A}',0,1,20,'#fff',null,'#000');ctx.restore();
-  const l1=league.list[0];const ly2=by+70;if(ly2<H-4)fit(l1?'LEAGUE #1: '+l1.n.toUpperCase()+' \u2022 '+l1.s.toLocaleString('en-US')+(hi?'  \u2022  YOUR BEST '+hi.toLocaleString('en-US'):''):(hi?'YOUR BEST '+hi.toLocaleString('en-US'):'BE THE FIRST ON THE LEAGUE LEADERBOARD'),W/2,ly2,9,W-16,GOLD,'#000');
+  const l1=league.list[0],ly2=TL.ly;ctx.fillStyle='rgba(0,0,0,.78)';rr4(10,ly2-8,W-20,16,8);ctx.fill();ctx.strokeStyle='rgba(255,212,0,.35)';ctx.lineWidth=1;ctx.stroke();fit(l1?'LEAGUE #1: '+l1.n.toUpperCase()+' \u2022 '+l1.s.toLocaleString('en-US')+(hi?'  \u2022  YOUR BEST '+hi.toLocaleString('en-US'):''):(hi?'YOUR BEST '+hi.toLocaleString('en-US'):'BE THE FIRST ON THE LEAGUE LEADERBOARD'),W/2,ly2,9,W-32,GOLD,'#000');
   drawParts();drawVHS();vhsOSD(8,8,'PLAY');}
 // Joe in total despair: face-down sobbing on a desk of rejected trade offers, rain cloud, REBUILD YEAR 5 banner
 function drawSobJoe(x,y,sc,t){ctx.save();ctx.translate(x,y);ctx.scale(sc,sc);
@@ -785,7 +793,7 @@ function drawBoard(){const t=vhsT;ctx.fillStyle='rgba(8,2,16,.94)';ctx.fillRect(
     fit(myRank?'YOUR RUN: #'+myRank+(wk?' THIS WEEK':' ALL-TIME'):online?(list.length?list.length+(wk?' SCORES THIS WEEK':' PLAYERS ALL-TIME'):(wk?'NOBODY YET THIS WEEK. GO GET SHIT ON FIRST.':'NO SCORES YET.')):'',W/2,H-34,10,W-20,GOLD,'#000')}
   fit('TAP A TAB TO SWITCH \u2022 TAP ANYWHERE ELSE TO CLOSE',W/2,H-16,9,W-20,'#aaa');drawVHS()}
 let endQuoteI=0,tauntWhy='',rainN=0,amb=null,waahN=0,lastWaah=-1e9;function pick2(a){if(state==='end'&&stateT<0.05)endQuoteI=(R()*a.length)|0;return a[endQuoteI%a.length]}
-function draw(){
+function draw(){if(DEBUG){if(TB)TBlast=TB;TB=[]}
   ctx.setTransform(S*DPR,0,0,S*DPR,0,0);ctx.clearRect(0,0,W,H);
   if(state==='title'){drawTitle();drawBanner();if(boardOpen)drawBoard();return}
   if(state==='end'){drawEnd();if(boardOpen)drawBoard();return}
@@ -817,7 +825,7 @@ function draw(){
 }
 // ---------- overlays ----------
 const tankBtn=document.getElementById('tankBtn'),tankEndBtn=document.getElementById('tankEndBtn'),tankTease=document.getElementById('tankTease'),modeBtn=document.getElementById('modeBtn'),boardBtn=document.getElementById('boardBtn'),shareBtn=document.getElementById('shareBtn'),againBtn=document.getElementById('againBtn'),hsPanel=document.getElementById('hsPanel'),hsIn=document.getElementById('hsIn');
-function placeButtons(){const ch0=Math.min(250,H*0.33),by=Math.min(H-34-44,172+ch0+26+68+62),ty=(by+30)*S;
+function placeButtons(){const ty=titleLayout().ty*S;
   modeBtn.style.cssText+=`;left:${10*S}px;top:${ty}px;width:${110*S}px`;boardBtn.style.cssText+=`;left:${125*S}px;top:${ty}px;width:${110*S}px`;tankBtn.style.cssText+=`;left:${240*S}px;top:${ty}px;width:${110*S}px`;
   tankEndBtn.style.cssText+=`;left:${10*S}px;top:${(H-62)*S-50}px;width:${340*S}px`;
   const y=(H-62)*S;shareBtn.style.cssText+=`;left:${10*S}px;top:${y}px;width:${214*S}px`;againBtn.style.cssText+=`;left:${232*S}px;top:${y}px;width:${118*S}px`}
@@ -907,6 +915,7 @@ function frame(n){const raw=(n-lastT);const dt=Math.min(0.05,Math.max(0,raw/1000
 player=newPlayer();layout();requestAnimationFrame(frame);
 if(DEBUG){window.__NW={get state(){return state},get score(){return score},get problems(){return problems},get lives(){return lives},set lives(v){lives=v},get combo(){return combo},get meter(){return meter},set meter(v){meter=v},
   get trackI(){return trackI},get loop(){return loop},get finT(){return finT},get timeScale(){return timeScale},get hsEntering(){return hsEntering},get lastShare(){return lastShare},get frames(){return frames},audio:AUD,lb:lbLoad,
+  get textBoxes(){return TBlast},get titleLayout(){return titleLayout()},
   get player(){return{x:player.x,y:player.y,inv:player.inv,spreadT:player.spreadT,rapidT:player.rapidT,shieldT:player.shieldT,shoeyT:player.shoeyT,purseT:player.purseT}},get lips(){return balls.filter(b=>b.lip).length},get shoeys(){return shoeys},get hsInfo(){const el=document.getElementById('hsInfo');return el?el.innerText:''},get hsPanelRect(){const r=hsPanel.getBoundingClientRect();return{top:r.top,bottom:r.bottom,h:innerHeight}},get boardTab(){return boardTab},get boardOpenNow(){return boardOpen},get card(){return{ready:!!card.blob,size:card.blob?card.blob.size:0,downloads:card.downloads||0,key:card.key}},cardDataURL(){return new Promise(r=>{if(!card.blob)return r('');const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsDataURL(card.blob)})},get lbReposts(){return league.reposts||0},get lbSent(){return league.sent||0},get lbList(){return league.list.map(e=>({id:e.id,n:e.n,s:e.s,dev:e.dev}))},get shoeyFx(){return shoeyFx&&shoeyFx.t},shoeyGo(){shoeyPenalty()},noPow(){player.purseT=0;player.shoeyT=0;player.spreadT=0;player.rapidT=0},get balls(){return balls.length},get boss(){return boss&&{hp:boss.hp,max:boss.max,dead:boss.dead,x:boss.x,y:boss.y}},
   get balloon(){return balloon&&{hp:balloon.hp,x:balloon.x}},get potCount(){return potCount},get finishers(){return finishers},get parts(){return parts.length},get tp(){return parts.filter(q=>q.tp===1).length},
   enemies:()=>enemies.map(e=>({k:e.k,x:e.x,y:e.y,hp:e.hp,mode:e.mode,enter:e.enter})),
