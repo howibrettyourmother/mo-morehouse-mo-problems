@@ -267,3 +267,16 @@ shu01|Liquid courage! Still gonna lose!|Liquid courage! Still gonna lose!|SHOEYU
 shu02|Joe's beer goggles say he's a contender!|Joe's beer goggles say he's a contender!|SHOEYUP|
 shu03|One shoey and Joe thinks he's playoff bound!|One shoey and Joe thinks he's playoff bound!|SHOEYUP|
 shu04|Drunk Joe makes better trades than sober Joe!|Drunk Joe makes better trades than sober Joe!|SHOEYUP|
+bow01|Brock Bowers just trucked your whole linebacker corps, Joe!|Brock Bowers just trucked your whole linebacker corps, Joe!|BOSSHIT|
+bow02|Bowers is the tight end Kyle Pitts was supposed to be!|Bowers is the tight end Kyle Pitts was supposed to be!|BOSSHIT PITTS|
+prs01|Caleb's man purse! Holds his lip gloss and his interceptions!|Kaleb's man purse! Holds his lip gloss and his interceptions!|PURSE|
+prs02|Caleb checked his purse for a hot read. Nothing in there!|Kaleb checked his purse for a hot read. Nothing in there!|PURSE|
+prs03|Lipstick on, pocket collapsing, Caleb still holding the ball!|Lipstick on, pocket collapsing, Kaleb still holding the ball!|PURSE|
+prs04|He packs a purse but he can't feel the pocket!|He packs a purse, but he can't feel the pocket!|PURSE|
+prs05|Caleb's purse has a clasp. His pocket doesn't!|Kaleb's purse has a clasp. His pocket doesn't!|PURSE|
+prs06|Lipstick sniper! First thing Caleb's ever hit downfield!|Lipstick sniper! First thing Kaleb's ever hit downfield!|PURSE|
+prs07|Caleb took a sack digging for his lipstick!|Kaleb took a sack, digging for his lipstick!|PURSE|
+prs08|He touched up his lipstick in the porta-potty and still got sacked!|He touched up his lipstick in the porta potty, and still got sacked!|PURSE|
+prs09|Fresh lipstick, same sixty sacks!|Fresh lipstick, same sixty sacks!|PURSE|
+prs10|Joe raided Caleb's purse and found a playbook he never opened!|Joe raided Kaleb's purse, and found a playbook he never opened!|PURSE|
+prs11|Caleb holds that purse longer than he holds a lead! Wait, he holds the ball longer!|Kaleb holds that purse longer than he holds a lead! Wait, he holds the ball longer!|PURSE|

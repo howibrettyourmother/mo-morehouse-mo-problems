@@ -66,10 +66,14 @@ async def run(p,b,name,dev,touch,shots):
     s=await m.evaluate('({s:__NW.score,p:__NW.problems,pc:__NW.potCount,tp:__NW.tp,st:__NW.audio.stats()})')
     chk(f'[{name}] football kills Caleb -> porta-potty + TP confetti',s['pc']==1 and s['s']>s0 and s['p']>=1,str({k:s[k] for k in ['s','p','pc','tp']}))
     chk(f'[{name}] voice lines playing',s['st'].get('n',0)>=1,json.dumps(s['st']))
-    for i in range(30):
-        st=await m.evaluate('__NW.audio.stats()')
-        if any(v for k,v in st.items() if isinstance(v,int) and v and k.startswith(('a_potty','cal','nl','nails'))): break
-        await m.wait_for_timeout(200)
+    for attempt in range(2):   # a random event line (e.g. DESPERATE TRADE OFFER) can outrank the kill line; retry once
+        for i in range(30):
+            st=await m.evaluate('__NW.audio.stats()')
+            if any(v for k,v in st.items() if isinstance(v,int) and v and k.startswith(('a_potty','cal','nl','nails'))): break
+            await m.wait_for_timeout(200)
+        else:
+            await m.evaluate('__NW.clearAll();__NW.hold();__NW.movePlayer(180,600);__NW.spawn("caleb",180,420);__NW.freezeEnemies()');await m.wait_for_timeout(1500);continue
+        break
     chk(f'[{name}] Caleb kill -> potty/Caleb voice',any(v for k,v in st.items() if isinstance(v,int) and v and k.startswith(('a_potty','cal','nl','nails'))),json.dumps(st))
     # SHOEYS: penalty on life lost + rare LIQUID COURAGE SHOEY power-up
     await m.evaluate('__NW.lives=4;__NW.noInv()');sh0=await m.evaluate('__NW.shoeys')
@@ -96,6 +100,16 @@ async def run(p,b,name,dev,touch,shots):
     chk(f'[{name}] LIQUID COURAGE SHOEY: beer goggles + triple shots + 1 life',pu['p']['shoeyT']>6 and pu['p']['spreadT']>6 and pu['l']==min(5,l0+1),str(pu))
     await m.wait_for_timeout(900)
     if shots: await m.screenshot(path=OUT+'screenshot-shoeyup.png')
+    await m.evaluate('__NW.noPow()')
+    # CALEB'S MAN PURSE: lipstick spread shot + Caleb purse voice lines
+    await m.evaluate('__NW.noInv();__NW.star("purse",__NW.player.x,__NW.player.y-6)');await m.wait_for_timeout(700)
+    pr=await m.evaluate('({p:__NW.player,lips:__NW.lips})')
+    if shots: await m.screenshot(path=OUT+'screenshot-purse.png')
+    for i in range(25):
+        st=await m.evaluate('__NW.audio.stats()')
+        if any(v for k,v in st.items() if isinstance(v,int) and v and k.startswith('prs')): break
+        await m.wait_for_timeout(200)
+    chk(f"[{name}] CALEB'S MAN PURSE: ~8s lipstick spread (5-way) + purse voice line",pr['p']['purseT']>6.5 and pr['lips']>=5 and any(v for k,v in st.items() if isinstance(v,int) and v and k.startswith('prs')),str((pr,[k for k in st if k.startswith('prs')])))
     await m.evaluate('__NW.noPow()')
     # Puka Nacua: the one that got away (ghost card, out of reach)
     await m.evaluate('__NW.pukaGo()')
@@ -138,7 +152,7 @@ async def run(p,b,name,dev,touch,shots):
         if shots and i==9: await m.screenshot(path=OUT+'screenshot-boss.png')
     st=await m.evaluate('__NW.audio.stats()');chk(f'[{name}] fire sale -> "What a little bitch!" heckle',st.get('bitch',0)>=1,json.dumps(st))
     bh=await m.evaluate('__NW.boss');chk(f'[{name}] Weasel Dynasty boss takes football hits',bh and bh['hp']<bh['max'],str(bh))
-    chk(f'[{name}] boss rains Mahomes/Lamb/Lamar/CMC/JSN cards',rain>=1,str(rain))
+    chk(f'[{name}] boss rains Mahomes/Lamb/Lamar/CMC/JSN/Bowers cards',rain>=1,str(rain))
     await m.evaluate('__NW.setBossHp(Math.round(__NW.boss.max*0.6))');await m.wait_for_timeout(500)
     f=await m.evaluate('({ph:__NW.bossPhase,ta:__NW.bossTaunt,fm:__NW.finMode,ft:__NW.finT})')
     chk(f'[{name}] boss phase -> weasel EAT SHIT slow-mo taunt (invulnerable)',f['ph']==1 and f['ta']>0 and f['fm']=='weasel' and f['ft']>0,str(f))
@@ -182,10 +196,24 @@ async def run(p,b,name,dev,touch,shots):
     await m.click('#hsOk');await m.wait_for_timeout(1400)
     lb=await m.evaluate('__NW.lb()');chk(f'[{name}] local Hall of Shame saved with full name',len(lb)>=1 and any(e['i']=='Joe Morehouse 99' for e in lb),str(lb[:2]))
     chk(f'[{name}] last name remembered',await m.evaluate('localStorage.getItem("nw_name")')=='Joe Morehouse 99')
-    lab=await m.text_content('#shareBtn');chk(f'[{name}] share button label','I GAVE MOREHOUSE' in lab and 'MORE PROBLEMS' in lab,lab)
-    await m.evaluate('navigator.share=undefined')
-    if touch: await m.tap('#shareBtn')
-    else: await m.click('#shareBtn')
+    lab=await m.text_content('#shareBtn');chk(f'[{name}] share button label','SCORE CARD' in lab,lab)
+    for i in range(20):
+        cd=await m.evaluate('__NW.card')
+        if cd['ready'] and 'Joe Morehouse 99'.upper() in cd['key']: break
+        await m.wait_for_timeout(150)
+    chk(f'[{name}] score card PNG pre-rendered with the posted name',cd['ready'] and cd['size']>40000 and 'JOE MOREHOUSE 99' in cd['key'],str(cd))
+    if name=='iphone13':
+        du=await m.evaluate('__NW.cardDataURL()');import base64;open(OUT+'scorecard-sample.png','wb').write(base64.b64decode(du.split(',')[1]))
+    # iOS path: navigator.share with files (mocked to capture what we hand it)
+    sh=await m.evaluate('''(async()=>{let got=null;navigator.canShare=d=>!!(d&&d.files);navigator.share=d=>{got=d;return Promise.resolve()};
+      document.getElementById('shareBtn').click();await new Promise(r=>setTimeout(r,200));
+      return got&&{files:(got.files||[]).map(f=>({n:f.name,t:f.type,s:f.size})),text:got.text||''}})()''')
+    chk(f'[{name}] one tap shares the PNG card via navigator.share(files)',sh and len(sh['files'])==1 and sh['files'][0]['t']=='image/png' and sh['files'][0]['s']>40000 and 'mo-morehouse-mo-problems' in sh['text'],str(sh))
+    await m.evaluate('navigator.share=undefined;navigator.canShare=undefined')
+    async with m.expect_download(timeout=5000) as dl:
+        if touch: await m.tap('#shareBtn')
+        else: await m.click('#shareBtn')
+    d=await dl.value;chk(f'[{name}] fallback: card PNG downloads',d.suggested_filename.endswith('.png'),d.suggested_filename)
     await m.wait_for_timeout(400)
     ls=await m.evaluate('__NW.lastShare');chk(f'[{name}] share works (copy fallback)','I gave Morehouse' in ls and 'more problems' in ls and 'mo-morehouse-mo-problems' in ls and 'champ' not in ls.lower(),ls)
     chk(f'[{name}] share text says how many shoeys Joe owes',re.search(r'Joe owes \d+ shoeys?\.',ls) is not None,ls)
@@ -212,6 +240,15 @@ async def run(p,b,name,dev,touch,shots):
     if shots: await m.screenshot(path=OUT+'screenshot-end.png')
     if shots:
         await m.evaluate('__NW.openBoard()');await m.wait_for_timeout(700);await m.screenshot(path=OUT+'screenshot-leaderboard.png');await m.evaluate('__NW.closeBoard()')
+    # board tabs: THIS WEEK (default) / ALL-TIME / HALL OF SHAME
+    await m.evaluate('__NW.openBoard()');await m.wait_for_timeout(400);tabs=[]
+    for k,x in [('hall',300),('all',180),('week',60)]:
+        pt=await m.evaluate(f'__NW.clientOf({x},71)');await m.touchscreen.tap(pt['x'],pt['y']) if touch else await m.mouse.click(pt['x'],pt['y'])
+        await m.wait_for_timeout(250);tabs.append((k,await m.evaluate('__NW.boardTab'),await m.evaluate('__NW.boardOpenNow')))
+        if shots and k=='hall': await m.screenshot(path=OUT+'screenshot-hallofshame.png')
+    lgw=await m.evaluate('__NW.league')
+    chk(f'[{name}] board tabs switch (week / all-time / Hall of Shame) and weekly data loaded',all(a==b and o for a,b,o in tabs) and lgw['weekInfo'] and isinstance(lgw['hall'],list),str((tabs,lgw.get('weekInfo'))))
+    await m.evaluate('__NW.closeBoard()')
     ns=await m.evaluate('__NW.audio.nodeStats()');chk(f'[{name}] audio: pre-rendered SFX + music loops, sources capped',ns['cached']>=25 and len(ns['songs'])==4 and ns['peak']<=8 and ns['live']==0,str(ns))
     # local runs only: the one public (non-debug) page load talks to the production Worker, whose CORS correctly only allows github.io
     if not LIVE: errs=[x for x in errs if not ('morehouse-scores.brettwilson08.workers.dev' in x and 'CORS' in x) and not ('Failed to load resource' in x and 'ERR_FAILED' in x)]

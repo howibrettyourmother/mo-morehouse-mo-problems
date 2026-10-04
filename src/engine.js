@@ -377,7 +377,7 @@ const AUD=(()=>{
   // ---- SINGLE VOICE QUEUE: one line at a time, short gap, 2.5-4s cooldown for random heckles, priorities, stale low-prio lines dropped ----
   const stingLast={};let onSay=null;const Q=[];let busyUntil=0,lastEnd=-1e9,cool=3000,curLine=null;
   const P3=new Set(['puka1','puka2','puka3','puka4','puka5','pitts4','caleb8','nails1','nails2','bitch','nohouse','wilson','wilson2','bestteam','boss8','a_over','a_best','a_eatshit','a_joewin','shoey1']);
-  function prioOf(h,base){if(P3.has(h.k))return 3;if(h.g.split(' ').some(g=>g==='SHOEY'||g==='SHOEYCHANT'))return 3;if(h.g.split(' ').some(g=>g==='BOSS'||g==='BOSSHIT'||g==='BOSSDIE'||g==='WILSON'||g==='end'||g==='SHOEY'||g==='SHOEYUP'||g==='SHOEYCHANT'))return Math.max(base,2);return base}
+  function prioOf(h,base){if(P3.has(h.k))return 3;if(h.g.split(' ').some(g=>g==='SHOEY'||g==='SHOEYCHANT'))return 3;if(h.g.split(' ').some(g=>g==='BOSS'||g==='BOSSHIT'||g==='BOSSDIE'||g==='WILSON'||g==='end'||g==='SHOEY'||g==='SHOEYUP'||g==='PURSE'||g==='SHOEYCHANT'))return Math.max(base,2);return base}
   function startLine(e){const h=e.h;let ok=false,dur=1.8;
     if(C&&!muted){try{if('speechSynthesis' in window)speechSynthesis.cancel()}catch(x){}
       if(clips[h.k]){ok=playClip(h.k,!!(e.o.chant||h.chant),0,e.o.vol,e.o.rate);dur=clips[h.k].duration/(e.o.rate||1)}else ok=say(h.s||h.t)}
