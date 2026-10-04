@@ -1,6 +1,8 @@
 import asyncio,sys,json
 from playwright.async_api import async_playwright
-BASE=sys.argv[1] if len(sys.argv)>1 else 'file:///workspace/notorious-weasel/index.html'
+BASE=sys.argv[1] if len(sys.argv)>1 else 'http://127.0.0.1:18734/index.html'
+import random,urllib.request
+TOPIC='mmp-lb-test-'+''.join(random.choice('abcdefghjkmnpqrstuvwxyz23456789') for _ in range(10))
 OUT='/workspace/notorious-weasel/'
 LIVE=len(sys.argv)>1
 ok=True
@@ -14,7 +16,7 @@ async def run(p,b,name,dev,touch,shots):
     m.on('pageerror',lambda e: errs.append(f'pageerror {e}'))
     await m.goto(BASE);await m.wait_for_timeout(700)
     chk(f'[{name}] public build has no __NW',await m.evaluate('typeof window.__NW')=='undefined')
-    await m.goto(BASE+'?debug=1');await m.wait_for_timeout(900)
+    await m.goto(BASE+'?debug=1&lbtopic='+TOPIC);await m.wait_for_timeout(900)
     tap=(lambda x,y: m.touchscreen.tap(x,y)) if touch else (lambda x,y: m.mouse.click(x,y))
     r=await m.evaluate('(()=>{const r=document.getElementById("c").getBoundingClientRect();return[r.x,r.y,r.width,r.height]})()')
     vp=await m.evaluate('[innerWidth,innerHeight]')
@@ -23,10 +25,16 @@ async def run(p,b,name,dev,touch,shots):
     await tap(cx,cy);await m.wait_for_timeout(1500)
     a=await m.evaluate('({u:__NW.audio.unlocked,run:__NW.audio.running,clips:__NW.audio.clipCount,st:__NW.state,theme:__NW.audio.theme})')
     chk(f'[{name}] first tap unlocks audio, stays on title',a['u'] and a['run'] and a['st']=='title',str(a))
-    chk(f'[{name}] voice clips decoded',a['clips']>=85,str(a['clips']))
+    chk(f'[{name}] voice clips lazy-loaded + decoded',a['clips']>=105,str(a["clips"]))
+    chk(f'[{name}] title shows MODE + LEAGUE LEADERBOARD buttons',await m.is_visible('#modeBtn') and await m.is_visible('#boardBtn') and 'LEAGUE LEADERBOARD' in await m.text_content('#boardBtn'))
+    await (m.tap('#modeBtn') if touch else m.click('#modeBtn'));chk(f'[{name}] difficulty toggle -> rookie',await m.evaluate('__NW.mode')=='rookie')
+    await (m.tap('#boardBtn') if touch else m.click('#boardBtn'));await m.wait_for_timeout(1500);chk(f'[{name}] league board opens',await m.evaluate('__NW.boardOpen') and await m.evaluate('__NW.league.ok'),str(await m.evaluate('__NW.league')))
+    await tap(cx,cy);await m.wait_for_timeout(300);chk(f'[{name}] board closes on tap (stays on title)',not await m.evaluate('__NW.boardOpen') and await m.evaluate('__NW.state')=='title')
     chk(f'[{name}] title boom-bap theme',a['theme']=='title',a['theme'])
     if shots: await m.screenshot(path=OUT+'screenshot-title.png')
-    await tap(cx,cy);await m.wait_for_function('__NW.state==="play"',timeout=5000)
+    await tap(cx,cy);await m.wait_for_timeout(250);chk(f'[{name}] rookie run starts with 5 seasons',await m.evaluate('__NW.lives')==5)
+    await tap(cx,cy+80);await m.wait_for_timeout(100);chk(f'[{name}] tap skips the intro',await m.evaluate('__NW.state')=='play')
+    await m.evaluate('__NW.setMode("y5")')
     await m.wait_for_timeout(2600)
     e=await m.evaluate('__NW.enemies()');chk(f'[{name}] track 1 formation spawned',len(e)>=8,str(len(e)))
     chk(f'[{name}] auto-fire footballs',await m.evaluate('__NW.balls')>0)
@@ -54,6 +62,29 @@ async def run(p,b,name,dev,touch,shots):
     s=await m.evaluate('({s:__NW.score,p:__NW.problems,pc:__NW.potCount,tp:__NW.tp,st:__NW.audio.stats()})')
     chk(f'[{name}] football kills Caleb -> porta-potty + TP confetti',s['pc']==1 and s['s']>s0 and s['p']>=1,str({k:s[k] for k in ['s','p','pc','tp']}))
     chk(f'[{name}] voice lines playing',s['st'].get('n',0)>=1,json.dumps(s['st']))
+    for i in range(30):
+        st=await m.evaluate('__NW.audio.stats()')
+        if any(st.get(k,0) for k in ['a_potty','caleb8','nails1','nails2','caleb1','caleb2','caleb3','caleb4','caleb5','caleb6','caleb7']): break
+        await m.wait_for_timeout(200)
+    chk(f'[{name}] Caleb kill -> potty/Caleb voice',any(st.get(k,0) for k in ['a_potty','caleb8','nails1','nails2','caleb1','caleb2','caleb3','caleb4','caleb5','caleb6','caleb7']),json.dumps(st))
+    # Puka Nacua: the one that got away (ghost card, out of reach)
+    await m.evaluate('__NW.pukaGo()')
+    for i in range(30):
+        await m.wait_for_timeout(200);pk=await m.evaluate('({p:__NW.puka,cap:__NW.caption,st:__NW.audio.stats().puka1||0})')
+        if pk['st']>=1 and 'Puka' in (pk['cap'] or ''): break
+    chk(f'[{name}] Puka Nacua (DROPPED) ghost card + voice/caption',pk['p'] and pk['st']>=1 and 'Puka' in (pk['cap'] or ''),str(pk))
+    if shots: await m.screenshot(path=OUT+'screenshot-puka.png')
+    # mini-boss: THE TRADE DEADLINE spits DECLINED fax pages
+    await m.evaluate('__NW.lives=99;__NW.miniGo()');await m.wait_for_timeout(2600)
+    mi=await m.evaluate('({m:__NW.mini,fax:__NW.enemies().filter(e=>e.k==="fax").length})')
+    chk(f'[{name}] Trade Deadline mini-boss spits fax pages + takes hits',mi['m'] and mi['m']['hp']<mi['m']['max'] and mi['fax']>=1,str(mi))
+    if shots: await m.screenshot(path=OUT+'screenshot-minboss.png')
+    await m.evaluate('__NW.setMiniHp(3)')
+    for i in range(30):
+        await m.evaluate('__NW.mini&&__NW.movePlayer(__NW.mini.x,__NW.player.y)');await m.wait_for_timeout(200)
+        if await m.evaluate('!__NW.mini'): break
+    chk(f'[{name}] mini-boss swatted (or deadline passed)',await m.evaluate('!__NW.mini'),str(await m.evaluate('[__NW.mini,__NW.miniBeat]')))
+    await m.evaluate('__NW.clearAll();__NW.lives=3;__NW.movePlayer(180,600)');await m.wait_for_timeout(1500)
     # star catch (shoot passes through)
     await m.evaluate('__NW.star("spread",__NW.player.x,__NW.player.y-30)');await m.wait_for_timeout(900)
     pl=await m.evaluate('__NW.player');chk(f'[{name}] caught gold Brett star -> triple threat',pl['spreadT']>0,str(pl))
@@ -104,14 +135,17 @@ async def run(p,b,name,dev,touch,shots):
       return{started:n1-n0,q1,cur,cap,seen,maxQ:A.stats().maxQ,dropped:A.stats().dropped}})()''')
     chk(f'[{name}] voice queue: only one line starts at once, rest queued/dropped',q['started']==1 and q['q1']<=3 and q['cur'] is not None,str(q))
     chk(f'[{name}] caption matches the line actually playing',q['cap']==q['cur'],str((q['cap'],q['cur'])))
-    chk(f'[{name}] high-priority queued lines play in order (Brett lines first)',len(q['seen'])>=2 and set(q['seen'][:2])<={'wilson','waah','bitch'} and 'a_t2' not in q['seen'][:2],str(q['seen']))
+    chk(f'[{name}] high-priority queued lines play in order (Brett lines first)',len(q['seen'])>=2 and set(q['seen'][:2])<={'wilson','waah','bitch','nohouse','wilson2','boss8','bestteam','puka1','puka2','puka3','puka4','puka5'} and 'a_t2' not in q['seen'][:2],str(q['seen']))
     await m.evaluate('__NW.lives=1;__NW.noInv();__NW.shot("int",__NW.player.x,__NW.player.y-30)');await m.wait_for_timeout(600)
     f=await m.evaluate('({fm:__NW.finMode,ft:__NW.finT,st:__NW.state,l:__NW.lives})')
     chk(f'[{name}] game over -> weasel EAT SHIT taunt',f['fm']=='weasel' and f['ft']>0 and f['l']==0,str(f))
     await m.wait_for_timeout(3600)
     chk(f'[{name}] end screen + initials prompt',await m.evaluate('__NW.state')=='end' and await m.evaluate('__NW.hsEntering'))
-    await m.fill('#hsIn','bmw');await m.click('#hsOk');await m.wait_for_timeout(1400)
-    lb=await m.evaluate('__NW.lb()');chk(f'[{name}] local top-10 saved',len(lb)>=1 and lb[0]['i']=='BMW',str(lb[:2]))
+    chk(f'[{name}] name input allows 16 chars',await m.get_attribute('#hsIn','maxlength')=='16')
+    await m.fill('#hsIn','Joe Morehouse 99!xyz');v=await m.input_value('#hsIn');chk(f'[{name}] name trimmed to 16',v=='Joe Morehouse 99',v)
+    await m.click('#hsOk');await m.wait_for_timeout(1400)
+    lb=await m.evaluate('__NW.lb()');chk(f'[{name}] local Hall of Shame saved with full name',len(lb)>=1 and any(e['i']=='Joe Morehouse 99' for e in lb),str(lb[:2]))
+    chk(f'[{name}] last name remembered',await m.evaluate('localStorage.getItem("nw_name")')=='Joe Morehouse 99')
     lab=await m.text_content('#shareBtn');chk(f'[{name}] share button label','I GAVE MOREHOUSE' in lab and 'MORE PROBLEMS' in lab,lab)
     await m.evaluate('navigator.share=undefined')
     if touch: await m.tap('#shareBtn')
@@ -119,7 +153,6 @@ async def run(p,b,name,dev,touch,shots):
     await m.wait_for_timeout(400)
     ls=await m.evaluate('__NW.lastShare');chk(f'[{name}] share works (copy fallback)','I gave Morehouse' in ls and 'more problems' in ls and 'mo-morehouse-mo-problems' in ls and 'champ' not in ls.lower(),ls)
     await m.wait_for_timeout(2400)
-    if shots: await m.screenshot(path=OUT+'screenshot-end.png')
     st=await m.evaluate('__NW.audio.stats()');chk(f'[{name}] game over -> "Morehouse? More like NO house." voice',st.get('nohouse',0)>=1,json.dumps(st))
     chk(f'[{name}] ending theme',await m.evaluate('__NW.audio.theme')=='ending')
     if touch: await m.tap('#againBtn')
@@ -129,6 +162,17 @@ async def run(p,b,name,dev,touch,shots):
     await m.wait_for_timeout(14000)
     s=await m.evaluate('({p:__NW.problems,st:__NW.state,l:__NW.lives,t:__NW.trackI,f:__NW.frames})')
     chk(f'[{name}] natural play: auto-fire drops problems',s['p']>=3,str(s))
+    # league submission of a legit run -> ntfy relay
+    await m.evaluate('__NW.end()');await m.wait_for_timeout(1800)
+    chk(f'[{name}] name prefilled with last name',await m.input_value('#hsIn')=='Joe Morehouse 99')
+    await m.fill('#hsIn','Test '+name[:10]);await m.click('#hsOk');await m.wait_for_timeout(2500)
+    lg=await m.evaluate('__NW.league');chk(f'[{name}] league score posted + own rank highlighted',lg['sent']>=1 and lg['rank']>=1 and lg['last'],str(lg))
+    raw=urllib.request.urlopen(f'https://ntfy.sh/{TOPIC}/json?poll=1&since=1h',timeout=20).read().decode()
+    chk(f'[{name}] score landed on the relay',lg['last'] in raw,raw[-200:])
+    if shots: await m.screenshot(path=OUT+'screenshot-end.png')
+    if shots:
+        await m.evaluate('__NW.openBoard()');await m.wait_for_timeout(700);await m.screenshot(path=OUT+'screenshot-leaderboard.png');await m.evaluate('__NW.closeBoard()')
+    ns=await m.evaluate('__NW.audio.nodeStats()');chk(f'[{name}] audio: pre-rendered SFX + music loops, sources capped',ns['cached']>=25 and len(ns['songs'])==4 and ns['peak']<=8 and ns['live']==0,str(ns))
     chk(f'[{name}] no console errors/warnings',not errs,str(errs[:5]))
     await ctx.close()
 async def main():

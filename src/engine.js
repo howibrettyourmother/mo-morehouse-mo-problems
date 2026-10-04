@@ -1,20 +1,22 @@
 const AUD=(()=>{
-  let C=null,master,comp,musicBus,musicDuck,sfxBus,crowdBus,voiceBus,verb,verbSend,delay,noiseBuf,pinkBuf;
+  let C=null,LIVE=null,RENDERING=false,verbIR=null,fxIn=null,voiceHP=null,chantG=null,master,comp,musicBus,musicDuck,sfxBus,crowdBus,voiceBus,verb,verbSend,delay,noiseBuf,pinkBuf;
   let unlocked=false,muted=localStorage.getItem('nw_muted')==='1',musicOn=localStorage.getItem('nw_music')!=='0';
   let stats={n:0,clip:0,speech:0,last:''},unlockedAt=0,silentEl=null,clips={},clipsLoading=false,speechPrimed=false,lastHeckle=0,recent=[],errors=0;
   const R=Math.random,rr=(a,b)=>a+R()*(b-a),pick=a=>a[(R()*a.length)|0];
   const now=()=>C?C.currentTime:0;
   try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(e){}
-  function safe(fn){return function(){try{if(!C||muted)return;return fn.apply(null,arguments)}catch(e){errors++;if(errors<5)console.warn('audio',e)}}}
+  function safe(fn){return function(){try{if(!C||(muted&&!RENDERING))return;return fn.apply(null,arguments)}catch(e){errors++;if(errors<5)console.warn('audio',e)}}}
   function build(){
     const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
-    C=new AC();
+    C=new AC();LIVE=C;
     master=C.createGain();master.gain.value=muted?0:0.9;
     comp=C.createDynamicsCompressor();comp.threshold.value=-14;comp.knee.value=12;comp.ratio.value=4;comp.attack.value=0.004;comp.release.value=0.2;
     master.connect(comp);comp.connect(C.destination);
     const bus=v=>{const g=C.createGain();g.gain.value=v;g.connect(master);return g};
     musicBus=bus(musicOn?0.42:0);musicDuck=C.createGain();musicDuck.connect(musicBus);
-    sfxBus=bus(0.75);crowdBus=bus(0.85);voiceBus=bus(1.1);
+    sfxBus=bus(0.75);crowdBus=bus(0.85);voiceBus=bus(1.1);fxIn=bus(1);
+    // shared voice chain (no per-line filters/gains)
+    voiceHP=C.createBiquadFilter();voiceHP.type='highpass';voiceHP.frequency.value=160;voiceHP.connect(voiceBus);chantG=C.createGain();chantG.gain.value=0.3;chantG.connect(voiceHP);
     // noise buffers
     const sr=C.sampleRate;noiseBuf=C.createBuffer(1,sr*2,sr);let d=noiseBuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=R()*2-1;
     pinkBuf=C.createBuffer(1,sr*4,sr);d=pinkBuf.getChannelData(0);let b0=0,b1=0,b2=0;
@@ -22,14 +24,14 @@ const AUD=(()=>{
     // stadium reverb
     verb=C.createConvolver();const L=Math.floor(sr*1.8),ir=C.createBuffer(2,L,sr);
     for(let c=0;c<2;c++){const x=ir.getChannelData(c);for(let i=0;i<L;i++)x[i]=(R()*2-1)*Math.pow(1-i/L,3.2)*(i<sr*0.012?0:1)}
-    verb.buffer=ir;verbSend=C.createGain();verbSend.gain.value=0.5;verbSend.connect(verb);verb.connect(master);
+    verb.buffer=ir;verbIR=ir;verbSend=C.createGain();verbSend.gain.value=0.5;verbSend.connect(verb);verb.connect(master);
     // music echo
     delay=C.createDelay(1);delay.delayTime.value=0.3;const fb=C.createGain();fb.gain.value=0.25;const dm=C.createGain();dm.gain.value=0.18;
     musicDuck.connect(delay);delay.connect(fb);fb.connect(delay);delay.connect(dm);dm.connect(musicBus);
     startAmbience();
     {const L=sr*3,cb=C.createBuffer(1,L,sr),x=cb.getChannelData(0);for(let i=0;i<L;i++){x[i]=(R()*2-1)*0.02;if(R()<0.0009)x[i]+=(R()*2-1)*0.9}
      crackleG=C.createGain();crackleG.gain.value=0;crackleG.connect(musicBus);const cs=C.createBufferSource();cs.buffer=cb;cs.loop=true;cs.connect(filt('highpass',900,0.7,crackleG));cs.start()}
-    setInterval(schedule,25);
+    setInterval(schedule,50);
   }
   // ---- iOS-safe unlock: call from every gesture (touchstart/touchend/click/keydown) ----
   function unlock(){
@@ -45,7 +47,7 @@ const AUD=(()=>{
       if(silentEl.paused&&!document.hidden){const p=silentEl.play();if(p&&p.catch)p.catch(()=>{})}
       // prime speechSynthesis inside the gesture (iOS requires the first speak() be user-initiated)
       if(!speechPrimed&&'speechSynthesis' in window){speechPrimed=true;try{const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u);speechSynthesis.getVoices()}catch(e){}}
-      if(!unlocked){unlocked=true;unlockedAt=performance.now();loadClips()}
+      if(!unlocked){unlocked=true;unlockedAt=performance.now();loadClips();warm()}
     }catch(e){console.warn('unlock',e)}
   }
   ['touchstart','touchend','pointerdown','mousedown','click','keydown'].forEach(ev=>window.addEventListener(ev,unlock,{capture:true,passive:true}));
@@ -54,8 +56,12 @@ const AUD=(()=>{
     if(document.hidden){C.suspend&&C.suspend().catch(()=>{});silentEl&&silentEl.pause();try{speechSynthesis.cancel()}catch(e){}}
     else if(unlocked){C.resume().catch(()=>{});if(silentEl){const p=silentEl.play();p&&p.catch&&p.catch(()=>{})}}
   });
+  // voice clips are lazy-loaded from vo.json after first paint (faster initial load); decoded once audio is unlocked
+  let VO=null;
+  function fetchVO(){if(VO||typeof VO_URL==='undefined')return;fetch(VO_URL).then(r=>r.ok?r.json():Promise.reject(r.status)).then(j=>{VO=j;stats.vo='loaded';if(unlocked)loadClips()}).catch(e=>{stats.vo='failed';setTimeout(()=>{VO=null;if(stats.voTries=(stats.voTries||0)+1,stats.voTries<4)fetchVO()},4000)})}
+  if(document.readyState==='complete')setTimeout(fetchVO,50);else window.addEventListener('load',()=>setTimeout(fetchVO,50));
   function loadClips(){
-    if(clipsLoading)return;clipsLoading=true;
+    if(clipsLoading||!VO||!C)return;clipsLoading=true;const HECKLE_CLIPS=VO;
     for(const k in HECKLE_CLIPS){
       try{const bin=atob(HECKLE_CLIPS[k]);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
         const ok=b=>{clips[k]=b},bad=()=>{};
@@ -65,10 +71,11 @@ const AUD=(()=>{
   }
   // ---- primitives ----
   function env(g,t,a,h,r,v){g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(v,t+a);g.gain.setValueAtTime(v,t+a+h);g.gain.exponentialRampToValueAtTime(0.0001,t+a+h+r)}
-  function osc(type,f,t,dur,out){const o=C.createOscillator();o.type=type;o.frequency.setValueAtTime(f,t);o.connect(out);o.start(t);o.stop(t+dur+0.05);return o}
+  function track(n){if(C===LIVE){nst.live++;nst.created++;n.onended=()=>{nst.live--;try{n.disconnect()}catch(e){}}}return n}
+  function osc(type,f,t,dur,out){const o=C.createOscillator();o.type=type;o.frequency.setValueAtTime(f,t);o.connect(out);o.start(t);o.stop(t+dur+0.05);return track(o)}
   function gain(v,out){const g=C.createGain();g.gain.value=v;g.connect(out);return g}
   function filt(type,f,q,out){const x=C.createBiquadFilter();x.type=type;x.frequency.value=f;x.Q.value=q||0.7;x.connect(out);return x}
-  function noiseSrc(t,dur,out,buf){const s=C.createBufferSource();s.buffer=buf||noiseBuf;s.loop=true;s.connect(out);s.start(t,R()*1.5);s.stop(t+dur+0.05);return s}
+  function noiseSrc(t,dur,out,buf){const s=C.createBufferSource();s.buffer=buf||noiseBuf;s.loop=true;s.connect(out);s.start(t,R()*1.5);s.stop(t+dur+0.05);return track(s)}
   function shaper(amt,out){const w=C.createWaveShaper(),n=1024,cv=new Float32Array(n);for(let i=0;i<n;i++){const x=i/n*2-1;cv[i]=Math.tanh(x*amt)}w.curve=cv;w.connect(out);return w}
   const toneRaw=(f,d0,type,v,slide,delay,out)=>{const d=d0||0.1;const t=now()+(delay||0);const g=gain(0,out||sfxBus);env(g,t,0.004,d*0.3,d*0.7,v||0.06);
     const o=osc(type||'square',f,t,d,g);if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(30,f+slide),t+d)};
@@ -92,10 +99,13 @@ const AUD=(()=>{
   function startAmbience(){
     ambG=gain(0,crowdBus);ambF=filt('bandpass',900,0.6,ambG);const s=C.createBufferSource();s.buffer=pinkBuf;s.loop=true;s.connect(ambF);
     const hf=filt('bandpass',2400,1.5,gain(0.25,ambG));s.connect(hf);s.start();
-    // low murmur babble voices
-    const mg=gain(0.0,ambG);booBed=mg;const bank=formantBank('oh',mg);
-    for(let i=0;i<7;i++){const o=C.createOscillator();o.type='sawtooth';o.frequency.value=rr(100,240);o.connect(bank);
-      const l=C.createOscillator(),lg=C.createGain();l.frequency.value=rr(0.15,0.6);lg.gain.value=rr(10,30);l.connect(lg);lg.connect(o.frequency);o.start();l.start()}
+    // low murmur babble voices: pre-rendered once into a looping buffer (was 14 live oscillators)
+    const mg=gain(0.0,ambG);booBed=mg;
+    enqueue(()=>renderJob(9,1,()=>{const bank=formantBank('oh',C.destination);
+      for(let i=0;i<7;i++){const o=C.createOscillator();o.type='sawtooth';o.frequency.value=rr(100,240);o.connect(bank);
+        const l=C.createOscillator(),lg=C.createGain();l.frequency.value=rr(0.15,0.6);lg.gain.value=rr(10,30);l.connect(lg);lg.connect(o.frequency);o.start(0);l.start(0)}}).then(b=>{
+      const n=8*b.sampleRate,F=b.sampleRate|0,out=LIVE.createBuffer(1,n,b.sampleRate),a=b.getChannelData(0),o=out.getChannelData(0);o.set(a.subarray(0,n));for(let i=0;i<F;i++){const u=i/F;o[i]=a[i]*u+a[n+i]*(1-u)}
+      const src=LIVE.createBufferSource();src.buffer=out;src.loop=true;src.connect(mg);src.start()}));
   }
   const SFXi={
     chomp:safe(()=>{const t=now(),hi=(SFXi._f=!SFXi._f);const g=gain(0,sfxBus);env(g,t,0.003,0.03,0.05,0.09);
@@ -187,14 +197,60 @@ const AUD=(()=>{
     slowmo:safe(()=>{const t=now();const g=gain(0,sfxBus);env(g,t,0.05,0.6,0.8,0.35);g.connect(verbSend);const o=osc('sawtooth',220,t,1.5,filt('lowpass',900,3,g));o.frequency.exponentialRampToValueAtTime(40,t+1.4);
       const n=gain(0,sfxBus);env(n,t,0.2,0.6,0.7,0.25);noiseSrc(t,1.5,filt('lowpass',600,1,n),pinkBuf)}),
     sniff:safe(()=>{const t=now();[0,0.18].forEach(d=>{const g=gain(0,sfxBus);env(g,t+d,0.03,0.06,0.08,0.18);noiseSrc(t+d,0.2,filt('bandpass',2600,2,g))})}),
+    siren:safe(()=>{for(let i=0;i<6;i++)toneRaw(i%2?740:980,0.32,'square',0.035,0,i*0.36)}),
     tone:safe((f,d,type,v,slide,delay)=>toneRaw(f,d,type,v,slide,delay))
   };
+  
+  // ================= PERFORMANCE: everything synthesized is PRE-RENDERED once (OfflineAudioContext) =================
+  // Each SFX hit = ONE AudioBufferSource into a shared bus (no per-hit gains/filters/oscillators). Music = one looping buffer per theme.
+  // One-shot sources are capped (SFX <= 5, voice <= 3, all one-shots <= 8; + 4 persistent beds = ~12 total) and disconnected when they end.
+  var nst={oneshot:0,live:0,peak:0,created:0,capDrop:0,renders:0,renderMs:0},pressure=0;
+  let offIR=null;const OSR=32000,CAP_SFX=5,CAP_ALL=8,cache={},want={},rq=[];let rqBusy=false;
+  function enqueue(job,front){if(front)rq.unshift(job);else rq.push(job);pumpR()}
+  function pumpR(){if(rqBusy||!rq.length)return;rqBusy=true;const job=rq.shift();let p;try{p=job()}catch(e){p=Promise.reject(e)}
+    Promise.resolve(p).catch(e=>{errors++;if(errors<5)console.warn('render',e)}).then(()=>{rqBusy=false;setTimeout(pumpR,30)})}
+  function renderJob(len,ch,fn,name){const OAC=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!OAC||!LIVE)return Promise.reject('no offline');
+    const off=new OAC(ch,Math.ceil(len*OSR),OSR),t0=performance.now();
+    const sv=[C,sfxBus,crowdBus,verbSend,musicDuck,muted,hypeT,booBedT,curName];
+    try{C=off;muted=false;RENDERING=true;curName=name||curName;
+      const d=off.destination,g=v=>{const x=off.createGain();x.gain.value=v;x.connect(d);return x};
+      sfxBus=g(0.75);crowdBus=g(0.85);if(!offIR){const L=Math.floor(OSR*1.8);offIR=off.createBuffer(2,L,OSR);for(let c=0;c<2;c++){const x=offIR.getChannelData(c);for(let i=0;i<L;i++)x[i]=(R()*2-1)*Math.pow(1-i/L,3.2)*(i<OSR*0.012?0:1)}}
+      const cv=off.createConvolver();cv.buffer=offIR;cv.connect(d);verbSend=off.createGain();verbSend.gain.value=0.5;verbSend.connect(cv);
+      musicDuck=g(1);const dl=off.createDelay(1);dl.delayTime.value=0.3;const fb=off.createGain();fb.gain.value=0.25;const dm=off.createGain();dm.gain.value=0.18;musicDuck.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(dm);dm.connect(d);
+      fn()}finally{[C,sfxBus,crowdBus,verbSend,musicDuck,muted,hypeT,booBedT,curName]=sv;RENDERING=false}
+    return new Promise((res,rej)=>{let done=false;const fin=b=>{if(done)return;done=true;nst.renders++;nst.renderMs+=performance.now()-t0;res(b)};off.oncomplete=e=>fin(e.renderedBuffer);
+      try{const p=off.startRendering();if(p&&p.then)p.then(fin,rej)}catch(e){rej(e)}})}
+  function trim(b){const a=b.getChannelData(0);let n=a.length-1;while(n>0&&Math.abs(a[n])<2e-4)n--;n=Math.min(a.length,n+64);if(n>=a.length-64)return b;
+    const o=LIVE.createBuffer(b.numberOfChannels,n,b.sampleRate);for(let c=0;c<b.numberOfChannels;c++)o.getChannelData(c).set(b.getChannelData(c).subarray(0,n));return o}
+  function requestSong(name){if(songBuf[name]||want['song|'+name])return;want['song|'+name]=1;const s=SONGS[name];
+    enqueue(()=>{const sp=60/s.bpm/s.div,L=s.len*sp;return renderJob(L+2.4,2,()=>{let t=0;for(let i=0;i<s.len;i++){playStep(s,i,t,sp);const sw=s.swing||0;t+=sp*(i%2===0?1+sw:1-sw)}},name).then(b=>{
+      const n=Math.round(L*b.sampleRate),o=LIVE.createBuffer(2,n,b.sampleRate);for(let c=0;c<2;c++){const a=b.getChannelData(c),x=o.getChannelData(c);x.set(a.subarray(0,n));for(let i=n;i<a.length&&i-n<n;i++)x[i-n]+=a[i]}songBuf[name]=o})},name===pendingName||name===curName)}
+  const SYN=Object.assign({},SFXi);
+  const LEN={cheer:4.6,boo:3.9,laugh:4.2,trombone:5.4,sadHorn:4.6,eatShitChant:6.2,mmpChant:6.2,sackChant:4.6,flush:3.6,slowmo:3.9,death:3.8,airhorn:3.1,bossSting:3.7,ohh:3.2,intThrow:2.9,bossHit:3.1,bigPop:2.9,power:2.4,siren:2.6,ghostEat:1.2,scratch:0.8,bonus:0.9,start:1.4,hurt:0.8,stamp:0.6,sniff:0.6};
+  const DARG={trombone:0,sadHorn:0,stamp:0,eatShitChant:0,mmpChant:0,tone:5};
+  function sig(k,args){const a=Array.prototype.slice.call(args);let d=0;if(k in DARG){d=+a[DARG[k]]||0;a[DARG[k]]=0}
+    if(k==='squeak')a[0]=Math.round((+a[0]||0)*4)/4;if(k==='cheer'||k==='laugh'||k==='boo')a[0]=Math.round((+a[0]||1)*5)/5;if(k==='splat')a[0]=!!a[0];return{key:k+'|'+a.join(','),a,d}}
+  function renderSfx(k,a,key,front){if(cache[key]||want[key])return;want[key]=1;enqueue(()=>renderJob(LEN[k]||2.2,1,()=>SYN[k].apply(null,a)).then(b=>{cache[key]=trim(b)}),front)}
+  function playBuf(b,when,rate){if(nst.oneshot>=CAP_SFX||nst.oneshot+nst.live>=CAP_ALL){nst.capDrop++;return false}
+    const s=C.createBufferSource();s.buffer=b;if(rate)s.playbackRate.value=rate;s.connect(fxIn);nst.oneshot++;nst.created++;nst.peak=Math.max(nst.peak,nst.oneshot+nst.live);
+    s.onended=()=>{nst.oneshot--;try{s.disconnect()}catch(e){}};s.start(Math.max(now(),when));return true}
+  const HYPE={cheer:2.5,sackChant:3,eatShitChant:4,mmpChant:4};
+  for(const k of Object.keys(SYN)){SFXi[k]=function(){try{if(!C||muted||C!==LIVE)return;if(HYPE[k])hypeT=Math.max(hypeT,HYPE[k]);if(k==='boo')booBedT=3;const g=sig(k,arguments),b=cache[g.key],t=now();
+      if(b){playBuf(b,t+g.d,k==='squeak'?1+(+arguments[0]||0)*0.15-0.07:k==='splat'||k==='throwF'||k==='chomp'?rr(0.94,1.07):0);return}
+      renderSfx(k,g.a,g.key,true);const want0=t+g.d;const iv=setInterval(()=>{if(cache[g.key]){clearInterval(iv);if(now()-want0<0.3)playBuf(cache[g.key],want0)}},40);setTimeout(()=>clearInterval(iv),1500)}
+    catch(e){errors++;if(errors<5)console.warn('sfx',e)}}}
+  function warm(){if(warm.done||!C)return;warm.done=true;
+    renderSfx('airhorn',[],'airhorn|',true);requestSong('title');
+    [['throwF'],['splat',false],['splat',true],['chomp'],['scratch'],['bonus'],['power'],['intThrow'],['hurt'],['flush'],['bigPop'],['bossHit'],['cheer',1],['cheer',0.6],['cheer',1.2],['laugh',0.8],['laugh',1.2],['laugh',1.4],['ohh'],['trombone',0],
+     ['slowmo'],['eatShitChant',0],['mmpChant',0],['death'],['ghostEat'],['bossSting'],['siren'],['squeak',0],['squeak',0.25],['squeak',0.5],['squeak',0.75],['squeak',1]].forEach(x=>{const g=sig(x[0],x.slice(1));renderSfx(x[0],g.a,g.key)});
+    requestSong('main');requestSong('boss');requestSong('ending')}
+
   // ---- SFX limiter: per-sound throttles, one BIG sound at a time, max 6 SFX per 150ms ----
-  {const TH={airhorn:900,bigPop:450,splat:45,chomp:40,throwF:80,bossHit:250,cheer:1100,boo:1100,laugh:1400,ohh:900,flush:700,scratch:350,slowmo:1200,eatShitChant:1800,mmpChant:1800,sackChant:1800,
-     power:300,bonus:200,ghostEat:300,intThrow:250,squeak:60,sniff:400,hurt:300,death:800,trombone:2000,sadHorn:2000,stamp:200,start:300,bossSting:800};
+  {const TH={airhorn:900,bigPop:450,splat:70,chomp:60,throwF:150,bossHit:250,cheer:1100,boo:1100,laugh:1400,ohh:900,flush:700,scratch:350,slowmo:1200,eatShitChant:1800,mmpChant:1800,sackChant:1800,
+     power:300,bonus:200,ghostEat:300,intThrow:250,squeak:90,sniff:400,hurt:300,death:800,trombone:2000,sadHorn:2000,stamp:200,start:300,bossSting:800,siren:1500};
    const BIG={airhorn:1.25,bigPop:0.6,slowmo:1.4,bossHit:0.5,flush:1.3,bossSting:1.3,death:1.4};const last={};let win=[],bigUntil=0;
-   for(const k of Object.keys(SFXi)){if(k==='tone')continue;const f=SFXi[k];SFXi[k]=function(){const n=performance.now();if(n-(last[k]||-1e9)<(TH[k]||60)){stats.sfxDrop=(stats.sfxDrop||0)+1;return}
-     win=win.filter(x=>n-x<150);if(win.length>=6){stats.sfxDrop=(stats.sfxDrop||0)+1;return}
+   for(const k of Object.keys(SFXi)){if(k==='tone')continue;const f=SFXi[k];SFXi[k]=function(){const n=performance.now(),hard=pressure>0;if(n-(last[k]||-1e9)<(TH[k]||60)*(hard?2.2:1)){stats.sfxDrop=(stats.sfxDrop||0)+1;return}
+     win=win.filter(x=>n-x<150);if(win.length>=(hard?3:5)){stats.sfxDrop=(stats.sfxDrop||0)+1;return}
      if(BIG[k]){if(n<bigUntil){stats.sfxDrop=(stats.sfxDrop||0)+1;return}bigUntil=n+BIG[k]*1000}
      last[k]=n;win.push(n);return f.apply(null,arguments)}}}
     // ---------- music sequencer ----------
@@ -224,6 +280,9 @@ const AUD=(()=>{
       b:`C3 . G2 . C3 . G2 .  C3 . G2 . C3 . G2 .  C3 . G2 . F2 . G2 .  G2 . G2 . C3 . . .`,
       d:`k . c . k . c .  k . c . k . c .  k . c . k . c .  k . c . k c c c`})
   };
+  let musicSrc=null,waitSong=null;const songBuf={};
+  function startSong(name,at){if(musicSrc){try{musicSrc.stop(Math.max(now(),at-0.01))}catch(e){}musicSrc=null}waitSong=null;if(!name)return;const b=songBuf[name];if(!b){waitSong=name;requestSong(name);return}
+    const s=C.createBufferSource();s.buffer=b;s.loop=true;s.connect(musicDuck);s.onended=()=>{try{s.disconnect()}catch(e){}};s.start(Math.max(now(),at));musicSrc=s}
   let cur=null,curName=null,step=0,nextT=0,pendingName=null,startDelay=0;
   function setTheme(n){if(n===curName&&!pendingName)return;if(n===pendingName)return;pendingName=n;
     if(!C)return;
@@ -232,17 +291,14 @@ const AUD=(()=>{
   let switchAt=0;
   function schedule(){
     try{
-      if(!C||C.state!=='running')return;
+      if(!C||C.state!=='running'||C!==LIVE)return;
       const t=now();
       // ambience follow
       if(ambG){const tgt=muted?0:ambTarget*(hypeT>0?1.7:1);ambG.gain.setTargetAtTime(tgt*0.18,t,0.4);ambF.frequency.setTargetAtTime(hypeT>0?1300:850,t,0.5);
         booBed.gain.setTargetAtTime(booBedT>0?0.035:0.008,t,0.6);hypeT=Math.max(0,hypeT-0.025);booBedT=Math.max(0,booBedT-0.025)}
       if(pendingName!==null&&t>=switchAt){curName=pendingName;if(crackleG)crackleG.gain.setTargetAtTime(curName&&curName!=='ending'?0.5:0.15,t,0.2);pendingName=null;cur=curName?SONGS[curName]:null;step=0;nextT=t+0.05+(curName==='ending'?startDelay:0);startDelay=0;
-        musicDuck.gain.cancelScheduledValues(t);musicDuck.gain.setValueAtTime(0.0001,t);musicDuck.gain.linearRampToValueAtTime(1,t+0.1)}
-      if(!cur||!musicOn||muted){if(cur)nextT=Math.max(nextT,t);return}
-      const sp=60/cur.bpm/cur.div;
-      if(nextT<t-0.3)nextT=t+0.02;
-      while(nextT<t+0.12){playStep(cur,step,nextT,sp);const sw=cur.swing||0;nextT+=sp*(step%2===0?1+sw:1-sw);step=(step+1)%cur.len}
+        musicDuck.gain.cancelScheduledValues(t);musicDuck.gain.setValueAtTime(0.0001,t);musicDuck.gain.linearRampToValueAtTime(1,t+0.1);startSong(curName,nextT)}
+      if(waitSong&&songBuf[waitSong]&&waitSong===curName)startSong(curName,t+0.03);
     }catch(e){errors++;if(errors<5)console.warn('sched',e)}
   }
   function playStep(s,i,t,sp){
@@ -301,18 +357,18 @@ const AUD=(()=>{
   }
   function playClip(k,chant,delay,vol,rate0){
     const b=clips[k];if(!b)return false;const t=now()+0.02+(delay||0);
-    const out=gain((chant?0.55:1)*(vol||1),voiceBus);out.connect(verbSend);const hp=filt('highpass',160,0.7,out);
-    const copies=chant?[[1,0,1],[0.93,0.03,0.7],[1.08,0.05,0.7],[0.97,0.08,0.6],[1.04,0.11,0.55]]:rate0?[[rate0,0,1],[rate0*0.5,0,0.5]]:[[rr(0.96,1.06),0,1]];
-    for(const[rate,dl,v]of copies){const s=C.createBufferSource();s.buffer=b;s.playbackRate.value=rate;s.connect(gain(v,hp));s.start(t+dl)}
+    const copies=chant?[[1,0],[0.93,0.03],[1.08,0.06]]:rate0?[[rate0,0],[rate0*0.5,0]]:[[rr(0.96,1.06),0]];
+    for(const[rate,dl]of copies){const s=C.createBufferSource();s.buffer=b;s.playbackRate.value=rate;s.connect(chant?chantG:voiceHP);nst.oneshot++;nst.created++;s.onended=()=>{nst.oneshot--;try{s.disconnect()}catch(e){}};s.start(t+dl)}
+    nst.peak=Math.max(nst.peak,nst.oneshot+nst.live);
     // duck music while the fan yells
     // duck music + SFX + crowd ~55% while the voice line plays
-    const dur=b.duration/(rate0||1)+0.15,T=now();for(const[bus,v]of[[musicBus,musicOn?0.42:0],[sfxBus,0.75],[crowdBus,0.85]]){bus.gain.cancelScheduledValues(T);bus.gain.setTargetAtTime(v*0.45,T,0.04);bus.gain.setTargetAtTime(v,t+dur,0.25)}
+    const dur=b.duration/(rate0||1)+0.15,T=now();for(const[bus,v]of[[musicBus,musicOn?0.42:0],[fxIn,1],[sfxBus,0.75],[crowdBus,0.85]]){bus.gain.cancelScheduledValues(T);bus.gain.setTargetAtTime(v*0.45,T,0.04);bus.gain.setTargetAtTime(v,t+dur,0.25)}
     if(chant)SFXi.cheer(0.6);
     return true;
   }
   // ---- SINGLE VOICE QUEUE: one line at a time, short gap, 2.5-4s cooldown for random heckles, priorities, stale low-prio lines dropped ----
   const stingLast={};let onSay=null;const Q=[];let busyUntil=0,lastEnd=-1e9,cool=3000,curLine=null;
-  const P3=new Set(['waah','bitch','nohouse','wilson','wilson2','bestteam','boss8','a_over','a_best','a_eatshit','a_joewin','poppa','boss1','bossdie']);
+  const P3=new Set(['puka1','puka2','puka3','puka4','puka5','pitts4','caleb8','nails1','nails2','waah','bitch','nohouse','wilson','wilson2','bestteam','boss8','a_over','a_best','a_eatshit','a_joewin','poppa','boss1','bossdie']);
   function prioOf(h,base){if(P3.has(h.k))return 3;if(h.g.split(' ').some(g=>g==='BOSS'||g==='BOSSHIT'||g==='BOSSDIE'||g==='WILSON'||g==='end'))return Math.max(base,2);return base}
   function startLine(e){const h=e.h;let ok=false,dur=1.8;
     if(C&&!muted){try{if('speechSynthesis' in window)speechSynthesis.cancel()}catch(x){}
@@ -337,9 +393,9 @@ const AUD=(()=>{
       const fresh=pool.filter(h=>!recent.includes(h));if(fresh.length)pool=fresh;const h=pick(pool);
       if(!request(h,{},prioOf(h,ev==='ambient'?0:1),false))return null;recent.push(h);if(recent.length>10)recent.shift();return h.t}catch(e){console.warn('heckle',e);return null}}
   function setMuted(m){muted=m;localStorage.setItem('nw_muted',m?'1':'0');if(C){master.gain.setTargetAtTime(m?0:0.9,now(),0.03)}if(m){try{speechSynthesis.cancel()}catch(e){}}}
-  function setMusic(on){musicOn=on;localStorage.setItem('nw_music',on?'1':'0');if(C)musicBus.gain.setTargetAtTime(on?0.42:0,now(),0.05)}
+  function setMusic(on){musicOn=on;if(on&&C&&curName&&!musicSrc)startSong(curName,now()+0.05);localStorage.setItem('nw_music',on?'1':'0');if(C)musicBus.gain.setTargetAtTime(on?0.42:0,now(),0.05)}
   return{unlock,heckle,sting,setTheme,setMuted,setMusic,SFX:SFXi,
     get unlocked(){return unlocked&&!!C},get running(){return !!C&&C.state==='running'},get muted(){return muted},get musicOn(){return musicOn},
     get theme(){return curName},get queueLen(){return Q.length},get current(){return curLine&&performance.now()<curLine.until?curLine:null},stats:()=>stats,get clipCount(){return Object.keys(clips).length},get errors(){return errors},
-    set ambience(v){ambTarget=v},set onSay(f){onSay=f},unlockAge:()=>performance.now()-unlockedAt,endingDelay(s){startDelay=s},ctx:()=>C};
+    set ambience(v){ambTarget=v},set pressure(v){pressure=v},get rendering(){return rqBusy||rq.length>0},get pressure(){return pressure},nodeStats:()=>Object.assign({},nst,{cached:Object.keys(cache).length,songs:Object.keys(songBuf),renderQ:rq.length,music:!!musicSrc}),set onSay(f){onSay=f},unlockAge:()=>performance.now()-unlockedAt,endingDelay(s){startDelay=s},ctx:()=>C};
 })();

@@ -26,7 +26,7 @@ def valid(e):
         if t > 80 or t > d // 6 + 1: return False            # a track takes real time
         if b > t // 5 + 1: return False                      # bosses need tracks
         if p > d * 8 + 20: return False                      # problems/sec sanity
-        if s > 2500 * d + 7500 * b * (b + 1) + 6000 * (t + 1): return False   # points/sec vs duration
+        if s > 2500 * d + 7500 * b * (b + 1) + 2500 * (b + 1) * (b + 2) + 6000 * (t + 1): return False   # points/sec vs duration (+boss/mini-boss bonuses)
         return True
     except Exception:
         return False

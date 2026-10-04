@@ -10,7 +10,8 @@ for k,txt,tts,g,ch in rows:
     HK.append(e)
     clips[k]=base64.b64encode(open(f'{H}/{k}.mp3','rb').read()).decode()
 silent=base64.b64encode(open(f'{H}/silent.mp3','rb').read()).decode()
-audio=('const HECKLE_CLIPS='+json.dumps(clips,separators=(',',':'))+';\nconst SILENT_MP3="data:audio/mpeg;base64,'+silent+'";\nconst HECKLES='+json.dumps(HK,separators=(',',':'))+';\n'+eng+'''
+vo=json.dumps(clips,separators=(',',':'));import hashlib;vh=hashlib.sha1(vo.encode()).hexdigest()[:10];open(f'{D}/../vo.json','w').write(vo)
+audio=('const VO_URL="vo.json?v='+vh+'";\nconst SILENT_MP3="data:audio/mpeg;base64,'+silent+'";\nconst HECKLES='+json.dumps(HK,separators=(',',':'))+';\n'+eng+'''
 const muteBtn=document.getElementById('muteBtn'),musicBtn=document.getElementById('musicBtn');
 function updMute(){muteBtn.innerHTML=AUD.muted?'&#128263;':'&#128266;';muteBtn.style.opacity=AUD.muted?0.6:1;musicBtn.style.opacity=AUD.musicOn&&!AUD.muted?1:0.4;musicBtn.style.textDecoration=AUD.musicOn?'none':'line-through'}
 muteBtn.addEventListener('click',e=>{e.stopPropagation();AUD.unlock();AUD.setMuted(!AUD.muted);updMute()});

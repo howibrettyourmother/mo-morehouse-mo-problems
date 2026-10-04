@@ -37,8 +37,11 @@ canvas{display:block;touch-action:none;border-radius:6px;box-shadow:0 0 24px rgb
 #againBtn{background:#b8860b}
 #hsPanel{left:50%;top:50%;transform:translate(-50%,-50%);width:90%;padding:14px 8px;border-radius:14px;border:3px solid #ffd400;background:rgba(18,6,31,.97);color:#ffd400;text-align:center;font-size:clamp(14px,4.2vw,19px);box-shadow:0 0 40px rgba(255,212,0,.45);cursor:default}
 #hsPanel small{display:block;color:#fff;font-size:.7em;margin-top:4px}
-#hsIn{width:4.4em;font:inherit;font-size:1.8em;text-align:center;text-transform:uppercase;letter-spacing:.2em;background:#111;color:#fff;border:2px solid #ffd400;border-radius:10px;margin:10px 6px 0;padding:4px 0 4px .2em;-webkit-user-select:text;user-select:text;touch-action:manipulation}
-#hsOk{font:inherit;font-size:1.15em;min-height:50px;padding:8px 18px;border-radius:10px;border:2px solid #fff;background:#c21;color:#fff;cursor:pointer;vertical-align:bottom}
+#hsIn{width:min(11em,92%);font:inherit;font-size:1.15em;text-align:center;letter-spacing:.04em;background:#111;color:#fff;border:2px solid #ffd400;border-radius:10px;margin:10px 6px 0;padding:4px 0 4px .2em;-webkit-user-select:text;user-select:text;touch-action:manipulation}
+#hsOk,#hsSkip{font:inherit;font-size:1.15em;min-height:50px;padding:8px 18px;border-radius:10px;border:2px solid #fff;background:#c21;color:#fff;cursor:pointer;vertical-align:bottom;margin:10px 4px 0}
+#hsSkip{background:#333;font-size:.9em}
+.tbtn{min-height:34px;padding:4px 6px;border-radius:12px;border:2px solid #ffd400;color:#fff;font-size:clamp(9px,2.7vw,12px);background:rgba(0,0,0,.72);box-shadow:0 3px 0 rgba(0,0,0,.5)}
+#boardBtn{border-color:#36e0ff}
 </style>
 </head>
 <body>
@@ -49,9 +52,11 @@ canvas{display:block;touch-action:none;border-radius:6px;box-shadow:0 0 24px rgb
     <button class="hudbtn" id="musicBtn" aria-label="Toggle music (N)">&#9835;</button>
     <button class="ovl bigbtn" id="shareBtn" aria-label="Share your score">SHARE</button>
     <button class="ovl bigbtn" id="againBtn" aria-label="Play again">&#127944; RUN IT BACK</button>
-    <div class="ovl" id="hsPanel" role="dialog" aria-label="New high score">TOP 10! ENTER YOUR INITIALS
-      <small>HALL OF SHAME &bull; SAVED ON THIS DEVICE ONLY</small>
-      <input id="hsIn" maxlength="3" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" placeholder="AAA" aria-label="Initials"><button id="hsOk">SAVE</button>
+    <button class="ovl tbtn" id="modeBtn" aria-label="Toggle difficulty">MODE</button>
+    <button class="ovl tbtn" id="boardBtn" aria-label="Open the league leaderboard">LEAGUE LEADERBOARD</button>
+    <div class="ovl" id="hsPanel" role="dialog" aria-label="Submit score">POST IT TO THE LEAGUE LEADERBOARD
+      <small>YOUR NAME (UP TO 16) &bull; SO THE LEAGUE KNOWS WHO GOT SHIT ON</small>
+      <input id="hsIn" maxlength="16" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" placeholder="YOUR NAME" aria-label="Your name"><br><button id="hsOk">POST IT</button><button id="hsSkip">SKIP</button>
     </div>
   </div>
 </div>
@@ -70,12 +75,14 @@ const W=360;let H=640,S=1,DPR=1;
 const FONT='"Arial Black",Impact,"Helvetica Neue",Arial,sans-serif';
 const R=Math.random,rnd=(a,b)=>a+R()*(b-a),pick=a=>a[(R()*a.length)|0],clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const RED='#e3262e',GOLD='#ffd400';
+// LOW-POWER MODE: if frames run >20ms for ~1.5s, cut particles/confetti, glow and DPR (sticky for the session)
+let lowPower=/[?&]lowpower=1\b/.test(location.search),ftEMA=16,slowAcc=0;
 // ---------- layout ----------
 let bgC=null,scanC=null;
 function layout(){
   const vw=window.innerWidth,vh=window.innerHeight;
   H=Math.round(clamp(W*vh/vw,580,780));
-  S=Math.min(vw/W,vh/H);DPR=Math.min(window.devicePixelRatio||1,3);
+  S=Math.min(vw/W,vh/H);DPR=Math.min(window.devicePixelRatio||1,lowPower?1.5:2);
   cv.width=Math.round(W*S*DPR);cv.height=Math.round(H*S*DPR);cv.style.width=Math.round(W*S)+'px';cv.style.height=Math.round(H*S)+'px';
   buildBG();placeButtons();
   if(player){player.y=clamp(player.y,H*0.5,H-60)}
@@ -148,7 +155,8 @@ const KIND={
   trade:{hp:1,pts:100,w:42,h:30,grp:'TRADE',word:['REJECTED!','NOBODY WANTS IT!','GTFO!']},
   year4:{hp:2,pts:150,w:38,h:42,grp:'YEAR4',word:['YEAR 5, BITCH!','SAME SHIT!']},
   darnold:{hp:1,pts:125,w:38,h:42,grp:'INT',word:['PICKED OFF!','SEES GHOSTS!'],num:14},
-  caleb:{hp:2,pts:250,w:40,h:46,grp:'CALEB',word:['SACKED!'],num:18,big:1},
+  caleb:{hp:2,pts:250,w:40,h:46,grp:'CALEB',word:['SACKED!','SACKED!','NAILS DONE, READS NOT!','FRESH MANI, NO READS!'],num:18,big:1},
+  fax:{hp:1,pts:120,w:32,h:38,grp:'FAX',word:['DECLINED!','SWATTED!','FAX THIS!']},
   mhj:{hp:2,pts:200,w:40,h:48,grp:'MHJ',word:['BUST!','GENERATIONAL BULLSHIT!','WR3!'],num:18,big:1},
   pitts:{hp:2,pts:200,w:42,h:46,grp:'PITTS',word:['STILL LOADING!','NEXT YEAR!','99%... RESET!'],num:8,big:1},
   // Brett's Wilson Weasels stars, rained down by the boss (still RED-framed: incoming = shoot/dodge)
@@ -162,7 +170,7 @@ const TRACKS=[
   {n:'TRACK 1',t:'YEAR 4 OF THE REBUILD',k:'a_t1',rows:[['pick4','year4','pick4','year4','pick4'],['year4','trade','year4','trade','year4']]},
   {n:'TRACK 2',t:'MO PICKS MO PROBLEMS',k:'a_t2',rows:[['darnold','pick4','darnold','pick4','darnold'],['pick4','year4','pick4','year4','pick4'],['pick4','pick4','pick4','pick4','pick4']]},
   {n:'TRACK 3',t:'MO BUSTS MO PROBLEMS',k:'a_t3',rows:[['mhj','pitts','caleb','pitts','mhj'],['darnold','trade','darnold','trade','darnold'],['pick4','year4','pick4','year4','pick4']]},
-  {n:'TRACK 4',t:'SURVIVE THE TRADE DEADLINE',k:'a_t4',balloon:1,rows:[['caleb','mhj','caleb','mhj','caleb'],['trade','trade','trade','trade','trade'],['pitts','darnold','pitts','darnold','pitts'],['trade','pick4','trade','pick4','trade']]},
+  {n:'TRACK 4',t:'SURVIVE THE TRADE DEADLINE',k:'a_t4',balloon:1,mini:1,rows:[['caleb','mhj','caleb','mhj','caleb'],['trade','trade','trade','trade','trade'],['pitts','darnold','pitts','darnold','pitts'],['trade','pick4','trade','pick4','trade']]},
   {n:'BOSS TRACK',t:'THE WEASEL DYNASTY',k:'a_boss',boss:1,rows:[]}
 ];
 const POW={spread:{l:'WAIVER WIRE PICKUP',k:'a_waiver',tag:'WAIVER'},rapid:{l:'DESPERATE TRADE OFFER',k:'a_desp',tag:'TRADE'},shield:{l:'FALSE HOPE',k:'a_hope',tag:'HOPE'},life:{l:'ONE MORE SEASON',k:'a_season',tag:'+1 YR'}};
@@ -172,30 +180,61 @@ const ROASTS=['IT WAS ALL A DREAM... JOE USED TO READ ROTOWORLD MAGAZINE','JUICY
   'SURVIVE, JOE! OH WAIT, YOU CAN\'T.','YOUR HOPE WAS A WAIVER WIRE PICKUP','THE WEASELS\' BENCH IS BETTER THAN YOUR STARTERS'];
 // ---------- state ----------
 let state='title',stateT=0,gT=0,score=0,problems=0,lives=3,combo=0,comboBest=0,comboT=0,meter=0,trackI=0,loop=0,trackT=0,timeScale=1,slowT=0,finT=0,shake=0,flash=0,flashCol='#fff';
-let player=null,balls=[],enemies=[],eshots=[],stars=[],parts=[],pops=[],potties=[],banner=null,caption=null,boss=null,balloon=null,fireCD=0,starT=8,diveT=3,formX=0,formY=0,formDir=1,nextAmb=10,bossesBeat=0,potCount=0,finishers=0,finMode='weasel',firesales=0,reached=0,hits=0,runId=0,soundAsked=false,endReason='',roast='',lastAir=0,lastHurtHk=0,noSpawn=false,trackCleared=false,ptr=null;
+let player=null,balls=[],enemies=[],eshots=[],stars=[],parts=[],pops=[],potties=[],banner=null,caption=null,boss=null,balloon=null,fireCD=0,starT=8,diveT=3,formX=0,formY=0,formDir=1,nextAmb=10,bossesBeat=0,potCount=0,finishers=0,finMode='weasel',firesales=0,reached=0,hits=0,runId=0,soundAsked=false,endReason='',roast='',lastAir=0,lastHurtHk=0,noSpawn=false,trackCleared=false,ptr=null,mini=null,miniDone=0,miniBeat=0,boardOpen=false,puka=null,pukaSeen=0,pukaOOR=0;
+let mode='y5';try{mode=localStorage.getItem('nw_mode')==='rookie'?'rookie':'y5'}catch(e){}
+const rook=()=>mode==='rookie';
 let hi=+(localStorage.getItem('nw_hi')||0),lastShare='',hsEntering=false,savedRank=-1,titleConf=[];
 function newPlayer(){return{x:W/2,y:H-110,inv:0,spreadT:0,rapidT:0,shieldT:0,bob:0,dead:0}}
-function resetRun(){score=0;problems=0;lives=3;combo=0;comboBest=0;comboT=0;meter=0;trackI=0;loop=0;gT=0;timeScale=1;slowT=0;finT=0;player=newPlayer();balls=[];enemies=[];eshots=[];stars=[];parts=[];pops=[];potties=[];
+function resetRun(){score=0;problems=0;lives=rook()?5:3;mini=null;miniDone=0;miniBeat=0;puka=null;pukaSeen=0;combo=0;comboBest=0;comboT=0;meter=0;trackI=0;loop=0;gT=0;timeScale=1;slowT=0;finT=0;player=newPlayer();balls=[];enemies=[];eshots=[];stars=[];parts=[];pops=[];potties=[];
   boss=null;balloon=null;banner=null;bossesBeat=0;potCount=0;finishers=0;firesales=0;reached=0;finT=0;hits=0;starT=7;savedRank=-1;runId++}
 function go(s){state=s;stateT=0;placeButtons()}
 // ---------- leaderboard ----------
+// ---------- LEAGUE LEADERBOARD: browsers POST to a public ntfy.sh topic; a GitHub Action validates + aggregates into scores/leaderboard.json ----------
+const LB_TOPIC=(DEBUG&&(location.search.match(/[?&]lbtopic=([A-Za-z0-9_-]+)/)||[])[1])||'mmp-league-scores-k7q2v9x4';
+const LB_POST='https://ntfy.sh/'+LB_TOPIC,LB_POLL=LB_POST+'/json?poll=1&since=12h',LB_RAW='https://raw.githubusercontent.com/howibrettyourmother/mo-morehouse-mo-problems/main/scores/leaderboard.json';
+const NAME_OK=/^[A-Za-z0-9 .,!?'&_#*$@+-]{1,16}$/,ID_OK=/^[a-z0-9]{8,16}$/;
+function rid(){const c='abcdefghijklmnopqrstuvwxyz0123456789',a=new Uint8Array(12);try{crypto.getRandomValues(a)}catch(e){for(let i=0;i<12;i++)a[i]=(R()*256)|0}let s='';for(const x of a)s+=c[x%36];return s}
+function lsGet(k,d){try{const v=localStorage.getItem(k);return v==null?d:v}catch(e){return d}}function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+let DEV=lsGet('nw_dev','');if(!ID_OK.test(DEV)){DEV=rid();lsSet('nw_dev',DEV)}
+// same rules as scores/aggregate.py (server side is authoritative)
+function lbPlausible(e){try{const I=Number.isInteger;if(!e||e.v!==1||typeof e.n!=='string'||!NAME_OK.test(e.n)||!e.n.trim()||!ID_OK.test(e.id||'')||!ID_OK.test(e.dev||'')||(e.m!=='rookie'&&e.m!=='y5'))return false;
+  const{s,t,d,b,p}=e;if(![s,t,d,b,p].every(x=>I(x)&&x>=0))return false;if(s<=0||s>3e6||d<8||d>14400||t>80||t>Math.floor(d/6)+1||b>Math.floor(t/5)+1||p>d*8+20)return false;
+  return s<=2500*d+7500*b*(b+1)+2500*(b+1)*(b+2)+6000*(t+1)}catch(x){return false}}
+let league={ok:false,loading:false,list:[],blocked:new Set(),at:0,note:''},lastLeagueId='';
+let myIds=new Set();try{myIds=new Set(JSON.parse(lsGet('nw_myids','[]')))}catch(e){}
+function mergeLeague(arr){const m=new Map(league.list.map(e=>[e.id,e]));for(const e of arr)if(e&&lbPlausible(e)&&!m.has(e.id))m.set(e.id,e);
+  league.list=[...m.values()].filter(e=>!league.blocked.has(e.id)).sort((a,b)=>b.s-a.s||(a.ts||0)-(b.ts||0))}
+function fetchLeague(){if(league.loading)return;league.loading=true;let any=false;
+  const raw=fetch(LB_RAW+'?t='+Date.now()).then(r=>r.ok?r.json():Promise.reject(r.status)).then(j=>{if(j&&Array.isArray(j.blocked))j.blocked.forEach(i=>league.blocked.add(i));if(j&&Array.isArray(j.top)){mergeLeague(j.top.map(x=>Object.assign({},x,{v:1})));any=true}});
+  const live=fetch(LB_POLL).then(r=>r.ok?r.text():Promise.reject(r.status)).then(t=>{const a=[];for(const l of t.split('\n')){if(!l)continue;try{const m=JSON.parse(l);if(m.event==='message'){const e=JSON.parse(m.message);e.ts=m.time;a.push(e)}}catch(x){}}mergeLeague(a);any=true});
+  Promise.allSettled([raw,live]).then(()=>{league.list=league.list.filter(e=>!league.blocked.has(e.id));league.ok=league.ok||any;league.loading=false;league.at=Date.now();if(any)flushPending()})}
+function pendingList(){try{const a=JSON.parse(lsGet('nw_pending','[]'));return Array.isArray(a)?a:[]}catch(e){return[]}}
+function setPending(a){lsSet('nw_pending',JSON.stringify(a.slice(-10)))}
+function postEntry(e){const body=JSON.stringify({v:1,id:e.id,n:e.n,s:e.s,t:e.t,m:e.m,p:e.p,d:e.d,b:e.b,dev:e.dev});
+  return fetch(LB_POST,{method:'POST',body}).then(r=>{if(!r.ok)throw r.status;league.sent=(league.sent||0)+1;setPending(pendingList().filter(x=>x.id!==e.id));league.note='POSTED TO THE LEAGUE'}).catch(()=>{const a=pendingList();if(!a.some(x=>x.id===e.id))a.push(e);setPending(a);league.note='OFFLINE: WILL POST WHEN BACK ONLINE'})}
+let flushing=false;function flushPending(){if(flushing)return;const a=pendingList();if(!a.length)return;flushing=true;Promise.allSettled(a.map(postEntry)).then(()=>{flushing=false})}
+function leagueSubmit(name){const e={v:1,id:rid(),n:name,s:score,t:Math.max(0,reached-1),m:mode,p:problems,d:Math.round(gT),b:bossesBeat,dev:DEV};lastLeagueId=e.id;myIds.add(e.id);lsSet('nw_myids',JSON.stringify([...myIds].slice(-60)));
+  if(!lbPlausible(e)){league.note=e.d<8?'TOO SHORT FOR THE LEAGUE BOARD (SURVIVE 8+ SEC)':'SCORE NOT ELIGIBLE';return false}
+  e.ts=(Date.now()/1000)|0;mergeLeague([e]);postEntry(e);return true}
+function leagueRank(id){const i=league.list.findIndex(e=>e.id===id);return i<0?0:i+1}
+setTimeout(fetchLeague,400);setInterval(()=>{if((state==='title'||state==='end'||boardOpen)&&!document.hidden&&Date.now()-league.at>45000)fetchLeague()},5000);
 function lbLoad(){try{const a=JSON.parse(localStorage.getItem('nw_lb')||'[]');return Array.isArray(a)?a.filter(e=>e&&typeof e.s==='number').slice(0,10):[]}catch(e){return[]}}
 function lbQualifies(s){if(s<=0)return false;const a=lbLoad();return a.length<10||s>a[a.length-1].s}
-const cleanIni=v=>(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,3);
-function lbSubmit(ini){ini=cleanIni(ini)||'???';try{localStorage.setItem('nw_ini',ini)}catch(e){}const a=lbLoad();const e={i:ini,s:score,p:problems,id:runId};a.push(e);a.sort((x,y)=>y.s-x.s);
-  const b=a.slice(0,10);savedRank=b.indexOf(e);try{localStorage.setItem('nw_lb',JSON.stringify(b.map(x=>({i:x.i,s:x.s,p:x.p}))))}catch(err){}}
+const cleanName=v=>(v||'').replace(/[^A-Za-z0-9 .,!?'&_#*$@+-]/g,'').replace(/\s+/g,' ').replace(/^ /,'').slice(0,16);
+function lbSubmit(ini){ini=cleanName(ini).trim()||'MYSTERY GM';const a=lbLoad();const e={i:ini,s:score,p:problems,t:Math.max(0,reached-1),m:mode,id:runId};a.push(e);a.sort((x,y)=>y.s-x.s);
+  const b=a.slice(0,10);savedRank=b.indexOf(e);try{localStorage.setItem('nw_lb',JSON.stringify(b.map(x=>({i:x.i,s:x.s,p:x.p,t:x.t,m:x.m}))))}catch(err){}}
 // ---------- audio glue ----------
 AUD.onSay=(text,ann,dur)=>{caption={t:text,life:Math.max(1.6,(dur||2)+0.4),ann:!!ann};if(/WAAAAHMBULANCE/.test(text)&&state==='play')startAmb()};
 function showBanner(t,c,big){banner={t,c:c||GOLD,life:big?2.4:1.8,max:big?2.4:1.8,big:!!big}}
 function airhorn(){const n=performance.now();if(n-lastAir<380)return;lastAir=n;AUD.SFX.airhorn()}
 // ---------- particles: confetti + toilet paper ----------
 const CONF=['#ffd400','#ff2fa8','#36e0ff','#7dff4a','#ff6a00','#fff','#e3262e'];
-function burst(x,y,n,tp){for(let i=0;i<n;i++){const a=R()*6.283,v=rnd(60,260);parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-80,rot:R()*6,vr:rnd(-10,10),c:pick(CONF),w:rnd(3,6),h:rnd(5,9),life:rnd(0.9,1.6),tp:0})}
+function burst(x,y,n,tp){if(lowPower){n=Math.ceil(n*0.35);tp=Math.ceil((tp||0)*0.4)}else if(parts.length>380){n=Math.ceil(n*0.6)}for(let i=0;i<n;i++){const a=R()*6.283,v=rnd(60,260);parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-80,rot:R()*6,vr:rnd(-10,10),c:pick(CONF),w:rnd(3,6),h:rnd(5,9),life:rnd(0.9,1.6),tp:0})}
   for(let i=0;i<(tp||0);i++){const a=-Math.PI/2+rnd(-1.3,1.3),v=rnd(120,300);parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,rot:R()*6,vr:rnd(-4,4),c:'#f7f5ee',w:7,h:rnd(30,60),life:rnd(1.4,2.2),tp:1,ph:R()*6})}}
-function snot(x,y){parts.push({x,y,vx:rnd(-20,20),vy:rnd(20,60),rot:0,vr:0,c:'#9be35a',w:4,h:6,life:rnd(1.2,2),tp:2})}
+function snot(x,y){if(lowPower&&R()<0.6)return;parts.push({x,y,vx:rnd(-20,20),vy:rnd(20,60),rot:0,vr:0,c:'#9be35a',w:4,h:6,life:rnd(1.2,2),tp:2})}
 function pop(x,y,t,c,sz){pops.push({x,y,t,c:c||'#fff',sz:sz||16,life:1.1})}
 // ---------- waves ----------
-function startTrack(i){trackI=i;trackT=0;reached=Math.max(reached,loop*5+i+1);trackCleared=false;const tr=TRACKS[i];enemies=[];eshots=[];formX=0;formY=0;formDir=1;diveT=2.8;
+function startTrack(i){trackI=i;trackT=0;mini=null;miniDone=0;reached=Math.max(reached,loop*5+i+1);trackCleared=false;const tr=TRACKS[i];enemies=[];eshots=[];formX=0;formY=0;formDir=1;diveT=2.8;
   showBanner((tr.n+': '+tr.t).toUpperCase(),tr.boss?RED:GOLD,true);AUD.sting(loop&&i===0?'a_remix':tr.k,{quiet:true});
   if(loop&&i===0)setTimeout(()=>{if(state==='play')showBanner('THE REMIX! FASTER!',RED,true)},1700);
   if(!tr.boss&&R()<0.35)setTimeout(()=>{if(state==='play')AUD.heckle(R()<0.5?'CHANT':'start',true)},3200);
@@ -206,22 +245,46 @@ function startTrack(i){trackI=i;trackT=0;reached=Math.max(reached,loop*5+i+1);tr
   if(tr.balloon)setTimeout(()=>{if(state==='play'&&trackI===i)spawnBalloon()},5000);
 }
 function mkEnemy(k,fx,fy){const d=KIND[k];return{k,d,fx,fy,x:fx,y:-60,hp:d.hp+(loop&&d.hp>1?1:0),max:d.hp+(loop&&d.hp>1?1:0),fl:0,t:R()*6,mode:'form',enter:0,ex:0,ey:0,edel:0,et:0,shotT:rnd(2,5),flipped:0,meter:R()*80,dv:null}}
-function speed(){return 1+loop*0.35+trackI*0.06}
-function spawnBoss(){const hp=240+loop*120;boss={x:W/2,y:-160,ty:165,hp,max:hp,t:0,fl:0,shotT:2.2,dir:1,phase:0,taunt:0,lunge:0,lx:0,dead:0,first:1};AUD.SFX.bossSting();airhorn();
+function speed(){return (1+loop*0.35+trackI*0.06)*(rook()?0.8:1)}
+function spawnBoss(){const hp=Math.round((240+loop*120)*(rook()?0.7:1));boss={x:W/2,y:-160,ty:165,hp,max:hp,t:0,fl:0,shotT:2.2,dir:1,phase:0,taunt:0,lunge:0,lx:0,dead:0,first:1};AUD.SFX.bossSting();airhorn();
   setTimeout(()=>{if(state==='play')AUD.heckle('BOSS',true)},1800);setTimeout(()=>{if(state==='play'&&boss&&!boss.dead)showBanner('WILSON WEASELS: BEST TEAM IN THE LEAGUE',GOLD)},2600)}
+function spawnMini(){const hp=Math.round((34+loop*18)*(rook()?0.7:1));mini={x:W/2,y:-90,ty:150,hp,max:hp,t:0,fl:0,shotT:1.4,dir:1,clock:rook()?26:22,leave:0};miniDone=1;eshots=[];
+  AUD.sting('a_dead',{quiet:true});showBanner('MINI-BOSS: THE TRADE DEADLINE',RED,true);airhorn();AUD.SFX.bossSting();setTimeout(()=>{if(state==='play'&&mini)AUD.heckle('FAX',true)},2600)}
+function killMini(){if(!mini)return;const m=mini,bonus=5000*(loop+1);score+=bonus;problems++;miniBeat++;burst(m.x,m.y,80,14);shake=12;flash=1;flashCol='#fff';airhorn();setTimeout(()=>airhorn(),300);AUD.SFX.bigPop();AUD.SFX.cheer(1);
+  pop(m.x,m.y-50,'+'+bonus+' DEADLINE SWATTED!',GOLD,16);showBanner('TRADE DEADLINE SWATTED! STILL NO TRADES THO',GOLD,true);for(const e of enemies)if(e.k==='fax')e.dead=1;mini=null;addCombo(15);spawnStar(null,m.x,m.y)}
+function updMini(dt,p){const m=mini;m.t+=dt;m.fl=Math.max(0,m.fl-dt);
+  if(m.leave){m.y-=dt*140;if(m.y<-120)mini=null;return}
+  m.clock-=dt;if(m.clock<=0){m.leave=1;showBanner('DEADLINE PASSED. ALL OFFERS DECLINED.',RED,true);AUD.SFX.trombone&&AUD.SFX.trombone();return}
+  m.y+=(m.ty-m.y)*Math.min(1,dt*2);m.x+=m.dir*55*dt*Math.min(1.4,speed());if(m.x>W-60){m.x=W-60;m.dir=-1}if(m.x<60){m.x=60;m.dir=1}
+  m.shotT-=dt;if(m.shotT<=0&&m.y>80){m.shotT=rnd(0.7,1.2)/Math.min(1.5,speed());const e=mkEnemy('fax',0,0);e.x=clamp(m.x+rnd(-30,30),20,W-20);e.y=m.y+34;e.mode='rain';e.dv={t:0,vy:rnd(95,125)*Math.min(1.5,speed()),home:22};enemies.push(e);AUD.SFX.intThrow();if(R()<0.12)AUD.heckle('FAX')}
+  for(const bl of balls){if(bl.hit)continue;if(Math.abs(bl.x-m.x)<46&&Math.abs(bl.y-m.y)<36){bl.hit=1;hits++;m.hp--;m.fl=0.1;score+=30;burst(bl.x,bl.y,4,R()<0.3?1:0);if(m.hp%8===0)AUD.SFX.bossHit();if(m.hp<=0){killMini();return}}}
+  if(!p.dead&&Math.abs(p.x-m.x)<50&&Math.abs(p.y-m.y)<40)hurtPlayer('FAXED IN THE FACE!')}
+// the one that got away: Joe drafted Puka Nacua... and DROPPED him. Ghost card floats past, out of reach.
+function spawnPuka(){pukaSeen=1;puka={x:-50,y:rnd(150,210),t:0};AUD.sting('puka1',{quiet:true});showBanner('JOE DROPPED PUKA NACUA!',GOLD,true);AUD.SFX.ohh();
+  setTimeout(()=>{if(state==='play')AUD.heckle('PUKA',true)},4200)}
+function updPuka(dt){const k=puka;k.t+=dt;k.x+=58*dt;k.y+=Math.sin(k.t*2)*18*dt;
+  for(const bl of balls){if(!bl.hit&&Math.abs(bl.x-k.x)<34&&Math.abs(bl.y-k.y)<42&&performance.now()-pukaOOR>900){pukaOOR=performance.now();pop(k.x,k.y-50,'OUT OF REACH! YOU DROPPED HIM!',GOLD,12)}}
+  if(k.x>W+60){puka=null;pop(W/2,170,'PUKA: GONE FOREVER',RED,14)}}
+function drawPuka(k){ctx.save();ctx.translate(k.x,k.y);ctx.rotate(Math.sin(k.t*1.6)*0.08);ctx.globalAlpha=0.55+Math.sin(k.t*5)*0.15;
+  ctx.shadowColor='rgba(255,212,0,.95)';ctx.shadowBlur=lowPower?0:22;rr4(-32,-40,64,80,8);ctx.fillStyle='rgba(30,20,0,.75)';ctx.fill();ctx.shadowBlur=0;ctx.lineWidth=3;ctx.strokeStyle=RED;ctx.stroke();
+  ctx.strokeStyle=GOLD;ctx.lineWidth=1;rr4(-28,-36,56,72,6);ctx.stroke();
+  helmet('#003594',-22);jersey(17,'#003594','#ffa300',-12);
+  fit('PUKA NACUA',0,12,9,58,GOLD,'#000');txt('(DROPPED)',0,22,7.5,RED,null,'#000');fit('1,486 YDS \u2022 WR1',0,32,6.5,56,'#fff');
+  ctx.save();ctx.rotate(-0.4);ctx.globalAlpha*=0.9;ctx.strokeStyle=RED;ctx.lineWidth=1.5;ctx.strokeRect(-30,-9,60,13);fit('DROPPED BY JOE',0,-2.5,7,56,RED);ctx.restore();
+  ctx.restore();ctx.save();ctx.globalAlpha=0.6+Math.sin(k.t*4)*0.2;txt('THE ONE THAT GOT AWAY',k.x,k.y-50,7,GOLD,null,'#000');ctx.restore()}
 function spawnBalloon(){balloon={x:-80,y:140,hp:14+loop*6,max:14+loop*6,t:0,sc:1,fl:0};AUD.heckle('BALLOON',true);showBanner('GIANT REBUILD YEAR 5 BALLOON!',RED)}
 function spawnStar(type,x,y){type=type||pick(['spread','spread','rapid','rapid','shield','life']);if(type==='life'&&lives>=5)type='rapid';stars.push({type,x:x==null?rnd(30,W-30):x,y:y==null?-20:y,t:R()*6,vy:rnd(60,80)})}
 // ---------- start / end ----------
 function startGame(){resetRun();hsEntering=false;hsPanel.style.display='none';go('intro');AUD.SFX.scratch();AUD.sting('a_go',{quiet:true});showBanner('SURVIVE ONE MORE SEASON, JOE',GOLD,true);AUD.setTheme('main');updateOverlays()}
 function endGame(why){if(state==='end')return;endReason=why||'';roast=pick(ROASTS);if(score>hi){hi=score;try{localStorage.setItem('nw_hi',hi)}catch(e){}}
   go('end');timeScale=1;slowT=0;AUD.SFX.trombone();AUD.endingDelay(2.2);AUD.setTheme('ending');AUD.sting('a_over',{quiet:true,delay:0.3});setTimeout(()=>{if(state==='end'){AUD.sting('nohouse',{quiet:true});showBanner('MOREHOUSE? MORE LIKE NO HOUSE.',RED,true)}},3500);setTimeout(()=>{if(state==='end')AUD.sting('a_best',{quiet:true})},6600);setTimeout(()=>{if(state==='end')AUD.heckle('end',true)},9800);
-  burst(W/2,H*0.3,60,8);if(lbQualifies(score))setTimeout(()=>{if(state==='end')showHS()},1300);updateOverlays()}
+  burst(W/2,H*0.3,60,8);lastLeagueId='';league.note='';if(score>0)setTimeout(()=>{if(state==='end'&&!hsEntering)showHS()},1300);fetchLeague();updateOverlays()}
 // ---------- combat ----------
 function addCombo(n){combo++;comboT=2.6;if(combo>comboBest)comboBest=combo;meter=Math.min(100,meter+n);if(meter>=100)fireSale()}
 function killEnemy(e,quiet){e.dead=1;problems++;const mult=1+Math.min(4,Math.floor(combo/10));const pts=e.d.pts*mult;score+=pts;hits++;
   burst(e.x,e.y,e.d.big?26:14,e.d.big?4:1);AUD.SFX.splat(e.d.big);pop(e.x,e.y-16,'+'+pts,GOLD,13);
   const w=pick(e.d.word);pop(e.x,e.y-34,w,e.d.big?RED:'#fff',e.d.big?15:12);
-  if(e.k==='caleb'){potties.push({x:e.x,y:e.y,t:0});potCount++;AUD.SFX.flush();if(!quiet){AUD.sting('a_potty',{quiet:true,throttle:9000})||AUD.heckle('CALEB',true)}burst(e.x,e.y,0,6)}
+  if(e.k==='caleb'){potties.push({x:e.x,y:e.y,t:0});potCount++;AUD.SFX.flush();if(!quiet){const r=R();(r<0.3&&AUD.sting('caleb8',{quiet:true,throttle:14000}))||(r<0.55&&AUD.sting(pick(['nails1','nails2']),{quiet:true,throttle:14000}))||AUD.sting('a_potty',{quiet:true,throttle:9000})||AUD.heckle('CALEB',true)}burst(e.x,e.y,0,6)}
   else if(!quiet&&R()<0.5)AUD.heckle(e.d.grp);
   if(e.d.big)airhorn();
   if(R()<0.07)spawnStar(null,e.x,e.y);
@@ -241,7 +304,7 @@ function fireSale(){meter=0;firesales++;shake=12;flash=1;flashCol='#ffd400';airh
   burst(W/2,H*0.45,70,12)}
 // the Weasel's slow-mo EAT SHIT taunt at Joe (boss phases + game over)
 function waahmbulance(){const n=performance.now();if(n-lastWaah<12000||state!=='play')return;lastWaah=n;waahN++;if(!AUD.sting('waah',{quiet:true}))startAmb()}
-function startAmb(){if(amb)return;amb={x:-90,t:0};for(let i=0;i<6;i++){AUD.SFX.tone(i%2?740:980,0.32,'square',0.035,0,i*0.36)}}
+function startAmb(){if(amb)return;amb={x:-90,t:0};AUD.SFX.siren()}
 function weaselTaunt(why){finT=2.4;finMode='weasel';slowT=1.9;finishers++;shake=16;flash=1;flashCol='#fff';AUD.SFX.slowmo();AUD.SFX.scratch();AUD.sting('a_eatshit',{quiet:true,rate:0.78});
   airhorn();setTimeout(()=>airhorn(),450);AUD.SFX.eatShitChant(0.2);AUD.SFX.laugh(1.3);burst(W/2,H*0.4,60,10);tauntWhy=why||''}
 function popBalloon(){if(!balloon)return;const b=balloon;score+=2500;problems++;burst(b.x,b.y,90,16);AUD.SFX.bigPop();airhorn();setTimeout(()=>airhorn(),300);AUD.heckle('BALLOONPOP',true);
@@ -254,6 +317,9 @@ function killBoss(){if(!boss||boss.dead)return;boss.dead=1;bossesBeat++;problems
 // ---------- input: drag anywhere to move (relative), auto-fire ----------
 function cpos(e){const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*W,y:(e.clientY-r.top)/r.height*H}}
 cv.addEventListener('pointerdown',e=>{e.preventDefault();const p=cpos(e);
+  if(boardOpen){closeBoard();return}
+  if(state==='end'){if(!hsEntering&&stateT>1.2&&p.y>endBoardY-14&&p.y<H-70)openBoard();return}
+  if(state==='intro'&&stateT>0.12){go('play');startTrack(0)}
   if(state==='title'){if(!soundAsked){soundAsked=true;AUD.SFX.airhorn();AUD.setTheme('title');burst(W/2,H*0.4,40,4);return}startGame();return}
   if(state==='end')return;
   if(player)ptr={id:e.pointerId,ox:player.x-p.x,oy:player.y-p.y};try{cv.setPointerCapture(e.pointerId)}catch(err){}},{passive:false});
@@ -262,6 +328,8 @@ const endPtr=e=>{if(ptr&&e.pointerId===ptr.id)ptr=null};cv.addEventListener('poi
 ['touchstart','touchmove','touchend','gesturestart','dblclick'].forEach(ev=>document.addEventListener(ev,e=>{if(e.target===hsIn||e.target.closest&&e.target.closest('button'))return;e.preventDefault()},{passive:false}));
 const keys={};window.addEventListener('keydown',e=>{if(e.target===hsIn)return;keys[e.key]=1;
   if(e.key==='m'||e.key==='M'){muteBtn.click()}else if(e.key==='n'||e.key==='N'){musicBtn.click()}
+  else if(boardOpen&&(e.key==='Escape'||e.key===' '||e.key==='Enter')){closeBoard();e.preventDefault();return}
+  else if((e.key===' '||e.key==='Enter')&&state==='intro'&&stateT>0.12){go('play');startTrack(0)}
   else if((e.key===' '||e.key==='Enter')&&state==='title'){if(!soundAsked){soundAsked=true;AUD.SFX.airhorn();AUD.setTheme('title');return}startGame()}
   else if((e.key===' '||e.key==='Enter')&&state==='end'&&!hsEntering&&stateT>1.5)startGame();
   if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key))e.preventDefault()});
@@ -288,7 +356,7 @@ function step(rdt){
   // formation sway
   const sp=speed();formX+=formDir*22*sp*dt;if(formX>26){formX=26;formDir=-1}if(formX<-26){formX=-26;formDir=1}formY=Math.min(110,formY+dt*2.2*sp);
   for(const e of enemies){if(e.dead)continue;e.t+=dt;e.fl=Math.max(0,e.fl-dt);
-    if(e.k==='pitts'){e.meter+=dt*38;if(e.meter>=99.4){e.meter=0;pop(e.x,e.y-30,'99%... RESET',RED,10)}}
+    if(e.k==='pitts'){e.meter+=dt*38;if(e.meter>=99.4){e.meter=0;pop(e.x,e.y-30,'99%... RESET',RED,10);if(state==='play'&&e.y>0&&R()<0.3)AUD.sting('pitts4',{quiet:true,throttle:16000})}}
     const tx=e.fx+formX,ty=e.fy+formY;
     if(e.enter){e.et+=dt;const u=clamp((e.et-e.edel)/1.3,0,1);if(u<=0){e.x=e.ex;e.y=e.ey}else{const s=u*u*(3-2*u);e.x=e.ex+(tx-e.ex)*s+Math.sin(u*Math.PI)*70*(e.ex<W/2?1:-1);e.y=e.ey+(ty-e.ey)*s}if(u>=1)e.enter=0;continue}
     if(e.mode==='rain'){const d=e.dv;d.t+=dt;e.y+=d.vy*dt;e.x+=clamp(p.x-e.x,-1,1)*d.home*dt;if(e.y>H+50){e.dead=1;continue}}
@@ -316,17 +384,20 @@ function step(rdt){
     if(balloon&&balloon.x>W+120){balloon=null;pop(W-60,150,'THE REBUILD FLOATED AWAY... LIKE JOE\'S TITLE HOPES',RED,10)}}
   // boss
   if(boss)updBoss(dt,p);
+  if(mini)updMini(dt,p);
+  if(!pukaSeen&&trackI===1&&trackT>5)spawnPuka();if(puka)updPuka(dt);
   // enemy shots
   for(const s of eshots){s.x+=s.vx*dt;s.y+=s.vy*dt;s.r+=dt*8;if(!p.dead&&p.inv<=0&&Math.hypot(s.x-p.x,s.y-p.y)<16){s.dead=1;hurtPlayer(s.k==='int'?'PICKED OFF!':s.k==='ring'?'CASH TO THE FACE!':s.k==='trade'?'TRADE OFFER TO THE FACE!':'SACKED!')}}
   eshots=eshots.filter(s=>!s.dead&&s.y<H+20&&s.y>-40&&s.x>-30&&s.x<W+30);
   // gold Brett stars (catch, don't shoot)
-  starT-=dt;if(starT<=0){starT=boss?rnd(6,9):rnd(9,13);spawnStar()}
+  starT-=dt;if(starT<=0){starT=(boss?rnd(6,9):rnd(9,13))*(rook()?0.75:1);spawnStar()}
   for(const s of stars){s.t+=dt;s.y+=s.vy*dt;s.x+=Math.sin(s.t*2)*20*dt;if(Math.hypot(s.x-p.x,s.y-p.y)<34){s.dead=1;catchStar(s)}}
   stars=stars.filter(s=>!s.dead&&s.y<H+30);
   if(amb){amb.t+=rdt;amb.x+=150*rdt;if(amb.x>W+100)amb=null}
   for(const pt of potties)pt.t+=dt;potties=potties.filter(pt=>pt.t<2.2);
   // track clear
-  if(!TRACKS[trackI].boss&&!trackCleared&&enemies.length===0&&trackT>2&&!balloon){trackCleared=true;score+=500*(trackI+1);showBanner('TRACK CLEARED! +'+500*(trackI+1),GOLD);AUD.SFX.bonus();AUD.SFX.cheer(1);
+  if(!TRACKS[trackI].boss&&!trackCleared&&enemies.length===0&&trackT>2&&!balloon&&!mini&&TRACKS[trackI].mini&&!miniDone)spawnMini();
+  if(!TRACKS[trackI].boss&&!trackCleared&&enemies.length===0&&trackT>2&&!balloon&&!mini){trackCleared=true;score+=500*(trackI+1);showBanner('TRACK CLEARED! +'+500*(trackI+1),GOLD);AUD.SFX.bonus();AUD.SFX.cheer(1);
     setTimeout(()=>{if(state==='play')startTrack(trackI+1)},1800)}
   // ambient heckles
   nextAmb-=dt;if(nextAmb<=0){nextAmb=rnd(7,12);AUD.heckle(boss?(R()<0.3?'WILSON':'BOSSHIT'):R()<0.12?'WILSON':R()<0.12?'CHANT':'ambient')}
@@ -356,7 +427,7 @@ function updBoss(dt,p){const b=boss;b.t+=dt;b.fl=Math.max(0,b.fl-dt);
     if(b.hp%10===0){airhorn();AUD.SFX.bossHit();addCombo(4)}if(b.hp<=0){killBoss();break}}}
   if(!p.dead&&Math.abs(p.x-b.x)<52&&Math.abs(p.y-b.y)<60)hurtPlayer('THE WEASEL DUNKED ON YOU!')}
 function updParts(dt){for(const q of parts){q.x+=q.vx*dt;q.y+=q.vy*dt;q.vy+=(q.tp===1?120:q.tp===2?160:300)*dt;q.vx*=(1-dt*(q.tp===1?1.6:1.2));q.rot+=q.vr*dt;q.life-=dt}parts=parts.filter(q=>q.life>0&&q.y<H+60);
-  if(parts.length>700)parts.splice(0,parts.length-700);for(const q of pops){q.y-=30*dt;q.life-=dt}pops=pops.filter(q=>q.life>0)}
+  const PC=lowPower?220:550;if(parts.length>PC)parts.splice(0,parts.length-PC);for(const q of pops){q.y-=30*dt;q.life-=dt}pops=pops.filter(q=>q.life>0)}
 // ---------- drawing: sprites ----------
 function football(x,y,r,s,col){ctx.save();ctx.translate(x,y);ctx.rotate(r);ctx.fillStyle=col||'#8b4513';ctx.beginPath();ctx.ellipse(0,0,s*1.5,s,0,0,7);ctx.fill();ctx.strokeStyle='#3a1a05';ctx.lineWidth=1;ctx.stroke();
   ctx.strokeStyle='#fff';ctx.lineWidth=Math.max(1,s/4);ctx.beginPath();ctx.moveTo(-s*0.6,0);ctx.lineTo(s*0.6,0);ctx.stroke();for(let i=-2;i<=2;i++){ctx.beginPath();ctx.moveTo(i*s*0.25,-s*0.3);ctx.lineTo(i*s*0.25,s*0.3);ctx.stroke()}ctx.restore()}
@@ -392,7 +463,7 @@ function drawJoe(x,y,sc,t,glow,sad){ctx.save();ctx.translate(x,y);ctx.scale(sc,s
   ctx.fillStyle='rgba(155,227,90,.9)';ctx.beginPath();ctx.ellipse(0,-2+((t*2)%1)*3,1.6,2.4,0,0,7);ctx.fill();
   ctx.restore()}
 function enemyFrame(e,draw){const d=e.d,w=d.w,h=d.h;ctx.save();ctx.translate(e.x,e.y);if(e.mode==='dive')ctx.rotate(Math.sin(e.t*8)*0.15);
-  ctx.shadowColor='rgba(227,38,46,.8)';ctx.shadowBlur=8;rr4(-w/2,-h/2,w,h,6);ctx.fillStyle=e.fl>0?'#fff':'#3a0608';ctx.fill();ctx.shadowBlur=0;ctx.lineWidth=2.5;ctx.strokeStyle=RED;ctx.stroke();
+  if(!lowPower){ctx.shadowColor='rgba(227,38,46,.8)';ctx.shadowBlur=8}rr4(-w/2,-h/2,w,h,6);ctx.fillStyle=e.fl>0?'#fff':'#3a0608';ctx.fill();ctx.shadowBlur=0;ctx.lineWidth=2.5;ctx.strokeStyle=RED;ctx.stroke();
   if(e.fl<=0)draw(w,h);
   if(e.max>1){for(let i=0;i<e.max;i++){ctx.fillStyle=i<e.hp?RED:'#555';ctx.fillRect(-w/2+3+i*7,h/2+2,5,3)}}ctx.restore()}
 function jersey(num,col,trim,y){ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(-14,y);ctx.lineTo(-9,y-6);ctx.lineTo(9,y-6);ctx.lineTo(14,y);ctx.lineTo(11,y+16);ctx.lineTo(-11,y+16);ctx.closePath();ctx.fill();txt(String(num),0,y+5,11,'#fff',null,trim)}
@@ -408,7 +479,9 @@ function drawEnemy(e){
   else if(k==='year4')enemyFrame(e,(w,h)=>{ctx.fillStyle='#fff';ctx.fillRect(-w/2+4,-h/2+8,w-8,h-12);ctx.fillStyle=RED;ctx.fillRect(-w/2+4,-h/2+4,w-8,10);ctx.fillStyle='#333';ctx.fillRect(-8,-h/2+1,3,6);ctx.fillRect(5,-h/2+1,3,6);
     txt('REBUILD',0,-h/2+9,6.5,'#fff');txt('YEAR',0,-1,7,'#333');txt(e.flipped?'5':'4',0,11,14,e.flipped?RED:'#111')});
   else if(k==='darnold')enemyFrame(e,(w,h)=>{helmet('#5a2d82',-9);jersey(14,'#5a2d82','#000',2);ctx.save();ctx.rotate(-0.3);txt('INT',0,-h/2+2,8,'#fff',null,RED);ctx.restore()});
-  else if(k==='caleb')enemyFrame(e,(w,h)=>{helmet('#0b1c3d',-12);jersey(18,'#0b1c3d','#e8621c',-1);football(9,8,0.6,4.5);fit('STILL HOLDING',0,h/2-5,5.5,w-6,'#ffcc00')});
+  else if(k==='fax')enemyFrame(e,(w,h)=>{ctx.fillStyle='#f4f4ee';ctx.fillRect(-w/2+4,-h/2+4,w-8,h-8);ctx.fillStyle='#bbb';for(let i=0;i<4;i++)ctx.fillRect(-w/2+7,-h/2+14+i*5,w-14,1.5);txt('FAX',0,-h/2+9,7,'#333');
+    ctx.save();ctx.rotate(-0.35);ctx.strokeStyle=RED;ctx.lineWidth=1.5;ctx.strokeRect(-15,-1,30,11);fit('DECLINED',0,4.5,6.5,27,RED);ctx.restore()});
+  else if(k==='caleb')enemyFrame(e,(w,h)=>{helmet('#0b1c3d',-12);jersey(18,'#0b1c3d','#e8621c',-1);football(9,8,0.6,4.5);ctx.fillStyle='#ff4fd8';for(let i=0;i<3;i++)ctx.fillRect(12+i*2.4,3,1.8,2.2);fit('STILL HOLDING',0,h/2-5,5.5,w-6,'#ffcc00')});
   else if(k==='mhj')enemyFrame(e,(w,h)=>{ctx.fillStyle='#fff';ctx.fillRect(-w/2+4,-h/2+4,w-8,h-8);ctx.fillStyle='#97233f';ctx.fillRect(-w/2+6,-h/2+6,w-12,h-22);ctx.save();ctx.translate(0,-h/2+20);helmet('#97233f',-6);ctx.restore();
     txt('18',0,1,10,'#fff',null,'#000');fit('GENERATIONAL',0,h/2-12,5.5,w-8,RED);txt('BUST',0,h/2-6,8,RED);
     ctx.strokeStyle='rgba(0,0,0,.6)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-10,-h/2+6);ctx.lineTo(-2,-4);ctx.lineTo(-8,8);ctx.moveTo(6,-h/2+8);ctx.lineTo(2,2);ctx.stroke()});
@@ -450,6 +523,13 @@ function drawBoss(b){const t=b.t;ctx.save();const bx=b.x,by=b.y;
   // HP
   const hw=W-40;ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(20,62,hw,12);ctx.fillStyle=GOLD;ctx.fillRect(21,63,(hw-2)*Math.max(0,b.hp)/b.max,10);
   ctx.fillStyle='#000';ctx.fillRect(20+hw*0.33,62,2,12);ctx.fillRect(20+hw*0.66,62,2,12);fit('FINAL BOSS: THE WILSON WEASELS (BEST TEAM IN THE LEAGUE) \u2022 PHASE '+(b.phase+1)+'/3',W/2,68,8,W-48,'#fff','#000')}
+function drawMini(m){ctx.save();ctx.translate(m.x,m.y+Math.sin(m.t*6)*2);ctx.shadowColor='rgba(227,38,46,.9)';ctx.shadowBlur=14;
+  ctx.fillStyle=m.fl>0?'#fff':'#6d6f78';rr4(-48,-30,96,58,10);ctx.fill();ctx.shadowBlur=0;ctx.lineWidth=3;ctx.strokeStyle=RED;ctx.stroke();
+  ctx.fillStyle='#3d3f46';ctx.fillRect(-40,-22,80,10);ctx.fillStyle='#f4f4ee';const pu=(m.t*2)%1;ctx.fillRect(-26,-26-pu*10,52,8+pu*10);
+  ctx.fillStyle='#0d2a12';ctx.fillRect(-36,-6,48,16);const c=Math.max(0,Math.ceil(m.clock));txt('0:'+String(c).padStart(2,'0'),-12,2,11,c<=5&&((m.t*4)|0)%2?RED:'#7dff4a');
+  for(let i=0;i<3;i++){ctx.fillStyle=['#e3262e','#ffd400','#36e0ff'][i];ctx.beginPath();ctx.arc(22+i*8,2,3,0,7);ctx.fill()}
+  fit('THE TRADE DEADLINE',0,20,8,88,'#fff','#000');ctx.restore();
+  ctx.fillStyle='#222';ctx.fillRect(m.x-40,m.y-44,80,5);ctx.fillStyle=RED;ctx.fillRect(m.x-40,m.y-44,80*Math.max(0,m.hp)/m.max,5);txt('MINI-BOSS',m.x,m.y-52,7,'#fff',null,'#000')}
 function drawShot(s){if(s.k==='int'){football(s.x,s.y,s.r,5,RED);txt('INT',s.x,s.y-10,7,'#fff',null,RED)}
   else if(s.k==='ring'){ctx.save();ctx.translate(s.x,s.y);ctx.rotate(Math.sin(s.r)*0.5);ctx.fillStyle='#3fae4c';ctx.strokeStyle=RED;ctx.lineWidth=2;ctx.fillRect(-9,-5,18,10);ctx.strokeRect(-9,-5,18,10);txt('$',0,0,8,'#fff',null,'#145a1e');ctx.restore()}
   else if(s.k==='sack'){ctx.fillStyle=RED;ctx.beginPath();ctx.arc(s.x,s.y,6,0,7);ctx.fill();txt('SACK',s.x,s.y-10,6,'#fff',null,RED)}
@@ -521,43 +601,107 @@ function drawTitle(){const t=vhsT;ctx.drawImage(bgC,0,0,W,H);
   drawStar({t:t},222,cy+36,1.15);txt('GOLD = CATCH',290,cy+15,11,GOLD,'center','#000');txt('RARE HOPE',292,cy+35,9,'#fff');txt('(WAIVER WIRE, LOL)',292,cy+51,7,'#ffe58a');
   fit('DRAG TO MOVE \u2022 FOOTBALLS AUTO-FIRE \u2022 FILL THE SHIT COMBO',W/2,cy+ch+14,10,W-16,'#ddd','#000');
   const q=QUOTES[((t/3.2)|0)%QUOTES.length];fit(q,W/2,cy+ch+31,10,W-16,'#36e0ff','#000');
-  const by=Math.min(H-34,cy+ch+62);const pulse=1+Math.sin(t*5)*0.03;ctx.save();ctx.translate(W/2,by);ctx.scale(pulse,pulse);ctx.fillStyle=soundAsked?'#b8860b':RED;rr4(-130,-23,260,46,23);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.stroke();
+  const by=Math.min(H-34-44,cy+ch+62);const pulse=1+Math.sin(t*5)*0.03;ctx.save();ctx.translate(W/2,by);ctx.scale(pulse,pulse);ctx.fillStyle=soundAsked?'#b8860b':RED;rr4(-130,-23,260,46,23);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.stroke();
   txt(soundAsked?'TAP TO SURVIVE \u{1F3C8}':'TAP FOR SOUND \u{1F50A}',0,1,20,'#fff',null,'#000');ctx.restore();
-  if(hi&&by+32<H)txt('HIGH SCORE '+hi.toLocaleString('en-US'),W/2,by+31,9,GOLD,'center','#000');
+  const l1=league.list[0];const ly2=by+70;if(ly2<H-4)fit(l1?'LEAGUE #1: '+l1.n.toUpperCase()+' \u2022 '+l1.s.toLocaleString('en-US')+(hi?'  \u2022  YOUR BEST '+hi.toLocaleString('en-US'):''):(hi?'YOUR BEST '+hi.toLocaleString('en-US'):'BE THE FIRST ON THE LEAGUE LEADERBOARD'),W/2,ly2,9,W-16,GOLD,'#000');
   drawParts();drawVHS();vhsOSD(8,8,'PLAY');}
+// Joe in total despair: face-down sobbing on a desk of rejected trade offers, rain cloud, REBUILD YEAR 5 banner
+function drawSobJoe(x,y,sc,t){ctx.save();ctx.translate(x,y);ctx.scale(sc,sc);
+  const sob=Math.sin(t*27),heave=Math.abs(Math.sin(t*7.5)),sx=sob*2.4,sy=-heave*5;
+  // banner
+  ctx.save();ctx.translate(0,-182);ctx.strokeStyle='#bbb';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(-122,-14);ctx.lineTo(-100,-4);ctx.moveTo(122,-14);ctx.lineTo(100,-4);ctx.stroke();ctx.rotate(Math.sin(t*1.6)*0.025);
+  ctx.fillStyle=RED;ctx.beginPath();ctx.moveTo(-104,-12);ctx.lineTo(104,-12);ctx.lineTo(94,3);ctx.lineTo(104,18);ctx.lineTo(-104,18);ctx.lineTo(-94,3);ctx.closePath();ctx.fill();ctx.strokeStyle=GOLD;ctx.lineWidth=2;ctx.stroke();
+  fit('REBUILD YEAR 5',0,3,19,176,GOLD,'#400');ctx.restore();
+  // rain cloud (follows his head a bit) + rain
+  const cx=sx*0.4,cy=-132;ctx.lineWidth=1.8;
+  for(let i=0;i<13;i++){const rx=-36+i*6+Math.sin(i*7.3)*2,u=(t*2.3+i*0.37)%1,ry=cy+10+u*62;ctx.strokeStyle='rgba(120,190,255,'+(0.9-u*0.5)+')';ctx.beginPath();ctx.moveTo(cx+rx,ry);ctx.lineTo(cx+rx-1.5,ry+8);ctx.stroke()}
+  if((t*0.6)%1<0.04){ctx.strokeStyle='#ffe600';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(cx+8,cy+8);ctx.lineTo(cx,cy+24);ctx.lineTo(cx+8,cy+24);ctx.lineTo(cx-2,cy+42);ctx.stroke()}
+  ctx.fillStyle='#4e5262';for(const[a,b,r]of[[-28,2,15],[-10,-8,19],[13,-6,18],[31,3,13],[0,6,17]]){ctx.beginPath();ctx.arc(cx+a,cy+b,r,0,7);ctx.fill()}
+  ctx.fillStyle='#6a6f82';for(const[a,b,r]of[[-12,-12,11],[12,-10,10]]){ctx.beginPath();ctx.arc(cx+a,cy+b,r,0,7);ctx.fill()}
+  // torso (shaking shoulders)
+  ctx.save();ctx.translate(sx,sy);ctx.fillStyle='#c0141b';rr4(-46,-44,92,52,20);ctx.fill();ctx.strokeStyle='#7a0a0f';ctx.lineWidth=2;ctx.stroke();txt('GM',0,-20,14,GOLD,null,'#400');ctx.restore();
+  // desk of rejected trade offers
+  ctx.fillStyle='#7a4a22';ctx.fillRect(-116,-2,232,10);ctx.fillStyle='#4a2a12';ctx.fillRect(-108,8,216,40);ctx.fillStyle='#3a200c';ctx.fillRect(-108,8,216,3);
+  const pw=(px,py,rot,lab)=>{ctx.save();ctx.translate(px,py);ctx.rotate(rot);ctx.fillStyle='#f4f4ee';ctx.fillRect(-17,-11,34,22);ctx.fillStyle='#bbb';ctx.fillRect(-13,-7,26,1.5);ctx.fillRect(-13,6,20,1.5);
+    ctx.rotate(-0.2);ctx.strokeStyle=RED;ctx.lineWidth=1.4;ctx.strokeRect(-15,-5,30,10);fit(lab,0,0,7,27,RED);ctx.restore()};
+  pw(-80,28,-0.12,'REJECTED');pw(-38,30,0.08,'DECLINED');pw(4,27,-0.05,'LOL NO');pw(46,30,0.1,'REJECTED');pw(86,27,-0.09,'DECLINED');
+  pw(-96,-6,-0.3,'DECLINED');pw(94,-8,0.35,'REJECTED');pw(-70,-9,0.15,'NOPE');
+  // tear puddle
+  const pg=Math.min(1,stateT/6);ctx.fillStyle='rgba(90,180,255,.55)';ctx.beginPath();ctx.ellipse(0,0,30+pg*50,3+pg*2,0,0,7);ctx.fill();
+  // arms on desk, one fist pounding
+  ctx.save();ctx.translate(sx,sy*0.4);ctx.fillStyle='#c0141b';ctx.beginPath();ctx.ellipse(-40,-6,28,10,-0.12,0,7);ctx.ellipse(40,-6,28,10,0.12,0,7);ctx.fill();
+  ctx.fillStyle='#f0c8a0';ctx.beginPath();ctx.arc(-66,-6,8,0,7);ctx.fill();ctx.beginPath();ctx.arc(66,-6-Math.abs(Math.sin(t*9))*12,8,0,7);ctx.fill();ctx.restore();
+  // head: ugly sob
+  ctx.save();ctx.translate(sx,sy);const hy=-70;ctx.rotate(sob*0.04);
+  ctx.fillStyle='#f0c8a0';ctx.beginPath();ctx.arc(0,hy,34,0,7);ctx.fill();
+  ctx.fillStyle=RED;ctx.beginPath();ctx.arc(0,hy-9,34,Math.PI,0);ctx.fill();ctx.fillRect(-2,hy-12,44,7);txt('JOE',0,hy-25,12,'#fff');
+  ctx.fillStyle='rgba(230,90,90,.45)';ctx.beginPath();ctx.ellipse(-18,hy+8,7,5,0,0,7);ctx.ellipse(18,hy+8,7,5,0,0,7);ctx.fill();
+  ctx.strokeStyle='#222';ctx.lineWidth=2.8;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(-19,hy-6);ctx.lineTo(-9,hy-1);ctx.lineTo(-19,hy+3);ctx.moveTo(19,hy-6);ctx.lineTo(9,hy-1);ctx.lineTo(19,hy+3);
+  ctx.moveTo(-22,hy-9);ctx.lineTo(-6,hy-15);ctx.moveTo(22,hy-9);ctx.lineTo(6,hy-15);ctx.stroke();ctx.lineCap='butt';
+  const mh=9+Math.abs(Math.sin(t*9))*8;ctx.fillStyle='#5a0a12';ctx.beginPath();ctx.ellipse(0,hy+17,13,mh*0.75,0,0,7);ctx.fill();ctx.fillStyle='#fff';ctx.fillRect(-8,hy+17-mh*0.75+1,16,3);ctx.fillStyle='#e86a8a';ctx.beginPath();ctx.ellipse(0,hy+17+mh*0.45,7,3,0,0,7);ctx.fill();
+  // tear rivers + fountains
+  ctx.fillStyle='rgba(90,180,255,.9)';ctx.fillRect(-15,hy+2,4,26+heave*6);ctx.fillRect(11,hy+2,4,26+heave*6);
+  for(const sd of[-1,1])for(let i=0;i<10;i++){const u=(t*1.9+i/10)%1,px=sd*(16+u*82),py=hy-3-u*50+u*u*128,r=(1-u*0.5)*3.6;ctx.fillStyle='rgba(110,195,255,'+(1-u*0.6)+')';ctx.beginPath();ctx.ellipse(px,py,r,r*1.3,0,0,7);ctx.fill()}
+  // snot bubble + drip
+  const bub=3+(Math.sin(t*2.6)+1)*4.5;ctx.fillStyle='rgba(155,227,90,.75)';ctx.beginPath();ctx.arc(5+bub*0.6,hy+5,bub,0,7);ctx.fill();ctx.fillStyle='rgba(255,255,255,.7)';ctx.beginPath();ctx.arc(3+bub*0.6,hy+3,bub*0.3,0,7);ctx.fill();
+  ctx.strokeStyle='rgba(155,227,90,.9)';ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(-3,hy+7);ctx.lineTo(-3,hy+12+((t*18)%26));ctx.stroke();
+  if((t*1.2)%1<0.62){ctx.save();ctx.translate(-62+sob*2,hy-30);ctx.rotate(-0.2);txt('WAAAAH!',0,0,15,'#9fd8ff',null,'#123a9a');ctx.restore()}
+  ctx.restore();ctx.restore()}
+let endBoardY=9999;
+function boardRow(e,i,x0,x1,yy,fs,hl,mine){if(hl){ctx.fillStyle='rgba(255,212,0,.3)';ctx.fillRect(x0-6,yy-fs*0.75,x1-x0+12,fs*1.5)}else if(mine){ctx.fillStyle='rgba(54,224,255,.12)';ctx.fillRect(x0-6,yy-fs*0.75,x1-x0+12,fs*1.5)}
+  const c=hl?GOLD:'#fff';txt((i+1)+'.',x0+22,yy,fs,hl?GOLD:'#aaa','right');fit(e?String(e.n).toUpperCase():'---',x0+28,yy,fs,x1-x0-150,c,null,'left');
+  if(e){txt(e.s.toLocaleString('en-US'),x1-62,yy,fs,c,'right');txt('T'+(e.t||0),x1-34,yy,fs*0.8,'#7dff4a','right');txt(e.m==='rookie'?'RK':'Y5',x1,yy,fs*0.8,e.m==='rookie'?'#36e0ff':RED,'right')}}
 function drawEnd(){const t=vhsT;ctx.drawImage(bgC,0,0,W,H);ctx.fillStyle='rgba(10,3,20,.6)';ctx.fillRect(0,0,W,H);
-  ctx.save();ctx.translate(W/2-10,52);ctx.rotate(-0.035);fit('MOREHOUSE:',0,-16,30,W-90,RED,'#000');fit('99 PROBLEMS AND STILL BROKE',0,14,22,W-30,'#fff',RED);ctx.restore();
-  ctx.save();ctx.translate(W/2,96);ctx.fillStyle='rgba(0,0,0,.6)';rr4(-150,-15,300,30,8);ctx.fill();ctx.restore();shinyText('WILSON WEASELS: STILL THE BEST',W/2,97,21,W-36,t);ctx.save();ctx.translate(W/2,124);ctx.rotate(0.02);fit('MOREHOUSE? MORE LIKE NO HOUSE.',0,0,17,W-30,'#ff6b6b','#000');ctx.restore();
-  // best-team weasel gloating over a crying Joe
-  const wy=196;ctx.fillStyle='rgba(255,212,0,.2)';ctx.beginPath();ctx.arc(W/2+50,wy,58,0,7);ctx.fill();
-  foamFinger(W/2+2,wy+30,0.9,t);cashStack(W/2+104,wy+40,0.9,t);drawWeasel(W/2+52,wy+Math.sin(t*4)*3,1.6,t,false);prBelt(W/2+52,wy+58,80);
-  drawJoe(W/2-92,wy+28,1.25,t,false,true);txt('JOE',W/2-92,wy+76,9,'#aaa');
-  ctx.fillStyle='#fff';rr4(14,wy-70,170,46,12);ctx.fill();ctx.beginPath();ctx.moveTo(150,wy-26);ctx.lineTo(196,wy-34);ctx.lineTo(166,wy-24);ctx.fill();
-  wrapTxt(pick2(['EAT SHIT, JOE. SPREAD LOVE, IT\'S THE WEASEL WAY.','JUICY? NAH. YOUR ROSTER IS DRY, JOE.','SEE YOU IN 2031. BRING TISSUES.']),99,wy-55,9.5,158,'#111');
-  let y=wy+100;
-  fit('YOU GAVE MOREHOUSE '+problems+' MORE PROBLEMS',W/2,y,15,W-20,'#fff','#000');y+=19;
-  fit('MO PROBLEMS: '+problems+'  \u2022  SCORE '+score.toLocaleString('en-US')+'  \u2022  SHIT COMBO x'+comboBest,W/2,y,11,W-20,GOLD,'#000');y+=16;
-  fit('TRACKS SURVIVED: '+Math.max(0,reached-1)+'  \u2022  CALEB FLUSHED x'+potCount+'  \u2022  FIRE SALES x'+firesales+(bossesBeat?'  \u2022  WEASEL BEATEN x'+bossesBeat+' (STILL THE BEST)':''),W/2,y,9,W-20,'#7dff4a','#000');y+=14;
-  const v1=Math.max(0.37,Math.round(1000000*Math.pow(0.5,score/2500)*100)/100);fit('JOE\'S DYNASTY VALUE: $1,000,000 \u2192 $'+v1.toLocaleString('en-US',{maximumFractionDigits:2}),W/2,y,10,W-20,'#ff8a8a','#000');y+=14;
-  fit(endReason,W/2,y,9,W-20,'#aaa');y+=13;
-  ctx.save();ctx.globalAlpha=0.95;const nl=wrapTxt('\u201C'+roast+'\u201D',W/2,y+3,10.5,W-30,'#36e0ff','#000');ctx.restore();y+=16+nl*13;
-  const lb=lbLoad(),bot=H-72,rows=10,lh=Math.min(15,(bot-y-14)/rows);
-  txt('HALL OF SHAME \u2022 TOP 10',W/2,y,11,RED,'center','#000');y+=lh+1;
-  for(let i=0;i<rows;i++){const e=lb[i],hl=i===savedRank;const yy=y+i*lh,fs=Math.min(12,lh-3);
-    if(hl){ctx.fillStyle='rgba(255,212,0,.25)';ctx.fillRect(40,yy-lh/2,W-80,lh)}
-    txt((i+1)+'.',70,yy,fs,hl?GOLD:'#aaa','right');txt(e?e.i:'---',82,yy,fs,hl?GOLD:'#fff','left');
-    txt(e?e.s.toLocaleString('en-US'):'',W-110,yy,fs,hl?GOLD:'#fff','right');txt(e?(e.p||0)+' PROB':'',W-46,yy,fs*0.8,'#888','right')}
+  ctx.save();ctx.translate(W/2-10,46);ctx.rotate(-0.035);fit('MOREHOUSE:',0,-14,28,W-90,RED,'#000');fit('99 PROBLEMS AND STILL BROKE',0,14,22,W-30,'#fff',RED);ctx.restore();
+  ctx.save();ctx.translate(W/2,88);ctx.fillStyle='rgba(0,0,0,.6)';rr4(-150,-14,300,28,8);ctx.fill();ctx.restore();shinyText('WILSON WEASELS: STILL THE BEST',W/2,89,20,W-36,t);ctx.save();ctx.translate(W/2,113);ctx.rotate(0.02);fit('MOREHOUSE? MORE LIKE NO HOUSE.',0,0,16,W-30,'#ff6b6b','#000');ctx.restore();
+  // centerpiece: Joe in total despair, the Weasel gloating beside him
+  const sc=H>=700?1.1:H>=600?0.95:0.84,dy=128+Math.round(198*sc);
+  drawSobJoe(W/2-34,dy,sc,t);
+  const wx=W-58,wy=dy-92*sc;ctx.fillStyle='rgba(255,212,0,.18)';ctx.beginPath();ctx.arc(wx,wy,46,0,7);ctx.fill();
+  drawWeasel(wx,wy+Math.sin(t*5)*3,1.15,t,false);prBelt(wx,wy+42,64);
+  ctx.save();ctx.translate(wx-6,wy-58+Math.abs(Math.sin(t*6))*-4);ctx.rotate(0.12);txt('HA! HA!',0,0,13,GOLD,null,'#000');ctx.restore();
+  ctx.fillStyle='#fff';rr4(W-122,wy+58,114,36,10);ctx.fill();ctx.beginPath();ctx.moveTo(W-70,wy+58);ctx.lineTo(W-60,wy+48);ctx.lineTo(W-56,wy+58);ctx.fill();
+  wrapTxt(pick2(['EAT SHIT, JOE.','YEAR 5, BABY! BRING TISSUES.','SEE YOU IN 2031, JOE.','CRY HARDER, MOREHOUSE.']),W-65,wy+70,8.5,106,'#111');
+  let y=dy+Math.round(52*sc)+6;
+  fit('YOU GAVE MOREHOUSE '+problems+' MORE PROBLEMS',W/2,y,15,W-20,'#fff','#000');y+=17;
+  fit('SCORE '+score.toLocaleString('en-US')+'  \u2022  TRACKS SURVIVED '+Math.max(0,reached-1)+'  \u2022  SHIT COMBO x'+comboBest+'  \u2022  '+(rook()?'ROOKIE':'YEAR 5'),W/2,y,10.5,W-20,GOLD,'#000');y+=14;
+  const v1=Math.max(0.37,Math.round(1000000*Math.pow(0.5,score/2500)*100)/100);
+  fit('PUKAS DROPPED: 1 (FOREVER)',W/2,y,11,W-20,'#ffb000','#000');y+=14;
+  fit('CALEB FLUSHED x'+potCount+'  \u2022  FIRE SALES x'+firesales+(miniBeat?'  \u2022  DEADLINE SWATTED':'')+(bossesBeat?'  \u2022  WEASEL BEATEN x'+bossesBeat+' (STILL THE BEST)':'')+'  \u2022  DYNASTY VALUE $'+v1.toLocaleString('en-US',{maximumFractionDigits:2}),W/2,y,9,W-20,'#7dff4a','#000');y+=13;
+  fit(endReason+'  \u2022  \u201C'+roast+'\u201D',W/2,y,9,W-20,'#36e0ff','#000');y+=19;
+  // LEAGUE LEADERBOARD (local Hall of Shame when offline)
+  endBoardY=y;const bot=H-70,online=league.ok&&league.list.length>0,list=online?league.list:lbLoad().map(e=>({n:e.i,s:e.s,t:e.t||0,m:e.m||'y5',id:e.id}));
+  txt(online?'LEAGUE LEADERBOARD':(league.ok?'LEAGUE LEADERBOARD (EMPTY) \u2022 HALL OF SHAME':'HALL OF SHAME (OFFLINE, THIS DEVICE)'),W/2,y,11,online?GOLD:RED,'center','#000');y+=14;
+  const myRank=online?leagueRank(lastLeagueId):0;const lh=13.5,fit2=Math.max(1,Math.floor((bot-y-14)/lh));let rows=Math.min(5,fit2);const showMine=myRank>rows&&rows>1;if(showMine)rows--;
+  for(let i=0;i<rows;i++){const e=list[i];boardRow(e,i,34,W-34,y+i*lh,10,e&&((online&&e.id===lastLeagueId)||(!online&&i===savedRank)),e&&myIds.has(e.id))}
+  y+=rows*lh;if(showMine){boardRow(list[myRank-1],myRank-1,34,W-34,y,10,true,true);y+=lh}
+  const note=myRank?('YOU: #'+myRank+' OF '+league.list.length+' \u2022 TAP FOR TOP 25'):(league.note||'TAP FOR THE FULL TOP 25');if(y+2<bot)fit(note,W/2,y+1,8.5,W-30,'#ddd','#000');
   drawParts();drawVHS();vhsOSD(8,8,'STOP');
   if(R()<0.05)burst(rnd(20,W-20),-10,6,R()<0.3?1:0)}
+// full-screen LEAGUE LEADERBOARD (title button or tap on the end-screen board)
+function openBoard(){boardOpen=true;AUD.SFX.scratch();if(Date.now()-league.at>8000)fetchLeague();placeButtons();updateOverlays()}
+function closeBoard(){boardOpen=false;updateOverlays()}
+function drawBoard(){const t=vhsT;ctx.fillStyle='rgba(8,2,16,.94)';ctx.fillRect(0,0,W,H);
+  shinyText('LEAGUE LEADERBOARD',W/2,30,26,W-24,t);fit('TOP 25 \u2022 SHADYNASTY \u2022 MOREHOUSE MORE PROBLEMS',W/2,54,9,W-20,'#fff','#000');
+  const online=league.ok,list=online?league.list:lbLoad().map(e=>({n:e.i,s:e.s,t:e.t||0,m:e.m||'y5',id:e.id}));
+  if(!online)fit(league.loading?'LOADING THE LEAGUE...':'OFFLINE: SHOWING YOUR LOCAL HALL OF SHAME',W/2,70,9,W-20,RED,'#000');
+  txt('NAME',62,84,8,'#888','left');txt('SCORE',W-96,84,8,'#888','right');txt('TRK',W-68,84,8,'#888','right');txt('MODE',W-34,84,8,'#888','right');
+  const n=25,top=98,lh=Math.min(19,(H-top-46)/n),fs=Math.min(12,lh-3);
+  for(let i=0;i<n;i++)boardRow(list[i],i,34,W-34,top+i*lh,fs,list[i]&&online&&list[i].id===lastLeagueId,list[i]&&myIds.has(list[i].id));
+  const myRank=online?leagueRank(lastLeagueId):0;
+  fit(myRank?'YOUR RUN: #'+myRank+' OF '+league.list.length:online?(league.list.length?league.list.length+' SCORES THIS WEEK':'NO SCORES YET. GO GET SHIT ON FIRST.'):'',W/2,H-34,10,W-20,GOLD,'#000');
+  fit('TAP ANYWHERE TO CLOSE',W/2,H-16,9,W-20,'#aaa');drawVHS()}
 let endQuoteI=0,tauntWhy='',rainN=0,amb=null,waahN=0,lastWaah=-1e9;function pick2(a){if(state==='end'&&stateT<0.05)endQuoteI=(R()*a.length)|0;return a[endQuoteI%a.length]}
 function draw(){
   ctx.setTransform(S*DPR,0,0,S*DPR,0,0);ctx.clearRect(0,0,W,H);
-  if(state==='title'){drawTitle();drawBanner();return}
-  if(state==='end'){drawEnd();return}
+  if(state==='title'){drawTitle();drawBanner();if(boardOpen)drawBoard();return}
+  if(state==='end'){drawEnd();if(boardOpen)drawBoard();return}
   ctx.save();if(shake>0)ctx.translate(rnd(-shake,shake)*0.6,rnd(-shake,shake)*0.6);
   drawBG(1/60*timeScale);
   if(balloon)drawBalloon(balloon);
   if(boss)drawBoss(boss);
+  if(mini)drawMini(mini);
+  if(puka)drawPuka(puka);
   for(const e of enemies)drawEnemy(e);
   for(const pt of potties)drawPotty(pt);
   for(const b of balls)football(b.x,b.y,b.r,5);
@@ -578,13 +722,17 @@ function draw(){
   drawVHS();if(state==='play'&&TRACKS[trackI].boss)vhsOSD(8,H-90,'BEST TEAM CAM')
 }
 // ---------- overlays ----------
-const shareBtn=document.getElementById('shareBtn'),againBtn=document.getElementById('againBtn'),hsPanel=document.getElementById('hsPanel'),hsIn=document.getElementById('hsIn');
-function placeButtons(){const y=(H-62)*S;shareBtn.style.cssText+=`;left:${10*S}px;top:${y}px;width:${214*S}px`;againBtn.style.cssText+=`;left:${232*S}px;top:${y}px;width:${118*S}px`}
-let ovlOn=null;
-function updateOverlays(){const show=state==='end'&&stateT>1.2&&!hsEntering;if(show!==ovlOn){ovlOn=show;shareBtn.style.display=againBtn.style.display=show?'block':'none';if(show)shareLabel()}}
+const modeBtn=document.getElementById('modeBtn'),boardBtn=document.getElementById('boardBtn'),shareBtn=document.getElementById('shareBtn'),againBtn=document.getElementById('againBtn'),hsPanel=document.getElementById('hsPanel'),hsIn=document.getElementById('hsIn');
+function placeButtons(){const ch0=Math.min(250,H*0.33),by=Math.min(H-34-44,172+ch0+26+68+62),ty=(by+30)*S;
+  modeBtn.style.cssText+=`;left:${10*S}px;top:${ty}px;width:${178*S}px`;boardBtn.style.cssText+=`;left:${194*S}px;top:${ty}px;width:${156*S}px`;
+  const y=(H-62)*S;shareBtn.style.cssText+=`;left:${10*S}px;top:${y}px;width:${214*S}px`;againBtn.style.cssText+=`;left:${232*S}px;top:${y}px;width:${118*S}px`}
+let ovlOn=null,tOn=null;
+function modeLabel(){modeBtn.textContent=rook()?'\u{1F476} MODE: ROOKIE':'\u{1F4A9} MODE: YEAR 5 (HARD)'}
+function updateOverlays(){const ts=state==='title'&&!boardOpen;if(ts!==tOn){tOn=ts;modeBtn.style.display=boardBtn.style.display=ts?'block':'none';if(ts)modeLabel()}
+  const show=state==='end'&&stateT>1.2&&!hsEntering&&!boardOpen;if(show!==ovlOn){ovlOn=show;shareBtn.style.display=againBtn.style.display=show?'block':'none';if(show)shareLabel()}}
 function shareLabel(t){shareBtn.textContent=t||('\u{1F4E3} I GAVE MOREHOUSE '+problems+' MORE PROBLEMS')}
 const SHARE_URL=location.protocol==='https:'?location.origin+location.pathname:'https://howibrettyourmother.github.io/mo-morehouse-mo-problems/';
-function shareText(){return 'I gave Morehouse '+problems+' more problems ('+score.toLocaleString('en-US')+' pts, survived '+Math.max(0,reached-1)+' tracks as Joe'+(comboBest>=10?', x'+comboBest+' shit combo':'')+') in MOREHOUSE MORE PROBLEMS. Mo Morehouse, mo problems. 99 problems and still broke. Wilson Weasels: still the best team in the league. Your turn:'}
+function shareText(){return 'I gave Morehouse '+problems+' more problems ('+score.toLocaleString('en-US')+' pts, survived '+Math.max(0,reached-1)+' tracks as Joe'+(comboBest>=10?', x'+comboBest+' shit combo':'')+(rook()?', rookie mode':'')+') in MOREHOUSE MORE PROBLEMS. Mo Morehouse, mo problems. 99 problems and still broke. Wilson Weasels: still the best team in the league. Your turn:'}
 function legacyCopy(full){let ok=false;try{const ta=document.createElement('textarea');ta.value=full;ta.setAttribute('readonly','');ta.style.cssText='position:fixed;left:-9999px;top:0;opacity:0';document.body.appendChild(ta);ta.select();ta.setSelectionRange(0,full.length);ok=document.execCommand('copy');ta.remove()}catch(e){}
   shareLabel(ok?'\u2705 COPIED! PASTE IN THE CHAT':'\u{1F4E3} '+problems+' PROBLEMS - COPY FAILED')}
 function copyShare(full){try{if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(full).then(()=>shareLabel('\u2705 COPIED! PASTE IN THE CHAT'),()=>legacyCopy(full));return}}catch(e){}legacyCopy(full)}
@@ -592,16 +740,22 @@ shareBtn.addEventListener('click',e=>{e.stopPropagation();AUD.unlock();const tex
   if(navigator.share){navigator.share({title:'MOREHOUSE MORE PROBLEMS',text,url:SHARE_URL}).then(()=>shareLabel('\u2705 SHARED! MO PROBLEMS'),err=>{if(err&&err.name==='AbortError')return;copyShare(lastShare)})}
   else copyShare(lastShare)});
 againBtn.addEventListener('click',e=>{e.stopPropagation();AUD.unlock();if(state==='end')startGame()});
-function showHS(){hsEntering=true;let v='';try{v=localStorage.getItem('nw_ini')||''}catch(e){}hsIn.value=cleanIni(v);hsPanel.style.display='block';updateOverlays();if(!isTouch)setTimeout(()=>{try{hsIn.focus();hsIn.select()}catch(e){}},60)}
-function saveHS(){if(!hsEntering)return;lbSubmit(hsIn.value);hsEntering=false;hsPanel.style.display='none';try{hsIn.blur()}catch(e){}AUD.SFX.cheer(1);window.scrollTo(0,0);updateOverlays()}
-hsIn.addEventListener('input',()=>{const c=cleanIni(hsIn.value);if(c!==hsIn.value)hsIn.value=c});
+modeBtn.addEventListener('click',e=>{e.stopPropagation();AUD.unlock();mode=rook()?'y5':'rookie';lsSet('nw_mode',mode);modeLabel();AUD.SFX.scratch();showBanner(rook()?'ROOKIE MODE: 5 SEASONS, SLOWER SHIT':'YEAR 5 OF THE REBUILD: THE REAL DEAL',rook()?'#36e0ff':RED)});
+boardBtn.addEventListener('click',e=>{e.stopPropagation();AUD.unlock();openBoard()});
+[modeBtn,boardBtn].forEach(b=>['pointerdown','touchstart'].forEach(ev=>b.addEventListener(ev,e=>e.stopPropagation())));
+function showHS(){hsEntering=true;const v=lsGet('nw_name','')||lsGet('nw_ini','');hsIn.value=cleanName(v);hsPanel.style.display='block';updateOverlays();if(!isTouch)setTimeout(()=>{try{hsIn.focus();hsIn.select()}catch(e){}},60)}
+function saveHS(){if(!hsEntering)return;const nm=cleanName(hsIn.value).trim()||'MYSTERY GM';lsSet('nw_name',nm);if(lbQualifies(score))lbSubmit(nm);leagueSubmit(nm);hsEntering=false;hsPanel.style.display='none';try{hsIn.blur()}catch(e){}AUD.SFX.cheer(1);window.scrollTo(0,0);updateOverlays()}
+hsIn.addEventListener('input',()=>{const c=cleanName(hsIn.value);if(c!==hsIn.value)hsIn.value=c});
 hsIn.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'){e.preventDefault();saveHS()}});
 hsIn.addEventListener('blur',()=>setTimeout(()=>window.scrollTo(0,0),50));
 document.getElementById('hsOk').addEventListener('click',e=>{e.stopPropagation();AUD.unlock();saveHS()});
+document.getElementById('hsSkip').addEventListener('click',e=>{e.stopPropagation();AUD.unlock();if(!hsEntering)return;hsEntering=false;hsPanel.style.display='none';try{hsIn.blur()}catch(x){}window.scrollTo(0,0);updateOverlays()});
 hsPanel.addEventListener('pointerdown',e=>e.stopPropagation());
 // ---------- main loop ----------
 let lastT=performance.now(),frames=0;
-function frame(n){const dt=Math.min(0.05,Math.max(0,(n-lastT)/1000));lastT=n;frames++;if(!document.hidden){try{step(dt)}catch(e){console.error(e)}}updateOverlays();try{draw()}catch(e){console.error(e)}requestAnimationFrame(frame)}
+function frame(n){const raw=(n-lastT);const dt=Math.min(0.05,Math.max(0,raw/1000));lastT=n;frames++;
+  if(!document.hidden&&raw<250){ftEMA+=(raw-ftEMA)*0.08;if(state==='play'&&ftEMA>20&&!AUD.rendering){slowAcc+=raw/1000;if(slowAcc>1.5&&!lowPower){lowPower=true;layout();console.log('low-power mode on')}}else slowAcc=Math.max(0,slowAcc-raw/2000)}
+  AUD.pressure=(state==='play'&&(combo>=10||parts.length>260||slowT>0||ftEMA>22))?1:0;if(!document.hidden){try{step(dt)}catch(e){console.error(e)}}updateOverlays();try{draw()}catch(e){console.error(e)}requestAnimationFrame(frame)}
 player=newPlayer();layout();requestAnimationFrame(frame);
 if(DEBUG){window.__NW={get state(){return state},get score(){return score},get problems(){return problems},get lives(){return lives},set lives(v){lives=v},get combo(){return combo},get meter(){return meter},set meter(v){meter=v},
   get trackI(){return trackI},get loop(){return loop},get finT(){return finT},get timeScale(){return timeScale},get hsEntering(){return hsEntering},get lastShare(){return lastShare},get frames(){return frames},audio:AUD,lb:lbLoad,
@@ -611,7 +765,9 @@ if(DEBUG){window.__NW={get state(){return state},get score(){return score},get p
   clientOf(x,y){const r=cv.getBoundingClientRect();return{x:r.left+x/W*r.width,y:r.top+y/H*r.height}},
   spawn(k,x,y){const e=mkEnemy(k,x,y);e.x=x;e.y=y;enemies.push(e);return enemies.length},clearAll(){enemies=[];eshots=[];stars=[];balloon=null},hold(){trackCleared=true;starT=1e9;diveT=1e9},
   star(type,x,y){spawnStar(type,x,y)},shot(k,x,y){eshots.push({x,y,vx:0,vy:120,k,r:0})},bossGo(){enemies=[];trackI=4;spawnBoss();boss.y=boss.ty},setBossHp(v){boss.hp=v},balloonGo(x){spawnBalloon();balloon.x=x||W/2},
-  track(i){startTrack(i)},end(){endGame('FINAL WHISTLE')},fin(){fireSale()},get firesales(){return firesales},get finMode(){return finMode},noInv(){player.inv=0;player.shieldT=0},get bossPhase(){return boss&&boss.phase},get bossTaunt(){return boss&&boss.taunt},get rain(){return rainN},get waahN(){return waahN},get caption(){return caption&&caption.t},get amb(){return !!amb},waah(){lastWaah=-1e9;waahmbulance()},movePlayer(x,y){player.x=x;player.y=y},freezeEnemies(){for(const e of enemies){e.enter=0;e.mode='frozen'}}};
+  track(i){startTrack(i)},end(){endGame('FINAL WHISTLE')},fin(){fireSale()},get firesales(){return firesales},get finMode(){return finMode},noInv(){player.inv=0;player.shieldT=0},get bossPhase(){return boss&&boss.phase},get bossTaunt(){return boss&&boss.taunt},get rain(){return rainN},get waahN(){return waahN},get caption(){return caption&&caption.t},get amb(){return !!amb},waah(){lastWaah=-1e9;waahmbulance()},movePlayer(x,y){player.x=x;player.y=y},freezeEnemies(){for(const e of enemies){e.enter=0;e.mode='frozen'}},
+  get league(){return{ok:league.ok,n:league.list.length,top:league.list.slice(0,5),last:lastLeagueId,rank:leagueRank(lastLeagueId),note:league.note,sent:league.sent||0,topic:LB_TOPIC}},fetchLeague,get boardOpen(){return boardOpen},openBoard,closeBoard,
+  get mode(){return mode},setMode(m){mode=m;lsSet('nw_mode',m);modeLabel()},miniGo(){spawnMini();mini.y=mini.ty},setMiniHp(v){if(mini)mini.hp=v},get mini(){return mini&&{hp:mini.hp,max:mini.max,x:mini.x,y:mini.y,clock:mini.clock}},get miniBeat(){return miniBeat},pukaGo(){spawnPuka();puka.x=W/2},get puka(){return puka&&{x:puka.x,y:puka.y}},get gT(){return gT},get lowPower(){return lowPower},get ftEMA(){return ftEMA},get partsN(){return parts.length},set gT(v){gT=v},set score(v){score=v},set reached(v){reached=v},plausible:lbPlausible};
   console.log('debug mode')}
 </script>
 </body>
