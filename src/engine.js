@@ -47,7 +47,7 @@ const AUD=(()=>{
       if(silentEl.paused&&!document.hidden){const p=silentEl.play();if(p&&p.catch)p.catch(()=>{})}
       // prime speechSynthesis inside the gesture (iOS requires the first speak() be user-initiated)
       if(!speechPrimed&&'speechSynthesis' in window){speechPrimed=true;try{const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u);speechSynthesis.getVoices()}catch(e){}}
-      if(!unlocked){unlocked=true;unlockedAt=performance.now();loadClips();warm()}
+      if(!unlocked){unlocked=true;unlockedAt=performance.now();setTimeout(warm,0);setTimeout(loadClips,1800)}   // heavy work off the tap so the tap itself stays instant
     }catch(e){console.warn('unlock',e)}
   }
   ['touchstart','touchend','pointerdown','mousedown','click','keydown'].forEach(ev=>window.addEventListener(ev,unlock,{capture:true,passive:true}));

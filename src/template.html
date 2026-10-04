@@ -326,7 +326,14 @@ function drawPuka(k){ctx.save();ctx.translate(k.x,k.y);ctx.rotate(Math.sin(k.t*1
 function spawnBalloon(){balloon={x:-80,y:140,hp:14+loop*6,max:14+loop*6,t:0,sc:1,fl:0};AUD.heckle('BALLOON',true);showBanner('GIANT REBUILD YEAR 5 BALLOON!',RED)}
 function spawnStar(type,x,y){if(!type){const q=R();if(q<0.06)type='shoey';else if(q<0.11)type='purse'}type=type||pick(['spread','spread','rapid','rapid','shield','life']);if(type==='life'&&lives>=5)type='rapid';stars.push({type,x:x==null?rnd(30,W-30):x,y:y==null?-20:y,t:R()*6,vy:rnd(60,80)})}
 // ---------- start / end ----------
-function startGame(){resetRun();hsEntering=false;hsPanel.style.display='none';go('intro');AUD.SFX.scratch();AUD.sting('a_go',{quiet:true});showBanner('SURVIVE ONE MORE SEASON, JOE',GOLD,true);AUD.setTheme('main');updateOverlays()}
+function startGame(){resetRun();hsEntering=false;hsPanel.style.display='none';go('intro');showBanner('SURVIVE ONE MORE SEASON, JOE',GOLD,true);updateOverlays();
+  try{AUD.SFX.scratch();AUD.sting('a_go',{quiet:true});AUD.setTheme('main')}catch(e){console.warn('audio',e)}}
+// Start from the title with ONE tap anywhere outside the bottom buttons. pointerdown is the main path; touchend and click are fallbacks
+// (some iOS Safari setups drop or cancel the pointer event), deduped so one tap can never start twice. Audio is unlocked inside the
+// same gesture but is best-effort: an audio error can no longer block the start.
+let lastStartAt=0;
+function titleStart(){if(state!=='title'||boardOpen||performance.now()-lastStartAt<600)return;lastStartAt=performance.now();
+  soundAsked=true;try{AUD.unlock()}catch(e){}startGame()}
 function endGame(why){if(state==='end')return;endReason=why||'';roast=pick(ROASTS);prevHi=hi;if(score>hi){hi=score;try{localStorage.setItem('nw_hi',hi)}catch(e){}}
   go('end');timeScale=1;slowT=0;AUD.SFX.trombone();AUD.endingDelay(2.2);AUD.setTheme('ending');AUD.sting('a_over',{quiet:true,delay:0.3});setTimeout(()=>{if(state==='end'){AUD.sting('nohouse',{quiet:true});showBanner('MOREHOUSE? MORE LIKE NO HOUSE.',RED,true)}},3500);setTimeout(()=>{if(state==='end')AUD.sting('a_best',{quiet:true})},6600);setTimeout(()=>{if(state==='end')AUD.heckle('end',true)},9800);
   burst(W/2,H*0.3,60,8);lastLeagueId='';league.note='';if(score>0)setTimeout(()=>{if(state==='end'&&!hsEntering)showHS()},1300);setTimeout(()=>{if(state==='end')buildCard()},700);fetchLeague();updateOverlays()}
@@ -376,17 +383,18 @@ cv.addEventListener('pointerdown',e=>{e.preventDefault();const p=cpos(e);
   if(boardOpen){const tb=tabAt(p);if(tb){if(tb!==boardTab){boardTab=tb;AUD.SFX.scratch()}return}closeBoard();return}
   if(state==='end'){if(!hsEntering&&stateT>1.2&&p.y>endBoardY-14&&p.y<H-70)openBoard();return}
   if(state==='intro'&&stateT>0.12){go('play');startTrack(0)}
-  if(state==='title'){if(!soundAsked){soundAsked=true;AUD.SFX.airhorn();AUD.setTheme('title');burst(W/2,H*0.4,40,4);return}startGame();return}
+  if(state==='title'){titleStart();return}
   if(state==='end')return;
   if(player)ptr={id:e.pointerId,ox:player.x-p.x,oy:player.y-p.y};try{cv.setPointerCapture(e.pointerId)}catch(err){}},{passive:false});
 cv.addEventListener('pointermove',e=>{if(!ptr||e.pointerId!==ptr.id||!player)return;const p=cpos(e);player.x=clamp(p.x+ptr.ox,18,W-18);player.y=clamp(p.y+ptr.oy,H*0.45,H-44)});
+['touchend','click'].forEach(ev=>cv.addEventListener(ev,e=>{if(state!=='title'||boardOpen)return;const t=e.changedTouches?e.changedTouches[0]:e;if(t&&cpos(t).y>titleLayout().ty-2)return;titleStart()},{passive:true}));
 const endPtr=e=>{if(ptr&&e.pointerId===ptr.id)ptr=null};cv.addEventListener('pointerup',endPtr);cv.addEventListener('pointercancel',endPtr);
 ['touchstart','touchmove','touchend','gesturestart','dblclick'].forEach(ev=>document.addEventListener(ev,e=>{if(e.target===hsIn||e.target.closest&&e.target.closest('button'))return;e.preventDefault()},{passive:false}));
 const keys={};window.addEventListener('keydown',e=>{if(e.target===hsIn)return;keys[e.key]=1;
   if(e.key==='m'||e.key==='M'){muteBtn.click()}else if(e.key==='n'||e.key==='N'){musicBtn.click()}
   else if(boardOpen&&(e.key==='Escape'||e.key===' '||e.key==='Enter')){closeBoard();e.preventDefault();return}
   else if((e.key===' '||e.key==='Enter')&&state==='intro'&&stateT>0.12){go('play');startTrack(0)}
-  else if((e.key===' '||e.key==='Enter')&&state==='title'){if(!soundAsked){soundAsked=true;AUD.SFX.airhorn();AUD.setTheme('title');return}startGame()}
+  else if((e.key===' '||e.key==='Enter')&&state==='title')titleStart();
   else if((e.key===' '||e.key==='Enter')&&state==='end'&&!hsEntering&&stateT>1.5)startGame();
   if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key))e.preventDefault()});
 window.addEventListener('keyup',e=>{keys[e.key]=0});
@@ -911,11 +919,13 @@ document.getElementById('hsOk').addEventListener('click',e=>{e.stopPropagation()
 document.getElementById('hsSkip').addEventListener('click',e=>{e.stopPropagation();AUD.unlock();if(!hsEntering)return;hsEntering=false;hsPanel.style.display='none';try{hsIn.blur()}catch(x){}window.scrollTo(0,0);updateOverlays()});
 hsPanel.addEventListener('pointerdown',e=>e.stopPropagation());
 // ---------- main loop ----------
-let lastT=performance.now(),frames=0;
+let lastT=performance.now(),frames=0,rafId=0,lastFrameAt=performance.now();
 function frame(n){const raw=(n-lastT);const dt=Math.min(0.05,Math.max(0,raw/1000));lastT=n;frames++;
   if(!document.hidden&&raw<250){ftEMA+=(raw-ftEMA)*0.08;if(state==='play'&&ftEMA>20&&!AUD.rendering){slowAcc+=raw/1000;if(slowAcc>1.5&&!lowPower){lowPower=true;layout();console.log('low-power mode on')}}else slowAcc=Math.max(0,slowAcc-raw/2000)}
-  AUD.pressure=(state==='play'&&(combo>=10||parts.length>260||slowT>0||ftEMA>22))?1:0;if(!document.hidden){try{step(dt)}catch(e){console.error(e)}}updateOverlays();try{draw()}catch(e){console.error(e)}requestAnimationFrame(frame)}
-player=newPlayer();layout();requestAnimationFrame(frame);
+  lastFrameAt=performance.now();cancelAnimationFrame(rafId);rafId=requestAnimationFrame(frame);try{AUD.pressure=(state==='play'&&(combo>=10||parts.length>260||slowT>0||ftEMA>22))?1:0}catch(e){}if(!document.hidden){try{step(dt)}catch(e){console.error(e)}}try{updateOverlays()}catch(e){console.error(e)}try{draw()}catch(e){console.error(e)}}
+player=newPlayer();layout();rafId=requestAnimationFrame(frame);
+// watchdog: if the animation loop ever stalls while the page is visible, restart it (one chain only)
+setInterval(()=>{if(!document.hidden&&performance.now()-lastFrameAt>1200){cancelAnimationFrame(rafId);rafId=requestAnimationFrame(frame)}},700);
 if(DEBUG){window.__NW={get state(){return state},get score(){return score},get problems(){return problems},get lives(){return lives},set lives(v){lives=v},get combo(){return combo},get meter(){return meter},set meter(v){meter=v},
   get trackI(){return trackI},get loop(){return loop},get finT(){return finT},get timeScale(){return timeScale},get hsEntering(){return hsEntering},get lastShare(){return lastShare},get frames(){return frames},audio:AUD,lb:lbLoad,
   get textBoxes(){return TBlast},get titleLayout(){return titleLayout()},
