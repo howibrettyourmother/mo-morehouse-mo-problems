@@ -1,0 +1,1 @@
+{"name":"morehouse-scores","private":true,"type":"module","version":"1.0.0","scripts":{"deploy":"wrangler deploy"},"devDependencies":{"wrangler":"^3.114.0"}}

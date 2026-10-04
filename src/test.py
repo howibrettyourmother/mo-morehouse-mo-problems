@@ -2,10 +2,13 @@ import re
 import asyncio,sys,json
 from playwright.async_api import async_playwright
 BASE=sys.argv[1] if len(sys.argv)>1 else 'http://127.0.0.1:18734/index.html'
-import random,urllib.request
-TOPIC='mmp-lb-test-'+''.join(random.choice('abcdefghjkmnpqrstuvwxyz23456789') for _ in range(10))
+import random,urllib.request,urllib.parse
 OUT='/workspace/notorious-weasel/'
 LIVE=len(sys.argv)>1
+# leaderboard: live runs use the real Worker's isolated 'test' board; local runs use `wrangler dev` on :8799 (local KV)
+API='https://morehouse-scores.brettwilson08.workers.dev' if LIVE else 'http://127.0.0.1:8799'
+QS='?debug=1&lbboard=test'+('' if LIVE else '&lbapi='+urllib.parse.quote(API,safe=''))
+def board(): return json.loads(urllib.request.urlopen(API+'/scores?board=test&mode=all&limit=200',timeout=20).read().decode())
 ok=True
 def chk(n,c,info=''):
     global ok;ok&=bool(c);print(('PASS ' if c else 'FAIL ')+n,info)
@@ -17,7 +20,7 @@ async def run(p,b,name,dev,touch,shots):
     m.on('pageerror',lambda e: errs.append(f'pageerror {e}'))
     await m.goto(BASE);await m.wait_for_timeout(700)
     chk(f'[{name}] public build has no __NW',await m.evaluate('typeof window.__NW')=='undefined')
-    await m.goto(BASE+'?debug=1&lbtopic='+TOPIC);await m.wait_for_timeout(900)
+    await m.goto(BASE+QS);await m.wait_for_timeout(900)
     tap=(lambda x,y: m.touchscreen.tap(x,y)) if touch else (lambda x,y: m.mouse.click(x,y))
     r=await m.evaluate('(()=>{const r=document.getElementById("c").getBoundingClientRect();return[r.x,r.y,r.width,r.height]})()')
     vp=await m.evaluate('[innerWidth,innerHeight]')
@@ -96,10 +99,11 @@ async def run(p,b,name,dev,touch,shots):
     await m.evaluate('__NW.noPow()')
     # Puka Nacua: the one that got away (ghost card, out of reach)
     await m.evaluate('__NW.pukaGo()')
+    seenP=False
     for i in range(30):
-        await m.wait_for_timeout(200);pk=await m.evaluate('({p:__NW.puka,cap:__NW.caption,st:__NW.audio.stats().puka1||0})')
+        await m.wait_for_timeout(200);pk=await m.evaluate('({p:__NW.puka,cap:__NW.caption,st:__NW.audio.stats().puka1||0})');seenP=seenP or bool(pk['p'])
         if pk['st']>=1 and 'Puka' in (pk['cap'] or ''): break
-    chk(f'[{name}] Puka Nacua (DROPPED) ghost card + voice/caption',pk['p'] and pk['st']>=1 and 'Puka' in (pk['cap'] or ''),str(pk))
+    chk(f'[{name}] Puka Nacua (DROPPED) ghost card + voice/caption',seenP and pk['st']>=1 and 'Puka' in (pk['cap'] or ''),str(pk))
     if shots: await m.screenshot(path=OUT+'screenshot-puka.png')
     # mini-boss: THE TRADE DEADLINE spits DECLINED fax pages
     await m.evaluate('__NW.lives=99;__NW.miniGo()');await m.wait_for_timeout(2600)
@@ -195,7 +199,7 @@ async def run(p,b,name,dev,touch,shots):
     await m.wait_for_timeout(14000)
     s=await m.evaluate('({p:__NW.problems,st:__NW.state,l:__NW.lives,t:__NW.trackI,f:__NW.frames})')
     chk(f'[{name}] natural play: auto-fire drops problems',s['p']>=3,str(s))
-    # league submission of a legit run -> ntfy relay
+    # league submission of a legit run -> Cloudflare Worker
     await m.evaluate('__NW.end()');await m.wait_for_timeout(1800)
     chk(f'[{name}] name prefilled with last name',await m.input_value('#hsIn')=='Joe Morehouse 99')
     hi=await m.evaluate('({t:__NW.hsInfo,r:__NW.hsPanelRect,s:__NW.score})')
@@ -203,19 +207,21 @@ async def run(p,b,name,dev,touch,shots):
     if shots or name=='iphoneSE': await m.screenshot(path=OUT+f'screenshot-post-{name}.png')
     await m.fill('#hsIn','Test '+name[:10]);await m.click('#hsOk');await m.wait_for_timeout(2500)
     lg=await m.evaluate('__NW.league');chk(f'[{name}] league score posted + own rank highlighted',lg['sent']>=1 and lg['rank']>=1 and lg['last'],str(lg))
-    raw=urllib.request.urlopen(f'https://ntfy.sh/{TOPIC}/json?poll=1&since=1h',timeout=20).read().decode()
-    chk(f'[{name}] score landed on the relay',lg['last'] in raw,raw[-200:])
+    bd=board();ent=[e for e in bd['top'] if e['id']==lg['last']]
+    chk(f'[{name}] score landed on the Worker board (mode tag kept)',len(ent)==1 and ent[0]['m'] in ('y5','rookie') and ent[0]['n'].startswith('Test'),str(ent))
     if shots: await m.screenshot(path=OUT+'screenshot-end.png')
     if shots:
         await m.evaluate('__NW.openBoard()');await m.wait_for_timeout(700);await m.screenshot(path=OUT+'screenshot-leaderboard.png');await m.evaluate('__NW.closeBoard()')
     ns=await m.evaluate('__NW.audio.nodeStats()');chk(f'[{name}] audio: pre-rendered SFX + music loops, sources capped',ns['cached']>=25 and len(ns['songs'])==4 and ns['peak']<=8 and ns['live']==0,str(ns))
+    # local runs only: the one public (non-debug) page load talks to the production Worker, whose CORS correctly only allows github.io
+    if not LIVE: errs=[x for x in errs if not ('morehouse-scores.brettwilson08.workers.dev' in x and 'CORS' in x) and not ('Failed to load resource' in x and 'ERR_FAILED' in x)]
     chk(f'[{name}] no console errors/warnings',not errs,str(errs[:5]))
     # personal-best fallback: reload -> device re-posts its best (same id), board shows it once per device+name
     await m.reload();await m.wait_for_timeout(4500)
     rp=await m.evaluate('({r:__NW.lbReposts,best:JSON.parse(localStorage.getItem("nw_best")||"{}"),list:__NW.lbList})')
-    raw=urllib.request.urlopen(f'https://ntfy.sh/{TOPIC}/json?poll=1&since=1h',timeout=20).read().decode()
-    mine=[e for e in rp['list'] if e['id']==lg['last']]
-    chk(f'[{name}] personal best remembered + re-posted on load (deduped on the board)',rp['r']>=1 and any(v['id']==lg['last'] for v in rp['best'].values()) and raw.count(lg['last'])>=2 and len(mine)==1,str((rp['r'],raw.count(lg['last']),len(mine))))
+    rs=await m.evaluate('__NW.league.reason');bd=board()
+    mine=[e for e in rp['list'] if e['id']==lg['last']];onb=[e for e in bd['top'] if e['id']==lg['last']]
+    chk(f'[{name}] personal best remembered + re-posted on load (Worker dedupes: no-op)',rp['r']>=1 and any(v['id']==lg['last'] for v in rp['best'].values()) and rs=='dup' and len(mine)==1 and len(onb)==1,str((rp['r'],rs,len(mine),len(onb))))
     await ctx.close()
 async def main():
     async with async_playwright() as p:

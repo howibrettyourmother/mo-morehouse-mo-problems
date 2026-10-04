@@ -20,7 +20,7 @@ async def main():
             if e['contextId']==W['ctx']: W['nodes']-=1
         cdp.on('WebAudio.contextCreated',oc);cdp.on('WebAudio.audioNodeCreated',nc);cdp.on('WebAudio.audioNodeWillBeDestroyed',nd)
         await cdp.send('WebAudio.enable')
-        await m.goto(BASE+'?debug=1&lbtopic=mmp-lb-test-stress');await m.wait_for_timeout(1000)
+        await m.goto(BASE+'?debug=1&lbboard=test&lbapi=http%3A%2F%2F127.0.0.1%3A8799');await m.wait_for_timeout(1000)
         await m.touchscreen.tap(195,330);await m.wait_for_timeout(5000)   # unlock + let pre-render finish
         await cdp.send('Emulation.setCPUThrottlingRate',{'rate':RATE})
         await m.touchscreen.tap(195,330);await m.wait_for_timeout(3000)

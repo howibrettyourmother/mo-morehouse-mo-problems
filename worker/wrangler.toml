@@ -1,0 +1,11 @@
+name = "morehouse-scores"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+workers_dev = true
+
+[[kv_namespaces]]
+binding = "MMP_SCORES"
+id = "6095592d2b5b4f04a597d621d233a8f9"
+
+[vars]
+ALLOWED_ORIGINS = "https://howibrettyourmother.github.io"

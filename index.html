@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#12061f">
 <meta name="description" content="Play as Joe. 99 problems and still broke. Survive Joe Morehouse's endless rebuild in a 90s-rap arcade shooter. Mo Morehouse, Mo Problems. A SHADYNASTY Production.">
 <meta property="og:type" content="website">
@@ -30,7 +32,9 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0;background:#12061f;height:100%;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;font-family:"Arial Black",Impact,Arial,sans-serif;color:#fff}
 html,body{overscroll-behavior:none;position:fixed;inset:0;width:100%;-webkit-touch-callout:none;-webkit-text-size-adjust:100%}
-#app{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);touch-action:none}
+#app{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;touch-action:none}
+/* SAFE AREA probe: env() is read through this element's padding (layout() turns it into px). --sa-* vars only exist for tests/overrides. */
+#safeProbe{position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;padding:var(--sa-t,env(safe-area-inset-top,0px)) var(--sa-r,env(safe-area-inset-right,0px)) var(--sa-b,env(safe-area-inset-bottom,0px)) var(--sa-l,env(safe-area-inset-left,0px))}
 #wrap{position:relative;line-height:0;flex:none}
 canvas{display:block;touch-action:none;border-radius:6px;box-shadow:0 0 24px rgba(255,200,0,.22)}
 .hudbtn{position:absolute;top:6px;width:36px;height:36px;border-radius:50%;border:2px solid #ffd400;background:rgba(0,0,0,.6);color:#ffd400;font-size:16px;line-height:32px;text-align:center;cursor:pointer;padding:0;font-family:Arial,sans-serif;font-weight:bold;touch-action:manipulation;z-index:4}
@@ -55,6 +59,7 @@ canvas{display:block;touch-action:none;border-radius:6px;box-shadow:0 0 24px rgb
 </style>
 </head>
 <body>
+<div id="safeProbe" aria-hidden="true"></div>
 <div id="app">
   <div id="wrap">
     <canvas id="c" aria-label="Morehouse More Problems game"></canvas>
@@ -513,11 +518,20 @@ const RED='#e3262e',GOLD='#ffd400';
 let lowPower=/[?&]lowpower=1\b/.test(location.search),ftEMA=16,slowAcc=0;
 // ---------- layout ----------
 let bgC=null,scanC=null;
+// iOS home-screen (standalone) mode runs edge-to-edge under the status bar/notch and home indicator. We read the insets via the probe
+// and lay the whole game out inside the safe box: canvas, HUD, top buttons and every hit area move together (input maps via the canvas rect).
+// The strip under the status bar is painted in the HUD bar color. Normal Safari reports 0 insets -> layout is identical to before.
+let SA={t:0,r:0,b:0,l:0};
+function readSafe(){try{const cs=getComputedStyle(document.getElementById('safeProbe'));const f=v=>Math.max(0,Math.round(parseFloat(v)||0));return{t:f(cs.paddingTop),r:f(cs.paddingRight),b:f(cs.paddingBottom),l:f(cs.paddingLeft)}}catch(e){return{t:0,r:0,b:0,l:0}}}
 function layout(){
-  const vw=window.innerWidth,vh=window.innerHeight;
+  SA=readSafe();const app=document.getElementById('app');app.style.padding=SA.t+'px '+SA.r+'px '+SA.b+'px '+SA.l+'px';
+  document.body.style.background=SA.t>0?'linear-gradient(#0a0314 '+SA.t+'px,#12061f '+SA.t+'px)':'';
+  const vw=window.innerWidth-SA.l-SA.r,vh=window.innerHeight-SA.t-SA.b;
   H=Math.round(clamp(W*vh/vw,580,780));
   S=Math.min(vw/W,vh/H);DPR=Math.min(window.devicePixelRatio||1,lowPower?1.5:2);
   cv.width=Math.round(W*S*DPR);cv.height=Math.round(H*S*DPR);cv.style.width=Math.round(W*S)+'px';cv.style.height=Math.round(H*S)+'px';
+  // top buttons scale with the canvas on small screens so they never cover SEASONS LEFT (iPhone 13 and larger: unchanged 36px)
+  {const k=Math.min(1,S),bs=Math.max(28,Math.round(36*k)),g=Math.round(6*k);for(const[id,i]of[['muteBtn',0],['musicBtn',1]]){const el=document.getElementById(id);if(el)el.style.cssText+=`;width:${bs}px;height:${bs}px;line-height:${bs-4}px;top:${g}px;right:${g+i*(bs+g)}px;font-size:${Math.round(16*k)}px`}}
   buildBG();placeButtons();
   if(player){player.y=clamp(player.y,H*0.5,H-60)}
 }
@@ -624,9 +638,9 @@ function resetRun(){shoeys=0;shoeyFx=null;lastShoeyFx=-1e9;score=0;problems=0;li
   boss=null;balloon=null;banner=null;bossesBeat=0;potCount=0;finishers=0;firesales=0;reached=0;finT=0;hits=0;starT=7;savedRank=-1;runId++}
 function go(s){state=s;stateT=0;placeButtons()}
 // ---------- leaderboard ----------
-// ---------- LEAGUE LEADERBOARD: browsers POST to a public ntfy.sh topic; a GitHub Action validates + aggregates into scores/leaderboard.json ----------
-const LB_TOPIC=(DEBUG&&(location.search.match(/[?&]lbtopic=([A-Za-z0-9_-]+)/)||[])[1])||'mmp-league-scores-k7q2v9x4';
-const LB_POST='https://ntfy.sh/'+LB_TOPIC,LB_POLL=LB_POST+'/json?poll=1&since=12h',LB_RAW='https://raw.githubusercontent.com/howibrettyourmother/mo-morehouse-mo-problems/main/scores/leaderboard.json';
+// ---------- LEAGUE LEADERBOARD: Cloudflare Worker (validation, rate limits, one best per device+name) + local fallback ----------
+// LEAGUE LEADERBOARD: a Cloudflare Worker + KV (free tier) at morehouse-scores.brettwilson08.workers.dev. Offline -> local Hall of Shame + pending queue that retries.
+const LB_API=((DEBUG&&(location.search.match(/[?&]lbapi=([^&]+)/)||[])[1])?decodeURIComponent(location.search.match(/[?&]lbapi=([^&]+)/)[1]):'https://morehouse-scores.brettwilson08.workers.dev').replace(/\/$/,''),LB_BOARD=(DEBUG&&(location.search.match(/[?&]lbboard=(main|test)/)||[])[1])||'main',LB_URL=LB_API+'/scores?board='+LB_BOARD;
 const NAME_OK=/^[A-Za-z0-9 .,!?'&_#*$@+-]{1,16}$/,ID_OK=/^[a-z0-9]{8,16}$/;
 function rid(){const c='abcdefghijklmnopqrstuvwxyz0123456789',a=new Uint8Array(12);try{crypto.getRandomValues(a)}catch(e){for(let i=0;i<12;i++)a[i]=(R()*256)|0}let s='';for(const x of a)s+=c[x%36];return s}
 function lsGet(k,d){try{const v=localStorage.getItem(k);return v==null?d:v}catch(e){return d}}function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
@@ -641,17 +655,18 @@ let myIds=new Set();try{myIds=new Set(JSON.parse(lsGet('nw_myids','[]')))}catch(
 function collapseLeague(list){const best=new Set(),seen=new Set(),out=[];for(const e of list.slice().sort((a,b)=>b.s-a.s||(a.ts||0)-(b.ts||0))){const k=e.dev+'|'+e.n.trim().toLowerCase(),ks=e.dev+'|'+e.s;if(best.has(k)||seen.has(ks))continue;best.add(k);seen.add(ks);out.push(e)}return out}
 function mergeLeague(arr){const m=new Map(league.list.map(e=>[e.id,e]));for(const e of arr)if(e&&lbPlausible(e)&&!m.has(e.id))m.set(e.id,e);
   league.list=collapseLeague([...m.values()].filter(e=>!league.blocked.has(e.id)))}
-function fetchLeague(){if(league.loading)return;league.loading=true;let any=false;
-  const raw=fetch(LB_RAW+'?t='+Date.now()).then(r=>r.ok?r.json():Promise.reject(r.status)).then(j=>{if(j&&Array.isArray(j.blocked))j.blocked.forEach(i=>league.blocked.add(i));if(j&&Array.isArray(j.top)){mergeLeague(j.top.map(x=>Object.assign({},x,{v:1})));any=true}});
-  const live=fetch(LB_POLL).then(r=>r.ok?r.text():Promise.reject(r.status)).then(t=>{const a=[];for(const l of t.split('\n')){if(!l)continue;try{const m=JSON.parse(l);if(m.event==='message'){const e=JSON.parse(m.message);e.ts=m.time;a.push(e)}}catch(x){}}mergeLeague(a);any=true});
-  Promise.allSettled([raw,live]).then(()=>{league.list=league.list.filter(e=>!league.blocked.has(e.id));league.ok=league.ok||any;league.loading=false;league.at=Date.now();if(any)flushPending()})}
+function takeBoard(j){if(j&&Array.isArray(j.blocked))j.blocked.forEach(i=>league.blocked.add(i));if(j&&Array.isArray(j.top)){mergeLeague(j.top.map(x=>Object.assign({},x,{v:1})));league.ok=true}}
+function fetchLeague(){if(league.loading)return;league.loading=true;
+  fetch(LB_URL+'&mode=all&limit=200',{cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject(r.status)).then(j=>{league.list=[];takeBoard(j);league.err=0})
+    .catch(()=>{league.err=(league.err||0)+1}).finally(()=>{league.list=league.list.filter(e=>!league.blocked.has(e.id));league.loading=false;league.at=Date.now();if(league.ok)flushPending()})}
 function pendingList(){try{const a=JSON.parse(lsGet('nw_pending','[]'));return Array.isArray(a)?a:[]}catch(e){return[]}}
 function setPending(a){lsSet('nw_pending',JSON.stringify(a.slice(-10)))}
 function postEntry(e,quiet){const body=JSON.stringify({v:1,id:e.id,n:e.n,s:e.s,t:e.t,m:e.m,p:e.p,d:e.d,b:e.b,dev:e.dev});
-  return fetch(LB_POST,{method:'POST',body}).then(r=>{if(!r.ok)throw r.status;league.sent=(league.sent||0)+1;setPending(pendingList().filter(x=>x.id!==e.id));if(!quiet)league.note='POSTED TO THE LEAGUE'}).catch(()=>{const a=pendingList();if(!a.some(x=>x.id===e.id))a.push(e);setPending(a);if(!quiet)league.note='OFFLINE: WILL POST WHEN BACK ONLINE'})}
+  return fetch(LB_URL,{method:'POST',body,headers:{'Content-Type':'application/json'}}).then(r=>r.json().catch(()=>({})).then(j=>{if(r.status===422||r.status===403){setPending(pendingList().filter(x=>x.id!==e.id));league.lastReason=j.error||r.status;return}
+      if(!r.ok)throw r.status;league.lastReason=j.reason;if(Array.isArray(j.top))mergeLeague(j.top.map(x=>Object.assign({},x,{v:1})));league.sent=(league.sent||0)+1;setPending(pendingList().filter(x=>x.id!==e.id));if(!quiet)league.note='POSTED TO THE LEAGUE'})).catch(()=>{const a=pendingList();if(!a.some(x=>x.id===e.id))a.push(e);setPending(a);if(!quiet)league.note='OFFLINE: WILL POST WHEN BACK ONLINE'})}
 let flushing=false;function flushPending(){if(flushing)return;const a=pendingList();if(!a.length)return;flushing=true;Promise.allSettled(a.map(postEntry)).then(()=>{flushing=false})}
 // BELT + SUSPENDERS: this device remembers its personal best per name and re-posts it (same id, so it dedupes) on load and on every submit.
-// Even if the GitHub merge lags past ntfy's 12h retention, a device's best is never lost from the board.
+// The Worker treats an already-listed score as a no-op (zero KV writes), so this is cheap and self-heals any lost write.
 function bestMap(){try{const o=JSON.parse(lsGet('nw_best','{}'));return o&&typeof o==='object'?o:{}}catch(e){return{}}}
 function rememberBest(e){const b=bestMap(),k=e.n.trim().toLowerCase();if(!b[k]||e.s>b[k].s){b[k]={v:1,id:e.id,n:e.n,s:e.s,t:e.t,m:e.m,p:e.p,d:e.d,b:e.b,dev:e.dev};
   const keep=Object.values(b).sort((x,y)=>y.s-x.s).slice(0,3),o={};for(const x of keep)o[x.n.trim().toLowerCase()]=x;lsSet('nw_best',JSON.stringify(o))}}
@@ -674,7 +689,6 @@ function airhorn(){const n=performance.now();if(n-lastAir<380)return;lastAir=n;A
 const CONF=['#ffd400','#ff2fa8','#36e0ff','#7dff4a','#ff6a00','#fff','#e3262e'];
 function burst(x,y,n,tp){if(lowPower){n=Math.ceil(n*0.35);tp=Math.ceil((tp||0)*0.4)}else if(parts.length>380){n=Math.ceil(n*0.6)}for(let i=0;i<n;i++){const a=R()*6.283,v=rnd(60,260);parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-80,rot:R()*6,vr:rnd(-10,10),c:pick(CONF),w:rnd(3,6),h:rnd(5,9),life:rnd(0.9,1.6),tp:0})}
   for(let i=0;i<(tp||0);i++){const a=-Math.PI/2+rnd(-1.3,1.3),v=rnd(120,300);parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,rot:R()*6,vr:rnd(-4,4),c:'#f7f5ee',w:7,h:rnd(30,60),life:rnd(1.4,2.2),tp:1,ph:R()*6})}}
-function snot(x,y){if(lowPower&&R()<0.6)return;parts.push({x,y,vx:rnd(-20,20),vy:rnd(20,60),rot:0,vr:0,c:'#9be35a',w:4,h:6,life:rnd(1.2,2),tp:2})}
 function pop(x,y,t,c,sz){pops.push({x,y,t,c:c||'#fff',sz:sz||16,life:1.1})}
 // ---------- waves ----------
 function startTrack(i){trackI=i;trackT=0;mini=null;miniDone=0;reached=Math.max(reached,loop*5+i+1);trackCleared=false;const tr=TRACKS[i];enemies=[];eshots=[];formX=0;formY=0;formDir=1;diveT=2.8;
@@ -910,7 +924,6 @@ function drawJoe(x,y,sc,t,glow,sad){ctx.save();ctx.translate(x,y);ctx.scale(sc,s
   ctx.beginPath();ctx.arc(0,2,5,Math.PI*1.15,Math.PI*1.85);ctx.stroke();
   // tears (more when sad)
   const tl=4+((t*3)%1)*6+(sad?8:0);ctx.fillStyle='rgba(90,180,255,.9)';ctx.fillRect(-6.5,-5,2.4,tl);ctx.fillRect(4.2,-5,2.4,tl);
-  ctx.fillStyle='rgba(155,227,90,.9)';ctx.beginPath();ctx.ellipse(0,-2+((t*2)%1)*3,1.6,2.4,0,0,7);ctx.fill();
   ctx.restore()}
 function enemyFrame(e,draw){const d=e.d,w=d.w,h=d.h;ctx.save();ctx.translate(e.x,e.y);if(e.mode==='dive')ctx.rotate(Math.sin(e.t*8)*0.15);
   if(!lowPower){ctx.shadowColor='rgba(227,38,46,.8)';ctx.shadowBlur=8}rr4(-w/2,-h/2,w,h,6);ctx.fillStyle=e.fl>0?'#fff':'#3a0608';ctx.fill();ctx.shadowBlur=0;ctx.lineWidth=2.5;ctx.strokeStyle=RED;ctx.stroke();
@@ -1113,9 +1126,6 @@ function drawSobJoe(x,y,sc,t){ctx.save();ctx.translate(x,y);ctx.scale(sc,sc);
   // tear rivers + fountains
   ctx.fillStyle='rgba(90,180,255,.9)';ctx.fillRect(-15,hy+2,4,26+heave*6);ctx.fillRect(11,hy+2,4,26+heave*6);
   for(const sd of[-1,1])for(let i=0;i<10;i++){const u=(t*1.9+i/10)%1,px=sd*(16+u*82),py=hy-3-u*50+u*u*128,r=(1-u*0.5)*3.6;ctx.fillStyle='rgba(110,195,255,'+(1-u*0.6)+')';ctx.beginPath();ctx.ellipse(px,py,r,r*1.3,0,0,7);ctx.fill()}
-  // snot bubble + drip
-  const bub=3+(Math.sin(t*2.6)+1)*4.5;ctx.fillStyle='rgba(155,227,90,.75)';ctx.beginPath();ctx.arc(5+bub*0.6,hy+5,bub,0,7);ctx.fill();ctx.fillStyle='rgba(255,255,255,.7)';ctx.beginPath();ctx.arc(3+bub*0.6,hy+3,bub*0.3,0,7);ctx.fill();
-  ctx.strokeStyle='rgba(155,227,90,.9)';ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(-3,hy+7);ctx.lineTo(-3,hy+12+((t*18)%26));ctx.stroke();
   if((t*1.2)%1<0.62){ctx.save();ctx.translate(-62+sob*2,hy-30);ctx.rotate(-0.2);txt('WAAAAH!',0,0,15,'#9fd8ff',null,'#123a9a');ctx.restore()}
   ctx.restore();ctx.restore()}
 let endBoardY=9999;
@@ -1239,11 +1249,11 @@ if(DEBUG){window.__NW={get state(){return state},get score(){return score},get p
   get player(){return{x:player.x,y:player.y,inv:player.inv,spreadT:player.spreadT,rapidT:player.rapidT,shieldT:player.shieldT,shoeyT:player.shoeyT}},get shoeys(){return shoeys},get hsInfo(){const el=document.getElementById('hsInfo');return el?el.innerText:''},get hsPanelRect(){const r=hsPanel.getBoundingClientRect();return{top:r.top,bottom:r.bottom,h:innerHeight}},get lbReposts(){return league.reposts||0},get lbSent(){return league.sent||0},get lbList(){return league.list.map(e=>({id:e.id,n:e.n,s:e.s,dev:e.dev}))},get shoeyFx(){return shoeyFx&&shoeyFx.t},shoeyGo(){shoeyPenalty()},noPow(){player.shoeyT=0;player.spreadT=0;player.rapidT=0},get balls(){return balls.length},get boss(){return boss&&{hp:boss.hp,max:boss.max,dead:boss.dead,x:boss.x,y:boss.y}},
   get balloon(){return balloon&&{hp:balloon.hp,x:balloon.x}},get potCount(){return potCount},get finishers(){return finishers},get parts(){return parts.length},get tp(){return parts.filter(q=>q.tp===1).length},
   enemies:()=>enemies.map(e=>({k:e.k,x:e.x,y:e.y,hp:e.hp,mode:e.mode,enter:e.enter})),
-  clientOf(x,y){const r=cv.getBoundingClientRect();return{x:r.left+x/W*r.width,y:r.top+y/H*r.height}},
+  get safe(){return Object.assign({},SA)},get H(){return H},startGame(){startGame()},relayout(){layout()},canvasRect(){const r=cv.getBoundingClientRect();return{x:r.left,y:r.top,w:r.width,h:r.height}},btnRect(id){const r=document.getElementById(id).getBoundingClientRect();return{x:r.left,y:r.top,w:r.width,h:r.height}},clientOf(x,y){const r=cv.getBoundingClientRect();return{x:r.left+x/W*r.width,y:r.top+y/H*r.height}},
   spawn(k,x,y){const e=mkEnemy(k,x,y);e.x=x;e.y=y;enemies.push(e);return enemies.length},clearAll(){enemies=[];eshots=[];stars=[];balloon=null},hold(){trackCleared=true;starT=1e9;diveT=1e9},
   star(type,x,y){spawnStar(type,x,y)},shot(k,x,y){eshots.push({x,y,vx:0,vy:120,k,r:0})},bossGo(){enemies=[];trackI=4;spawnBoss();boss.y=boss.ty},setBossHp(v){boss.hp=v},balloonGo(x){spawnBalloon();balloon.x=x||W/2},
   track(i){startTrack(i)},end(){endGame('FINAL WHISTLE')},fin(){fireSale()},get firesales(){return firesales},get finMode(){return finMode},noInv(){player.inv=0;player.shieldT=0},get bossPhase(){return boss&&boss.phase},get bossTaunt(){return boss&&boss.taunt},get rain(){return rainN},get waahN(){return waahN},get caption(){return caption&&caption.t},get amb(){return !!amb},waah(){lastWaah=-1e9;waahmbulance()},movePlayer(x,y){player.x=x;player.y=y},freezeEnemies(){for(const e of enemies){e.enter=0;e.mode='frozen'}},
-  get league(){return{ok:league.ok,n:league.list.length,top:league.list.slice(0,5),last:lastLeagueId,rank:leagueRank(lastLeagueId),note:league.note,sent:league.sent||0,topic:LB_TOPIC}},fetchLeague,get boardOpen(){return boardOpen},openBoard,closeBoard,
+  get league(){return{ok:league.ok,n:league.list.length,top:league.list.slice(0,5),last:lastLeagueId,rank:leagueRank(lastLeagueId),note:league.note,sent:league.sent||0,api:LB_API,board:LB_BOARD,reason:league.lastReason||''}},fetchLeague,get boardOpen(){return boardOpen},openBoard,closeBoard,
   get mode(){return mode},setMode(m){mode=m;lsSet('nw_mode',m);modeLabel()},miniGo(){spawnMini();mini.y=mini.ty},setMiniHp(v){if(mini)mini.hp=v},get mini(){return mini&&{hp:mini.hp,max:mini.max,x:mini.x,y:mini.y,clock:mini.clock}},get miniBeat(){return miniBeat},pukaGo(){spawnPuka();puka.x=W/2},get puka(){return puka&&{x:puka.x,y:puka.y}},get gT(){return gT},get lowPower(){return lowPower},get ftEMA(){return ftEMA},get partsN(){return parts.length},set gT(v){gT=v},set score(v){score=v},set reached(v){reached=v},plausible:lbPlausible};
   console.log('debug mode')}
 </script>
