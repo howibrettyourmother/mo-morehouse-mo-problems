@@ -31,6 +31,18 @@ async def run(p,b,name,dev,touch,shots):
     chk(f'[{name}] first tap unlocks audio, stays on title',a['u'] and a['run'] and a['st']=='title',str(a))
     chk(f'[{name}] voice clips lazy-loaded + decoded',a['clips']>=240,str(a["clips"]))
     chk(f'[{name}] title shows MODE + LEAGUE LEADERBOARD buttons',await m.is_visible('#modeBtn') and await m.is_visible('#boardBtn') and 'LEAGUE LEADERBOARD' in await m.text_content('#boardBtn'))
+    bx=await m.evaluate("['modeBtn','boardBtn','tankBtn'].map(i=>{const q=document.getElementById(i).getBoundingClientRect();return[q.x,q.y,q.width,q.height]})")
+    chk(f'[{name}] title: TANK WATCH button beside MODE + LEADERBOARD (44px+ tall, no overlap, inside the canvas)',all(b[3]>=44 for b in bx) and bx[0][0]+bx[0][2]<=bx[1][0]+0.5 and bx[1][0]+bx[1][2]<=bx[2][0]+0.5 and bx[0][0]>=r[0]-0.5 and bx[2][0]+bx[2][2]<=r[0]+r[2]+0.5 and max(b[1]+b[3] for b in bx)<=r[1]+r[3]+0.5,str(bx)+' canvas '+str(r))
+    chk(f'[{name}] TANK WATCH label',await m.is_visible('#tankBtn') and 'TANK WATCH' in await m.text_content('#tankBtn'))
+    await m.evaluate('window.__NW_noNav=true')
+    await (m.tap('#tankBtn') if touch else m.click('#tankBtn'));await m.wait_for_timeout(150)
+    chk(f'[{name}] TANK WATCH tap opens the tank page (nav stubbed), not a game start',await m.evaluate('window.__NW_tankNav')=='title' and await m.evaluate('__NW.state')=='title')
+    for i in range(40):
+        tz=await m.text_content('#tankTease')
+        if tz: break
+        await m.wait_for_timeout(200)
+    import re as _re
+    chk(f'[{name}] live tank teaser (Sleeper rosters; silent if offline)',(not tz) or bool(_re.fullmatch(r'JOE: (<1|\d{1,2})% FOR 1\.01',tz)),repr(tz))
     await (m.tap('#modeBtn') if touch else m.click('#modeBtn'));chk(f'[{name}] difficulty toggle -> rookie',await m.evaluate('__NW.mode')=='rookie')
     await (m.tap('#boardBtn') if touch else m.click('#boardBtn'));await m.wait_for_timeout(1500);chk(f'[{name}] league board opens',await m.evaluate('__NW.boardOpen') and await m.evaluate('__NW.league.ok'),str(await m.evaluate('__NW.league')))
     await tap(cx,cy);await m.wait_for_timeout(300);chk(f'[{name}] board closes on tap (stays on title)',not await m.evaluate('__NW.boardOpen') and await m.evaluate('__NW.state')=='title')
@@ -105,9 +117,10 @@ async def run(p,b,name,dev,touch,shots):
     await m.evaluate('__NW.noInv();__NW.star("purse",__NW.player.x,__NW.player.y-6)');await m.wait_for_timeout(700)
     pr=await m.evaluate('({p:__NW.player,lips:__NW.lips})')
     if shots: await m.screenshot(path=OUT+'screenshot-purse.png')
-    for i in range(25):
+    for i in range(60):   # the purse line can queue behind the shoey line; re-grab the purse once if it got dropped
         st=await m.evaluate('__NW.audio.stats()')
         if any(v for k,v in st.items() if isinstance(v,int) and v and k.startswith('prs')): break
+        if i==30: await m.evaluate('__NW.star("purse",__NW.player.x,__NW.player.y-6)')
         await m.wait_for_timeout(200)
     chk(f"[{name}] CALEB'S MAN PURSE: ~8s lipstick spread (5-way) + purse voice line",pr['p']['purseT']>6.5 and pr['lips']>=5 and any(v for k,v in st.items() if isinstance(v,int) and v and k.startswith('prs')),str((pr,[k for k in st if k.startswith('prs')])))
     await m.evaluate('__NW.noPow()')
@@ -197,6 +210,12 @@ async def run(p,b,name,dev,touch,shots):
     lb=await m.evaluate('__NW.lb()');chk(f'[{name}] local Hall of Shame saved with full name',len(lb)>=1 and any(e['i']=='Joe Morehouse 99' for e in lb),str(lb[:2]))
     chk(f'[{name}] last name remembered',await m.evaluate('localStorage.getItem("nw_name")')=='Joe Morehouse 99')
     lab=await m.text_content('#shareBtn');chk(f'[{name}] share button label','SCORE CARD' in lab,lab)
+    eb=await m.evaluate("['tankEndBtn','shareBtn','againBtn'].map(i=>{const q=document.getElementById(i).getBoundingClientRect();return[q.x,q.y,q.width,q.height,getComputedStyle(document.getElementById(i)).display]})")
+    chk(f'[{name}] end screen: SEE JOE\'S TANK button above share/again (44px+, no overlap)',eb[0][4]=='block' and eb[0][3]>=44 and eb[0][1]+eb[0][3]<=min(eb[1][1],eb[2][1])+0.5,str(eb))
+    await m.evaluate('window.__NW_noNav=true;window.__NW_tankNav=null')
+    await (m.tap('#tankEndBtn') if touch else m.click('#tankEndBtn'));await m.wait_for_timeout(150)
+    chk(f'[{name}] SEE JOE\'S TANK tap opens the tank page (nav stubbed)',await m.evaluate('window.__NW_tankNav')=='end' and await m.evaluate('__NW.state')=='end')
+
     for i in range(20):
         cd=await m.evaluate('__NW.card')
         if cd['ready'] and 'Joe Morehouse 99'.upper() in cd['key']: break

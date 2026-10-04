@@ -56,6 +56,10 @@ canvas{display:block;touch-action:none;border-radius:6px;box-shadow:0 0 24px rgb
 #hsSkip{background:#333;font-size:.9em}
 .tbtn{min-height:34px;padding:4px 6px;border-radius:12px;border:2px solid #ffd400;color:#fff;font-size:clamp(9px,2.7vw,12px);background:rgba(0,0,0,.72);box-shadow:0 3px 0 rgba(0,0,0,.5)}
 #boardBtn{border-color:#36e0ff}
+#modeBtn,#boardBtn,#tankBtn{min-height:44px}
+#tankBtn{border-color:#ff3b3b;background:rgba(60,0,6,.82);padding:3px 4px}
+#tankBtn .tl{display:block}#tankBtn .tt{display:block;font-size:.78em;color:#ffd400;margin-top:1px;min-height:1em}#tankBtn .tt:empty{display:none}
+#tankEndBtn{min-height:44px;border-color:#ff3b3b;background:rgba(60,0,6,.88);font-size:clamp(11px,3.3vw,15px)}
 </style>
 </head>
 <body>
@@ -69,6 +73,8 @@ canvas{display:block;touch-action:none;border-radius:6px;box-shadow:0 0 24px rgb
     <button class="ovl bigbtn" id="againBtn" aria-label="Play again">&#127944; RUN IT BACK</button>
     <button class="ovl tbtn" id="modeBtn" aria-label="Toggle difficulty">MODE</button>
     <button class="ovl tbtn" id="boardBtn" aria-label="Open the league leaderboard">LEAGUE LEADERBOARD</button>
+    <button class="ovl tbtn" id="tankBtn" aria-label="Open Tank Watch: the live race for the 1.01 rookie pick"><span class="tl">&#128701; TANK WATCH</span><span class="tt" id="tankTease"></span></button>
+    <button class="ovl tbtn" id="tankEndBtn" aria-label="See Joe's tank: the live race for the 1.01 rookie pick">&#128701; SEE JOE&rsquo;S TANK &rarr;</button>
     <div class="ovl" id="hsPanel" role="dialog" aria-label="Submit score"><div id="hsInfo" aria-live="polite"></div>POST IT TO THE LEAGUE LEADERBOARD
       <small>YOUR NAME (UP TO 16) &bull; SO THE LEAGUE KNOWS WHO GOT SHIT ON</small>
       <input id="hsIn" maxlength="16" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" placeholder="YOUR NAME" aria-label="Your name"><br><button id="hsOk">POST IT</button><button id="hsSkip">SKIP</button>
@@ -1172,7 +1178,7 @@ function drawEnd(){const t=vhsT;ctx.drawImage(bgC,0,0,W,H);ctx.fillStyle='rgba(1
   fit('CALEB FLUSHED x'+potCount+'  \u2022  FIRE SALES x'+firesales+(miniBeat?'  \u2022  DEADLINE SWATTED':'')+(bossesBeat?'  \u2022  WEASEL BEATEN x'+bossesBeat+' (STILL THE BEST)':'')+'  \u2022  DYNASTY VALUE $'+v1.toLocaleString('en-US',{maximumFractionDigits:2}),W/2,y,9,W-20,'#7dff4a','#000');y+=13;
   fit(endReason+'  \u2022  \u201C'+roast+'\u201D',W/2,y,9,W-20,'#36e0ff','#000');y+=19;
   // LEAGUE LEADERBOARD (local Hall of Shame when offline)
-  endBoardY=y;const bot=H-70,online=league.ok&&league.week.length>0,list=online?league.week:lbLoad().map(e=>({n:e.i,s:e.s,t:e.t||0,m:e.m||'y5',id:e.id}));
+  endBoardY=y;const bot=H-66-Math.ceil(52/S),online=league.ok&&league.week.length>0,list=online?league.week:lbLoad().map(e=>({n:e.i,s:e.s,t:e.t||0,m:e.m||'y5',id:e.id}));
   txt(online?'THIS WEEK\'S LEAGUE LEADERBOARD':(league.ok?'THIS WEEK: NO SCORES YET \u2022 YOUR LOCAL BOARD':'YOUR LOCAL BOARD (OFFLINE)'),W/2,y,11,online?GOLD:RED,'center','#000');y+=14;
   const myRank=online?leagueRank(lastLeagueId,'week'):0;const lh=13.5,fit2=Math.max(1,Math.floor((bot-y-14)/lh));let rows=Math.min(5,fit2);const showMine=myRank>rows&&rows>1;if(showMine)rows--;
   for(let i=0;i<rows;i++){const e=list[i];boardRow(e,i,34,W-34,y+i*lh,10,e&&((online&&e.id===lastLeagueId)||(!online&&i===savedRank)),e&&myIds.has(e.id))}
@@ -1234,14 +1240,15 @@ function draw(){
   drawVHS();if(state==='play'&&TRACKS[trackI].boss)vhsOSD(8,H-90,'BEST TEAM CAM')
 }
 // ---------- overlays ----------
-const modeBtn=document.getElementById('modeBtn'),boardBtn=document.getElementById('boardBtn'),shareBtn=document.getElementById('shareBtn'),againBtn=document.getElementById('againBtn'),hsPanel=document.getElementById('hsPanel'),hsIn=document.getElementById('hsIn');
+const tankBtn=document.getElementById('tankBtn'),tankEndBtn=document.getElementById('tankEndBtn'),tankTease=document.getElementById('tankTease'),modeBtn=document.getElementById('modeBtn'),boardBtn=document.getElementById('boardBtn'),shareBtn=document.getElementById('shareBtn'),againBtn=document.getElementById('againBtn'),hsPanel=document.getElementById('hsPanel'),hsIn=document.getElementById('hsIn');
 function placeButtons(){const ch0=Math.min(250,H*0.33),by=Math.min(H-34-44,172+ch0+26+68+62),ty=(by+30)*S;
-  modeBtn.style.cssText+=`;left:${10*S}px;top:${ty}px;width:${178*S}px`;boardBtn.style.cssText+=`;left:${194*S}px;top:${ty}px;width:${156*S}px`;
+  modeBtn.style.cssText+=`;left:${10*S}px;top:${ty}px;width:${110*S}px`;boardBtn.style.cssText+=`;left:${125*S}px;top:${ty}px;width:${110*S}px`;tankBtn.style.cssText+=`;left:${240*S}px;top:${ty}px;width:${110*S}px`;
+  tankEndBtn.style.cssText+=`;left:${10*S}px;top:${(H-62)*S-50}px;width:${340*S}px`;
   const y=(H-62)*S;shareBtn.style.cssText+=`;left:${10*S}px;top:${y}px;width:${214*S}px`;againBtn.style.cssText+=`;left:${232*S}px;top:${y}px;width:${118*S}px`}
 let ovlOn=null,tOn=null;
-function modeLabel(){modeBtn.textContent=rook()?'\u{1F476} MODE: ROOKIE':'\u{1F4A9} MODE: YEAR 5 (HARD)'}
-function updateOverlays(){const ts=state==='title'&&!boardOpen;if(ts!==tOn){tOn=ts;modeBtn.style.display=boardBtn.style.display=ts?'block':'none';if(ts)modeLabel()}
-  const show=state==='end'&&stateT>1.2&&!hsEntering&&!boardOpen;if(show!==ovlOn){ovlOn=show;shareBtn.style.display=againBtn.style.display=show?'block':'none';if(show)shareLabel()}}
+function modeLabel(){modeBtn.textContent=rook()?'\u{1F476} MODE: ROOKIE':'\u{1F4A9} MODE: YEAR 5'}
+function updateOverlays(){const ts=state==='title'&&!boardOpen;if(ts!==tOn){tOn=ts;modeBtn.style.display=boardBtn.style.display=tankBtn.style.display=ts?'block':'none';if(ts){modeLabel();tankTeaser()}}
+  const show=state==='end'&&stateT>1.2&&!hsEntering&&!boardOpen;if(show!==ovlOn){ovlOn=show;shareBtn.style.display=againBtn.style.display=tankEndBtn.style.display=show?'block':'none';if(show)shareLabel()}}
 function shareLabel(t){shareBtn.textContent=t||('\u{1F4F8} SHARE MY SCORE CARD')}
 const SHARE_URL=location.protocol==='https:'?location.origin+location.pathname:'https://howibrettyourmother.github.io/mo-morehouse-mo-problems/';
 function shareText(){return 'I gave Morehouse '+problems+' more problems ('+score.toLocaleString('en-US')+' pts, survived '+Math.max(0,reached-1)+' tracks as Joe'+(comboBest>=10?', x'+comboBest+' shit combo':'')+(rook()?', rookie mode':'')+') in MOREHOUSE MORE PROBLEMS. Mo Morehouse, mo problems. 99 problems and still broke. Joe owes '+shoeys+' shoey'+(shoeys===1?'':'s')+'. Wilson Weasels: still the best team in the league. Your turn:'}
@@ -1280,7 +1287,30 @@ shareBtn.addEventListener('click',e=>{e.stopPropagation();AUD.unlock();const tex
 againBtn.addEventListener('click',e=>{e.stopPropagation();AUD.unlock();if(state==='end')startGame()});
 modeBtn.addEventListener('click',e=>{e.stopPropagation();AUD.unlock();mode=rook()?'y5':'rookie';lsSet('nw_mode',mode);modeLabel();AUD.SFX.scratch();showBanner(rook()?'ROOKIE MODE: 5 SEASONS, SLOWER SHIT':'YEAR 5 OF THE REBUILD: THE REAL DEAL',rook()?'#36e0ff':RED)});
 boardBtn.addEventListener('click',e=>{e.stopPropagation();AUD.unlock();openBoard()});
-[modeBtn,boardBtn].forEach(b=>['pointerdown','touchstart'].forEach(ev=>b.addEventListener(ev,e=>e.stopPropagation())));
+// TANK WATCH: separate live page (same tab, so iOS home-screen mode never strands you; that page has a BACK TO THE GAME button)
+const TANK_URL=(DEBUG&&new URLSearchParams(location.search).get('tank'))||'https://howibrettyourmother.github.io/tank-for-jeremiah-smith/';
+function openTank(src){try{AUD.SFX.scratch()}catch(e){}window.__NW_tankNav=src;if(window.__NW_noNav)return;
+  location.href=TANK_URL+'?from=game&back='+encodeURIComponent(location.origin+location.pathname)}
+tankBtn.addEventListener('click',e=>{e.stopPropagation();openTank('title')});
+tankEndBtn.addEventListener('click',e=>{e.stopPropagation();openTank('end')});
+// tiny live teaser: Sleeper league + rosters only (two small public GETs), quick sim of the rest of the regular season. Fails silently.
+let teaseAt=0;
+function tankTeaser(){if(Date.now()-teaseAt<300000)return;teaseAt=Date.now();
+  const API='https://api.sleeper.app/v1/league/1312055708249767936',JOE='679000405232934912',ctl=typeof AbortController!=='undefined'?new AbortController():null;
+  if(ctl)setTimeout(()=>ctl.abort(),6000);
+  const g=u=>fetch(u,ctl?{signal:ctl.signal}:{}).then(r=>r.ok?r.json():Promise.reject(r.status));
+  Promise.all([g(API),g(API+'/rosters')]).then(([lg,ro])=>{
+    const st=lg.settings||{},pt=+st.playoff_teams||6,last=+st.last_scored_leg||0,left=Math.max(0,(+st.playoff_week_start||15)-1-last);
+    const T=ro.map(r=>{const s=r.settings||{},mx=(+s.ppts||0)+(+s.ppts_decimal||0)/100,pf=(+s.fpts||0)+(+s.fpts_decimal||0)/100;return{joe:r.owner_id===JOE,w:+s.wins||0,mx,pf,mu:mx/Math.max(1,last),eff:mx>0?Math.min(1,pf/mx):.85}});
+    const ji=T.findIndex(t=>t.joe);if(ji<0||!last)return;
+    const N=left?800:1;let hit=0;const n=T.length,W=new Float64Array(n),PF=new Float64Array(n),MX=new Float64Array(n),ix=[...Array(n).keys()];
+    const rn=()=>{let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(6.2832*v)};
+    for(let k=0;k<N;k++){for(let i=0;i<n;i++){W[i]=T[i].w;PF[i]=T[i].pf;MX[i]=T[i].mx}
+      for(let w=0;w<left;w++){const a=new Float64Array(n);for(let i=0;i<n;i++){const m=Math.max(40,T[i].mu*(1+0.2*rn()));MX[i]+=m;a[i]=m*T[i].eff;PF[i]+=a[i]}
+        const o=ix.slice().sort(()=>Math.random()-.5);for(let i=0;i+1<o.length;i+=2){W[a[o[i]]>a[o[i+1]]?o[i]:o[i+1]]++}}
+      const po=new Set(ix.slice().sort((x,y)=>W[y]-W[x]||PF[y]-PF[x]).slice(0,pt));let lo=-1;for(const i of ix)if(!po.has(i)&&(lo<0||MX[i]<MX[lo]))lo=i;if(lo===ji)hit++}
+    const p=hit/N;tankTease.textContent='JOE: '+(p>=.995?'99':p<.01&&p>0?'<1':Math.round(p*100))+'% FOR 1.01';window.__NW_tease=tankTease.textContent}).catch(()=>{})}
+[modeBtn,boardBtn,tankBtn,tankEndBtn].forEach(b=>['pointerdown','touchstart'].forEach(ev=>b.addEventListener(ev,e=>e.stopPropagation())));
 function wouldRank(){const online=league.ok;const list=online?league.list:lbLoad().map(e=>({s:e.s}));return{online,r:list.filter(e=>e.s>score).length+1,wr:(league.week||[]).filter(e=>e.s>score).length+1}}
 function fillHSInfo(){const el=document.getElementById('hsInfo');if(!el)return;const w=wouldRank(),pb=score>prevHi&&prevHi>0,first=prevHi<=0;
   el.innerHTML='<b>YOUR SCORE: '+score.toLocaleString('en-US')+'</b><span>TRACKS SURVIVED '+Math.max(0,reached-1)+' \u2022 '+(rook()?'ROOKIE':'YEAR 5')+' MODE</span>'+

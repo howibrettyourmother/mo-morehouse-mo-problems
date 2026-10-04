@@ -10,6 +10,7 @@ You are Joe Morehouse, a sad cartoon GM in Year 4 of the rebuild ("Rebuilding Mo
 - Tracks: Year 4 of the Rebuild / Mo Picks Mo Problems / Mo Busts Mo Problems / Survive the Trade Deadline / The Weasel Dynasty.
 - Original procedural boom-bap chiptune (WebAudio). No samples, no real lyrics.
 
+- **TANK WATCH**: title-screen button (with a live `JOE: xx% FOR 1.01` teaser from Sleeper league + rosters, silent if offline) and a `SEE JOE'S TANK →` button on the end screen open the [Tank for Jeremiah Smith](https://howibrettyourmother.github.io/tank-for-jeremiah-smith/) page in the same tab; its pinned BACK TO THE GAME button returns (works in iOS home-screen mode). `src/nav_test.py` checks the round trip.
 - **League Leaderboard** (weekly + all-time + Hall of Shame, top 25, names up to 16 chars, score, tracks survived, mode tag) on the title and end screens; your run is highlighted with your rank. Local Hall of Shame is kept as the offline fallback.
 - **Modes:** Rookie (5 seasons, slower problems) or Year 5 of the Rebuild (the real deal). Tap to skip the intro.
 - **Mini-boss: THE TRADE DEADLINE**, a fax machine spitting DECLINED trade offers. Plus the ghost of **PUKA NACUA (DROPPED)**, floating past forever out of reach.
