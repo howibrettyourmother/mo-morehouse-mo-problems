@@ -1,3 +1,4 @@
+import re
 import asyncio,sys,json
 from playwright.async_api import async_playwright
 BASE=sys.argv[1] if len(sys.argv)>1 else 'http://127.0.0.1:18734/index.html'
@@ -25,7 +26,7 @@ async def run(p,b,name,dev,touch,shots):
     await tap(cx,cy);await m.wait_for_timeout(1500)
     a=await m.evaluate('({u:__NW.audio.unlocked,run:__NW.audio.running,clips:__NW.audio.clipCount,st:__NW.state,theme:__NW.audio.theme})')
     chk(f'[{name}] first tap unlocks audio, stays on title',a['u'] and a['run'] and a['st']=='title',str(a))
-    chk(f'[{name}] voice clips lazy-loaded + decoded',a['clips']>=105,str(a["clips"]))
+    chk(f'[{name}] voice clips lazy-loaded + decoded',a['clips']>=240,str(a["clips"]))
     chk(f'[{name}] title shows MODE + LEAGUE LEADERBOARD buttons',await m.is_visible('#modeBtn') and await m.is_visible('#boardBtn') and 'LEAGUE LEADERBOARD' in await m.text_content('#boardBtn'))
     await (m.tap('#modeBtn') if touch else m.click('#modeBtn'));chk(f'[{name}] difficulty toggle -> rookie',await m.evaluate('__NW.mode')=='rookie')
     await (m.tap('#boardBtn') if touch else m.click('#boardBtn'));await m.wait_for_timeout(1500);chk(f'[{name}] league board opens',await m.evaluate('__NW.boardOpen') and await m.evaluate('__NW.league.ok'),str(await m.evaluate('__NW.league')))
@@ -64,9 +65,35 @@ async def run(p,b,name,dev,touch,shots):
     chk(f'[{name}] voice lines playing',s['st'].get('n',0)>=1,json.dumps(s['st']))
     for i in range(30):
         st=await m.evaluate('__NW.audio.stats()')
-        if any(st.get(k,0) for k in ['a_potty','caleb8','nails1','nails2','caleb1','caleb2','caleb3','caleb4','caleb5','caleb6','caleb7']): break
+        if any(v for k,v in st.items() if isinstance(v,int) and v and k.startswith(('a_potty','cal','nl','nails'))): break
         await m.wait_for_timeout(200)
-    chk(f'[{name}] Caleb kill -> potty/Caleb voice',any(st.get(k,0) for k in ['a_potty','caleb8','nails1','nails2','caleb1','caleb2','caleb3','caleb4','caleb5','caleb6','caleb7']),json.dumps(st))
+    chk(f'[{name}] Caleb kill -> potty/Caleb voice',any(v for k,v in st.items() if isinstance(v,int) and v and k.startswith(('a_potty','cal','nl','nails'))),json.dumps(st))
+    # SHOEYS: penalty on life lost + rare LIQUID COURAGE SHOEY power-up
+    await m.evaluate('__NW.lives=4;__NW.noInv()');sh0=await m.evaluate('__NW.shoeys')
+    for i in range(15):
+        await m.evaluate('__NW.noInv();__NW.shot("int",__NW.player.x,__NW.player.y-30)');await m.wait_for_timeout(250)
+        sh=await m.evaluate('({s:__NW.shoeys,l:__NW.lives})')
+        if sh['l']<4: break;chk(f'[{name}] losing a life adds a shoey owed',sh['s']==sh0+1 and sh['l']==3,str(sh))
+    await m.evaluate('__NW.shoeyGo()');await m.wait_for_timeout(500)
+    if shots: await m.screenshot(path=OUT+'screenshot-shoey.png')
+    await m.wait_for_timeout(1300)
+    if shots: await m.screenshot(path=OUT+'screenshot-shoey-chug.png')
+    fx=await m.evaluate('__NW.shoeyFx')
+    for i in range(20):
+        st=await m.evaluate('__NW.audio.stats()')
+        if any(v for k,v in st.items() if isinstance(v,int) and v and k.startswith(('sho','shoey'))): break
+        await m.wait_for_timeout(200)
+    chk(f'[{name}] SHOEY PENALTY cartoon plays (pour -> chug -> gag) with shoey voice',fx is not None and fx>1.2 and any(v for k,v in st.items() if isinstance(v,int) and v and k.startswith(('sho','shoey'))),str(fx))
+    for i in range(20):
+        if await m.evaluate('__NW.shoeyFx') is None: break
+        await m.wait_for_timeout(200)
+    chk(f'[{name}] shoey cartoon clears',await m.evaluate('__NW.shoeyFx') is None)
+    l0=await m.evaluate('__NW.lives');await m.evaluate('__NW.star("shoey",__NW.player.x,__NW.player.y-6)');await m.wait_for_timeout(600)
+    pu=await m.evaluate('({p:__NW.player,l:__NW.lives})')
+    chk(f'[{name}] LIQUID COURAGE SHOEY: beer goggles + triple shots + 1 life',pu['p']['shoeyT']>6 and pu['p']['spreadT']>6 and pu['l']==min(5,l0+1),str(pu))
+    await m.wait_for_timeout(900)
+    if shots: await m.screenshot(path=OUT+'screenshot-shoeyup.png')
+    await m.evaluate('__NW.noPow()')
     # Puka Nacua: the one that got away (ghost card, out of reach)
     await m.evaluate('__NW.pukaGo()')
     for i in range(30):
@@ -107,7 +134,7 @@ async def run(p,b,name,dev,touch,shots):
         if shots and i==9: await m.screenshot(path=OUT+'screenshot-boss.png')
     st=await m.evaluate('__NW.audio.stats()');chk(f'[{name}] fire sale -> "What a little bitch!" heckle',st.get('bitch',0)>=1,json.dumps(st))
     bh=await m.evaluate('__NW.boss');chk(f'[{name}] Weasel Dynasty boss takes football hits',bh and bh['hp']<bh['max'],str(bh))
-    chk(f'[{name}] boss rains Mahomes/Lamb/Lamar/CMC cards',rain>=1,str(rain))
+    chk(f'[{name}] boss rains Mahomes/Lamb/Lamar/CMC/JSN cards',rain>=1,str(rain))
     await m.evaluate('__NW.setBossHp(Math.round(__NW.boss.max*0.6))');await m.wait_for_timeout(500)
     f=await m.evaluate('({ph:__NW.bossPhase,ta:__NW.bossTaunt,fm:__NW.finMode,ft:__NW.finT})')
     chk(f'[{name}] boss phase -> weasel EAT SHIT slow-mo taunt (invulnerable)',f['ph']==1 and f['ta']>0 and f['fm']=='weasel' and f['ft']>0,str(f))
@@ -115,9 +142,9 @@ async def run(p,b,name,dev,touch,shots):
     await m.wait_for_timeout(4300)
     for i in range(40):
         w=await m.evaluate('({n:__NW.waahN,a:__NW.amb,st:__NW.audio.stats().waah||0})')
-        if w['st']>=1 and w['a']: break
+        if w['n']>=1 and w['a']: break
         await m.wait_for_timeout(200)
-    chk(f'[{name}] boss phase -> WAAAHMBULANCE drives by in sync with its voice line',w['n']>=1 and w['st']>=1 and w['a'],str(w))
+    chk(f'[{name}] boss phase -> WAAAHMBULANCE drives by (siren only, no voice line)',w['n']>=1 and w['st']==0 and w['a'],str(w))
     if shots and w['a']: await m.screenshot(path=OUT+'screenshot-waahmbulance.png')
     await m.evaluate('__NW.lives=99;__NW.setBossHp(1)')
     for i in range(26):
@@ -128,14 +155,19 @@ async def run(p,b,name,dev,touch,shots):
     z=await m.evaluate('({sy:scrollY,sc:visualViewport.scale,ta:getComputedStyle(document.body).touchAction})')
     chk(f'[{name}] no scroll/zoom',z['sy']==0 and z['sc']==1 and z['ta']=='none',str(z))
     st=await m.evaluate('__NW.audio.stats()');chk(f'[{name}] voice clips played',st.get('clip',0)+st.get('sting',0)>=4,json.dumps(st))
-    q=await m.evaluate('''(async()=>{const A=__NW.audio;await new Promise(r=>{const c=()=>{if(!A.current&&!A.queueLen)r();else setTimeout(c,100)};c()});
-      const n0=A.stats().n;A.heckle('ambient');A.heckle('HURT');A.sting('a_t2',{quiet:true});A.sting('wilson',{quiet:true});A.heckle('ambient');A.sting('waah',{quiet:true});
+    q=await m.evaluate('''(async()=>{const A=__NW.audio;await new Promise(r=>{const c=()=>{if(A.idle)r();else setTimeout(c,25)};c()});
+      const n0=A.stats().n;A.heckle('ambient');A.heckle('HURT');A.sting('a_t2',{quiet:true});A.sting('wilson',{quiet:true});A.heckle('ambient');A.sting('bitch',{quiet:true});
       const q1=A.queueLen;await new Promise(r=>setTimeout(r,300));const n1=A.stats().n,cur=A.current&&A.current.t,cap=__NW.caption;
       let over=0,prev=null,seen=[];for(let i=0;i<60;i++){await new Promise(r=>setTimeout(r,100));const c=A.current;if(c&&c.k!==prev){seen.push(c.k);prev=c.k}}
       return{started:n1-n0,q1,cur,cap,seen,maxQ:A.stats().maxQ,dropped:A.stats().dropped}})()''')
     chk(f'[{name}] voice queue: only one line starts at once, rest queued/dropped',q['started']==1 and q['q1']<=3 and q['cur'] is not None,str(q))
     chk(f'[{name}] caption matches the line actually playing',q['cap']==q['cur'],str((q['cap'],q['cur'])))
-    chk(f'[{name}] high-priority queued lines play in order (Brett lines first)',len(q['seen'])>=2 and set(q['seen'][:2])<={'wilson','waah','bitch','nohouse','wilson2','boss8','bestteam','puka1','puka2','puka3','puka4','puka5'} and 'a_t2' not in q['seen'][:2],str(q['seen']))
+    chk(f'[{name}] high-priority queued lines play in order (Brett lines first)',len(q['seen'])>=3 and set(q['seen'][1:3])<={'wilson','bitch','nohouse','wilson2','boss8','bestteam','puka1','puka2','puka3','puka4','puka5'} and 'a_t2' not in q['seen'][1:3],str(q['seen']))
+    ar=await m.evaluate('''(()=>{const A=__NW.audio,res={};for(const ev of ['ambient','CALEB','NAILS','BOSSHIT','HURT','PITTS','INT','end']){const N=A.poolSize(ev),seq=A.simPicks(ev,N*3);
+        let bagRep=0,winRep=0,nulls=0;for(let b=0;b+N<=seq.length;b+=N){const s=seq.slice(b,b+N).filter(x=>x);if(new Set(s).size!==s.length)bagRep++}
+        for(let i=0;i<seq.length;i++){if(!seq[i]){nulls++;continue}const w=seq.slice(Math.max(0,i-15),i);if(w.includes(seq[i]))winRep++}
+        res[ev]={N,bagRep,winRep,nulls,first:seq.slice(0,N).filter(x=>x).length}}return res})()''')
+    chk(f'[{name}] anti-repeat: shuffle-bag (no repeat until category exhausted) + no repeat within last 15',all(v['bagRep']==0 and v['winRep']==0 and v['first']==v['N'] for v in ar.values()),json.dumps(ar))
     await m.evaluate('__NW.lives=1;__NW.noInv();__NW.shot("int",__NW.player.x,__NW.player.y-30)');await m.wait_for_timeout(600)
     f=await m.evaluate('({fm:__NW.finMode,ft:__NW.finT,st:__NW.state,l:__NW.lives})')
     chk(f'[{name}] game over -> weasel EAT SHIT taunt',f['fm']=='weasel' and f['ft']>0 and f['l']==0,str(f))
@@ -152,6 +184,7 @@ async def run(p,b,name,dev,touch,shots):
     else: await m.click('#shareBtn')
     await m.wait_for_timeout(400)
     ls=await m.evaluate('__NW.lastShare');chk(f'[{name}] share works (copy fallback)','I gave Morehouse' in ls and 'more problems' in ls and 'mo-morehouse-mo-problems' in ls and 'champ' not in ls.lower(),ls)
+    chk(f'[{name}] share text says how many shoeys Joe owes',re.search(r'Joe owes \d+ shoeys?\.',ls) is not None,ls)
     await m.wait_for_timeout(2400)
     st=await m.evaluate('__NW.audio.stats()');chk(f'[{name}] game over -> "Morehouse? More like NO house." voice',st.get('nohouse',0)>=1,json.dumps(st))
     chk(f'[{name}] ending theme',await m.evaluate('__NW.audio.theme')=='ending')

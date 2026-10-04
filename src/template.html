@@ -19,7 +19,12 @@
 <meta name="twitter:title" content="MOREHOUSE MORE PROBLEMS: Survive Joe's Rebuild">
 <meta name="twitter:description" content="Play as Joe. 99 problems and still broke. Mo Morehouse, Mo Problems.">
 <meta name="twitter:image" content="https://howibrettyourmother.github.io/mo-morehouse-mo-problems/og.png">
-<link rel="icon" href="data:,">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-title" content="Mo Problems">
+<meta name="application-name" content="Mo Problems">
 <title>MOREHOUSE MORE PROBLEMS: Survive Joe's Rebuild</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -162,10 +167,11 @@ const KIND={
   // Brett's Wilson Weasels stars, rained down by the boss (still RED-framed: incoming = shoot/dodge)
   mahomes:{hp:2,pts:300,w:36,h:44,grp:'BOSSHIT',word:['MAHOMES SAYS HI!','TOO GOOD!'],num:15,col:'#e31837',trim:'#ffb81c',name:'MAHOMES',big:1},
   lamb:{hp:2,pts:300,w:36,h:44,grp:'BOSSHIT',word:['LAMB CHOP!','CEEDEE SEZ NO!'],num:88,col:'#041e42',trim:'#869397',name:'LAMB',big:1},
+  jsn:{hp:2,pts:300,w:36,h:44,grp:'BOSSHIT',word:['JSN COOKED YA!','WIDE OPEN!'],num:11,col:'#002244',trim:'#69be28',name:'JSN',big:1},
   lamar:{hp:2,pts:300,w:36,h:44,grp:'BOSSHIT',word:['JUKED!','LAMAR LOLS!'],num:8,col:'#241773',trim:'#9e7c0c',name:'LAMAR',big:1},
   cmc:{hp:2,pts:300,w:36,h:44,grp:'BOSSHIT',word:['RAN THROUGH YA!','CMC TOO!'],num:23,col:'#aa0000',trim:'#b3995d',name:'CMC',big:1}
 };
-const WSTARS=['mahomes','lamb','lamar','cmc'];
+const WSTARS=['mahomes','lamb','lamar','cmc','jsn'];
 const TRACKS=[
   {n:'TRACK 1',t:'YEAR 4 OF THE REBUILD',k:'a_t1',rows:[['pick4','year4','pick4','year4','pick4'],['year4','trade','year4','trade','year4']]},
   {n:'TRACK 2',t:'MO PICKS MO PROBLEMS',k:'a_t2',rows:[['darnold','pick4','darnold','pick4','darnold'],['pick4','year4','pick4','year4','pick4'],['pick4','pick4','pick4','pick4','pick4']]},
@@ -173,19 +179,19 @@ const TRACKS=[
   {n:'TRACK 4',t:'SURVIVE THE TRADE DEADLINE',k:'a_t4',balloon:1,mini:1,rows:[['caleb','mhj','caleb','mhj','caleb'],['trade','trade','trade','trade','trade'],['pitts','darnold','pitts','darnold','pitts'],['trade','pick4','trade','pick4','trade']]},
   {n:'BOSS TRACK',t:'THE WEASEL DYNASTY',k:'a_boss',boss:1,rows:[]}
 ];
-const POW={spread:{l:'WAIVER WIRE PICKUP',k:'a_waiver',tag:'WAIVER'},rapid:{l:'DESPERATE TRADE OFFER',k:'a_desp',tag:'TRADE'},shield:{l:'FALSE HOPE',k:'a_hope',tag:'HOPE'},life:{l:'ONE MORE SEASON',k:'a_season',tag:'+1 YR'}};
-const QUOTES=['"MO MOREHOUSE, MO PROBLEMS"','"IT WAS ALL A DREAM... JOE USED TO READ ROTOWORLD MAGAZINE"','"SURVIVE, JOE! OH WAIT, YOU CAN\'T."','"JUICY? NAH, JOE\'S ROSTER IS DRY"','"SPREAD LOVE, IT\'S THE WEASEL WAY"','"READY TO REBUILD... AGAIN"'];
-const ROASTS=['IT WAS ALL A DREAM... JOE USED TO READ ROTOWORLD MAGAZINE','JUICY? NAH, JOE\'S ROSTER IS DRY AS SHIT','RICHES TO RAGS. MOSTLY RAGS.','REBUILD YEAR 4. SAME SHIT, NEW CALENDAR.',
-  'CALEB IS STILL HOLDING IT. IN A PORTA-POTTY.','MARVIN HARRISON JR.: GENERATIONAL BULLSHIT','KYLE PITTS BREAKOUT METER: 99%... RESET','SPREAD LOVE, IT\'S THE WEASEL WAY. NOW EAT SHIT.',
-  'SURVIVE, JOE! OH WAIT, YOU CAN\'T.','YOUR HOPE WAS A WAIVER WIRE PICKUP','THE WEASELS\' BENCH IS BETTER THAN YOUR STARTERS'];
+const POW={spread:{l:'WAIVER WIRE PICKUP',k:'a_waiver',tag:'WAIVER'},rapid:{l:'DESPERATE TRADE OFFER',k:'a_desp',tag:'TRADE'},shield:{l:'FALSE HOPE',k:'a_hope',tag:'HOPE'},life:{l:'ONE MORE SEASON',k:'a_season',tag:'+1 YR'},shoey:{l:'LIQUID COURAGE SHOEY',k:null,tag:'SHOEY'}};
+const QUOTES=['"MO MOREHOUSE, MO PROBLEMS"','"JOE\'S REBUILD HAS A REBUILD"','"SURVIVE, JOE! OH WAIT, YOU CAN\'T."','"WILSON DRAFTS. JOE DROOLS."','"ONE YEAR AWAY FOR FIVE YEARS"','"THE WEASELS DON\'T REBUILD. THEY RELOAD."'];
+const ROASTS=['JOE\'S REBUILD HAS A REBUILD','ONE YEAR AWAY FOR FIVE FUCKING YEARS','JOE\'S DRAFT BOARD IS AN ETCH A SKETCH','REBUILD YEAR 4. SAME SHIT, NEW CALENDAR.',
+  'CALEB IS STILL HOLDING IT. IN A PORTA-POTTY.','MARVIN HARRISON JR.: GENERATIONAL LETDOWN','KYLE PITTS BREAKOUT METER: 99%... RESET','JOE DROPPED PUKA NACUA. NEVER FORGET.',
+  'SURVIVE, JOE! OH WAIT, YOU CAN\'T.','YOUR HOPE WAS A WAIVER WIRE PICKUP','THE WEASELS\' BENCH IS BETTER THAN YOUR STARTERS','WILSON DRAFTS. JOE DROOLS.'];
 // ---------- state ----------
 let state='title',stateT=0,gT=0,score=0,problems=0,lives=3,combo=0,comboBest=0,comboT=0,meter=0,trackI=0,loop=0,trackT=0,timeScale=1,slowT=0,finT=0,shake=0,flash=0,flashCol='#fff';
 let player=null,balls=[],enemies=[],eshots=[],stars=[],parts=[],pops=[],potties=[],banner=null,caption=null,boss=null,balloon=null,fireCD=0,starT=8,diveT=3,formX=0,formY=0,formDir=1,nextAmb=10,bossesBeat=0,potCount=0,finishers=0,finMode='weasel',firesales=0,reached=0,hits=0,runId=0,soundAsked=false,endReason='',roast='',lastAir=0,lastHurtHk=0,noSpawn=false,trackCleared=false,ptr=null,mini=null,miniDone=0,miniBeat=0,boardOpen=false,puka=null,pukaSeen=0,pukaOOR=0;
-let mode='y5';try{mode=localStorage.getItem('nw_mode')==='rookie'?'rookie':'y5'}catch(e){}
+let shoeys=0,shoeyFx=null,lastShoeyFx=-1e9,lastNails=-1e9,mode='y5';try{mode=localStorage.getItem('nw_mode')==='rookie'?'rookie':'y5'}catch(e){}
 const rook=()=>mode==='rookie';
 let hi=+(localStorage.getItem('nw_hi')||0),lastShare='',hsEntering=false,savedRank=-1,titleConf=[];
-function newPlayer(){return{x:W/2,y:H-110,inv:0,spreadT:0,rapidT:0,shieldT:0,bob:0,dead:0}}
-function resetRun(){score=0;problems=0;lives=rook()?5:3;mini=null;miniDone=0;miniBeat=0;puka=null;pukaSeen=0;combo=0;comboBest=0;comboT=0;meter=0;trackI=0;loop=0;gT=0;timeScale=1;slowT=0;finT=0;player=newPlayer();balls=[];enemies=[];eshots=[];stars=[];parts=[];pops=[];potties=[];
+function newPlayer(){return{x:W/2,y:H-110,inv:0,spreadT:0,rapidT:0,shieldT:0,shoeyT:0,bob:0,dead:0}}
+function resetRun(){shoeys=0;shoeyFx=null;lastShoeyFx=-1e9;score=0;problems=0;lives=rook()?5:3;mini=null;miniDone=0;miniBeat=0;puka=null;pukaSeen=0;combo=0;comboBest=0;comboT=0;meter=0;trackI=0;loop=0;gT=0;timeScale=1;slowT=0;finT=0;player=newPlayer();balls=[];enemies=[];eshots=[];stars=[];parts=[];pops=[];potties=[];
   boss=null;balloon=null;banner=null;bossesBeat=0;potCount=0;finishers=0;firesales=0;reached=0;finT=0;hits=0;starT=7;savedRank=-1;runId++}
 function go(s){state=s;stateT=0;placeButtons()}
 // ---------- leaderboard ----------
@@ -224,7 +230,7 @@ const cleanName=v=>(v||'').replace(/[^A-Za-z0-9 .,!?'&_#*$@+-]/g,'').replace(/\s
 function lbSubmit(ini){ini=cleanName(ini).trim()||'MYSTERY GM';const a=lbLoad();const e={i:ini,s:score,p:problems,t:Math.max(0,reached-1),m:mode,id:runId};a.push(e);a.sort((x,y)=>y.s-x.s);
   const b=a.slice(0,10);savedRank=b.indexOf(e);try{localStorage.setItem('nw_lb',JSON.stringify(b.map(x=>({i:x.i,s:x.s,p:x.p,t:x.t,m:x.m}))))}catch(err){}}
 // ---------- audio glue ----------
-AUD.onSay=(text,ann,dur)=>{caption={t:text,life:Math.max(1.6,(dur||2)+0.4),ann:!!ann};if(/WAAAAHMBULANCE/.test(text)&&state==='play')startAmb()};
+AUD.onSay=(text,ann,dur)=>{caption={t:text,life:Math.max(1.6,(dur||2)+0.4),ann:!!ann}};
 function showBanner(t,c,big){banner={t,c:c||GOLD,life:big?2.4:1.8,max:big?2.4:1.8,big:!!big}}
 function airhorn(){const n=performance.now();if(n-lastAir<380)return;lastAir=n;AUD.SFX.airhorn()}
 // ---------- particles: confetti + toilet paper ----------
@@ -273,7 +279,7 @@ function drawPuka(k){ctx.save();ctx.translate(k.x,k.y);ctx.rotate(Math.sin(k.t*1
   ctx.save();ctx.rotate(-0.4);ctx.globalAlpha*=0.9;ctx.strokeStyle=RED;ctx.lineWidth=1.5;ctx.strokeRect(-30,-9,60,13);fit('DROPPED BY JOE',0,-2.5,7,56,RED);ctx.restore();
   ctx.restore();ctx.save();ctx.globalAlpha=0.6+Math.sin(k.t*4)*0.2;txt('THE ONE THAT GOT AWAY',k.x,k.y-50,7,GOLD,null,'#000');ctx.restore()}
 function spawnBalloon(){balloon={x:-80,y:140,hp:14+loop*6,max:14+loop*6,t:0,sc:1,fl:0};AUD.heckle('BALLOON',true);showBanner('GIANT REBUILD YEAR 5 BALLOON!',RED)}
-function spawnStar(type,x,y){type=type||pick(['spread','spread','rapid','rapid','shield','life']);if(type==='life'&&lives>=5)type='rapid';stars.push({type,x:x==null?rnd(30,W-30):x,y:y==null?-20:y,t:R()*6,vy:rnd(60,80)})}
+function spawnStar(type,x,y){if(!type&&R()<0.06)type='shoey';type=type||pick(['spread','spread','rapid','rapid','shield','life']);if(type==='life'&&lives>=5)type='rapid';stars.push({type,x:x==null?rnd(30,W-30):x,y:y==null?-20:y,t:R()*6,vy:rnd(60,80)})}
 // ---------- start / end ----------
 function startGame(){resetRun();hsEntering=false;hsPanel.style.display='none';go('intro');AUD.SFX.scratch();AUD.sting('a_go',{quiet:true});showBanner('SURVIVE ONE MORE SEASON, JOE',GOLD,true);AUD.setTheme('main');updateOverlays()}
 function endGame(why){if(state==='end')return;endReason=why||'';roast=pick(ROASTS);if(score>hi){hi=score;try{localStorage.setItem('nw_hi',hi)}catch(e){}}
@@ -284,7 +290,7 @@ function addCombo(n){combo++;comboT=2.6;if(combo>comboBest)comboBest=combo;meter
 function killEnemy(e,quiet){e.dead=1;problems++;const mult=1+Math.min(4,Math.floor(combo/10));const pts=e.d.pts*mult;score+=pts;hits++;
   burst(e.x,e.y,e.d.big?26:14,e.d.big?4:1);AUD.SFX.splat(e.d.big);pop(e.x,e.y-16,'+'+pts,GOLD,13);
   const w=pick(e.d.word);pop(e.x,e.y-34,w,e.d.big?RED:'#fff',e.d.big?15:12);
-  if(e.k==='caleb'){potties.push({x:e.x,y:e.y,t:0});potCount++;AUD.SFX.flush();if(!quiet){const r=R();(r<0.3&&AUD.sting('caleb8',{quiet:true,throttle:14000}))||(r<0.55&&AUD.sting(pick(['nails1','nails2']),{quiet:true,throttle:14000}))||AUD.sting('a_potty',{quiet:true,throttle:9000})||AUD.heckle('CALEB',true)}burst(e.x,e.y,0,6)}
+  if(e.k==='caleb'){potties.push({x:e.x,y:e.y,t:0});potCount++;AUD.SFX.flush();if(!quiet){const r=R();(r<0.3&&AUD.sting('caleb8',{quiet:true,throttle:14000}))||(r<0.6&&performance.now()-lastNails>12000&&AUD.heckle('NAILS',true)&&(lastNails=performance.now()))||AUD.sting('a_potty',{quiet:true,throttle:9000})||AUD.heckle('CALEB',true)}burst(e.x,e.y,0,6)}
   else if(!quiet&&R()<0.5)AUD.heckle(e.d.grp);
   if(e.d.big)airhorn();
   if(R()<0.07)spawnStar(null,e.x,e.y);
@@ -294,8 +300,13 @@ function killEnemy(e,quiet){e.dead=1;problems++;const mult=1+Math.min(4,Math.flo
 function hurtPlayer(src){if(player.inv>0||state!=='play'||player.dead)return;
   if(player.shieldT>0){player.shieldT=0;player.inv=1;AUD.SFX.ghostEat();pop(player.x,player.y-40,'FALSE HOPE BLOCKED IT... THIS TIME',GOLD,12);return}
   lives--;player.inv=2.2;combo=0;meter=Math.max(0,meter-40);shake=10;flash=1;flashCol='#f00';AUD.SFX.hurt();AUD.SFX.laugh(0.8);
-  pop(player.x,player.y-44,src||'OUCH!',RED,15);if(lives===1)setTimeout(waahmbulance,900);const n=performance.now();if(n-lastHurtHk>3000){lastHurtHk=n;AUD.heckle('HURT',true)}
+  pop(player.x,player.y-44,src||'OUCH!',RED,15);if(lives===1)setTimeout(waahmbulance,900);const n=performance.now();shoeys++;
+  if(lives>0&&(shoeys===1||R()<0.5)&&n-lastShoeyFx>8000)shoeyPenalty();else if(n-lastHurtHk>3000){lastHurtHk=n;AUD.heckle('HURT',true)}
   if(lives<=0){player.dead=1;burst(player.x,player.y,40,10);AUD.SFX.death();weaselTaunt('GAME OVER');setTimeout(()=>endGame(boss&&!boss.dead?'THE WEASEL DYNASTY ENDED YOUR SEASON':'JOE\'S OWN PROBLEMS ENDED HIS SEASON'),2500)}}
+// SHOEY PENALTY: league rules, lose and you drink a beer out of a shoe (cartoon pour -> Joe chugs -> gag)
+function shoeyPenalty(){const n=performance.now();lastShoeyFx=n;lastHurtHk=n;shoeyFx={t:0,g1:0,g2:0,g3:0};
+  if(R()<0.3)AUD.sting('shoey1',{quiet:true,throttle:20000})||AUD.heckle('SHOEY',true);else AUD.heckle('SHOEY',true)}
+function updShoeyFx(dt){const f=shoeyFx;if(!f)return;f.t+=dt;if(!f.g1&&f.t>0.15){f.g1=1;AUD.SFX.glug()}if(!f.g2&&f.t>1.15){f.g2=1;AUD.SFX.glug()}if(!f.g3&&f.t>1.95){f.g3=1;AUD.SFX.gag()}if(f.t>2.8)shoeyFx=null}
 function fireSale(){meter=0;firesales++;shake=12;flash=1;flashCol='#ffd400';airhorn();setTimeout(()=>airhorn(),350);AUD.SFX.scratch();AUD.sting('a_firesale',{quiet:true,throttle:3000});AUD.SFX.cheer(1);
   showBanner('SHIT COMBO! FIRE SALE: EVERYTHING MUST GO!',GOLD,true);setTimeout(()=>{if(state==='play')AUD.sting('bitch',{quiet:true,throttle:20000})},1200);
   for(const e of enemies)if(!e.dead&&e.y>-20){killEnemy(e,true)}
@@ -303,7 +314,7 @@ function fireSale(){meter=0;firesales++;shake=12;flash=1;flashCol='#ffd400';airh
   if(balloon){balloon.hp=0;popBalloon()}
   burst(W/2,H*0.45,70,12)}
 // the Weasel's slow-mo EAT SHIT taunt at Joe (boss phases + game over)
-function waahmbulance(){const n=performance.now();if(n-lastWaah<12000||state!=='play')return;lastWaah=n;waahN++;if(!AUD.sting('waah',{quiet:true}))startAmb()}
+function waahmbulance(){const n=performance.now();if(n-lastWaah<12000||state!=='play')return;lastWaah=n;waahN++;startAmb()}
 function startAmb(){if(amb)return;amb={x:-90,t:0};AUD.SFX.siren()}
 function weaselTaunt(why){finT=2.4;finMode='weasel';slowT=1.9;finishers++;shake=16;flash=1;flashCol='#fff';AUD.SFX.slowmo();AUD.SFX.scratch();AUD.sting('a_eatshit',{quiet:true,rate:0.78});
   airhorn();setTimeout(()=>airhorn(),450);AUD.SFX.eatShitChant(0.2);AUD.SFX.laugh(1.3);burst(W/2,H*0.4,60,10);tauntWhy=why||''}
@@ -347,7 +358,7 @@ function step(rdt){
   if(state==='intro'){if(stateT>1.6){go('play');startTrack(0)}movePlayer(rdt);return}
   gT+=dt;trackT+=dt;
   movePlayer(rdt);
-  const p=player;p.inv=Math.max(0,p.inv-dt);p.spreadT=Math.max(0,p.spreadT-dt);p.rapidT=Math.max(0,p.rapidT-dt);p.shieldT=Math.max(0,p.shieldT-dt);
+  const p=player;p.inv=Math.max(0,p.inv-dt);p.spreadT=Math.max(0,p.spreadT-dt);p.rapidT=Math.max(0,p.rapidT-dt);p.shieldT=Math.max(0,p.shieldT-dt);p.shoeyT=Math.max(0,(p.shoeyT||0)-dt);
   // auto-fire footballs
   fireCD-=dt;if(fireCD<=0&&!p.dead&&state==='play'){fireCD=p.rapidT>0?0.11:0.22;const ang=p.spreadT>0?[-0.22,0,0.22]:[0];for(const a of ang)balls.push({x:p.x,y:p.y-30,vx:Math.sin(a)*520,vy:-Math.cos(a)*520,r:R()*6});AUD.SFX.throwF()}
   for(const b of balls){b.x+=b.vx*dt;b.y+=b.vy*dt;b.r+=dt*14}balls=balls.filter(b=>b.y>-20&&b.x>-20&&b.x<W+20&&!b.hit);
@@ -383,7 +394,7 @@ function step(rdt){
     for(const bl of balls){if(bl.hit)continue;if(Math.hypot(bl.x-b.x,(bl.y-b.y)*0.8)<34*b.sc){bl.hit=1;b.hp--;b.fl=0.1;AUD.SFX.squeak(1-b.hp/b.max);burst(bl.x,bl.y,4,0);if(b.hp<=0){popBalloon();break}}}
     if(balloon&&balloon.x>W+120){balloon=null;pop(W-60,150,'THE REBUILD FLOATED AWAY... LIKE JOE\'S TITLE HOPES',RED,10)}}
   // boss
-  if(boss)updBoss(dt,p);
+  updShoeyFx(dt);if(boss)updBoss(dt,p);
   if(mini)updMini(dt,p);
   if(!pukaSeen&&trackI===1&&trackT>5)spawnPuka();if(puka)updPuka(dt);
   // enemy shots
@@ -404,6 +415,8 @@ function step(rdt){
 }
 function movePlayer(dt){const p=player;if(!p)return;const k=keys,v=300*dt;if(k.ArrowLeft||k.a)p.x-=v;if(k.ArrowRight||k.d)p.x+=v;if(k.ArrowUp||k.w)p.y-=v;if(k.ArrowDown||k.s)p.y+=v;p.x=clamp(p.x,18,W-18);p.y=clamp(p.y,H*0.45,H-44);p.bob+=dt}
 function catchStar(s){const P=POW[s.type];AUD.SFX.power();AUD.SFX.bonus();score+=300;pop(s.x,s.y-20,P.l+'!',GOLD,14);burst(s.x,s.y,24,0);
+  if(s.type==='shoey'){player.shoeyT=8;player.spreadT=Math.max(player.spreadT,8);lives=Math.min(5,lives+1);setTimeout(()=>AUD.SFX.burp(),350);
+    if(R()<0.35)AUD.sting('shoey1',{quiet:true,throttle:20000})||AUD.heckle('SHOEYUP',true);else AUD.heckle('SHOEYUP',true);showBanner('LIQUID COURAGE SHOEY! BEER GOGGLES ON',GOLD,true);return}
   if(s.type==='spread')player.spreadT=10;else if(s.type==='rapid')player.rapidT=9;else if(s.type==='shield')player.shieldT=14;else lives=Math.min(5,lives+1);
   AUD.sting(P.k,{quiet:true,throttle:2500});setTimeout(()=>{if(state==='play')AUD.heckle('STAR',true)},1500);showBanner(P.l+'! (RARE HOPE)',GOLD)}
 function updBoss(dt,p){const b=boss;b.t+=dt;b.fl=Math.max(0,b.fl-dt);
@@ -481,7 +494,8 @@ function drawEnemy(e){
   else if(k==='darnold')enemyFrame(e,(w,h)=>{helmet('#5a2d82',-9);jersey(14,'#5a2d82','#000',2);ctx.save();ctx.rotate(-0.3);txt('INT',0,-h/2+2,8,'#fff',null,RED);ctx.restore()});
   else if(k==='fax')enemyFrame(e,(w,h)=>{ctx.fillStyle='#f4f4ee';ctx.fillRect(-w/2+4,-h/2+4,w-8,h-8);ctx.fillStyle='#bbb';for(let i=0;i<4;i++)ctx.fillRect(-w/2+7,-h/2+14+i*5,w-14,1.5);txt('FAX',0,-h/2+9,7,'#333');
     ctx.save();ctx.rotate(-0.35);ctx.strokeStyle=RED;ctx.lineWidth=1.5;ctx.strokeRect(-15,-1,30,11);fit('DECLINED',0,4.5,6.5,27,RED);ctx.restore()});
-  else if(k==='caleb')enemyFrame(e,(w,h)=>{helmet('#0b1c3d',-12);jersey(18,'#0b1c3d','#e8621c',-1);football(9,8,0.6,4.5);ctx.fillStyle='#ff4fd8';for(let i=0;i<3;i++)ctx.fillRect(12+i*2.4,3,1.8,2.2);fit('STILL HOLDING',0,h/2-5,5.5,w-6,'#ffcc00')});
+  else if(k==='caleb')enemyFrame(e,(w,h)=>{helmet('#0b1c3d',-12);jersey(18,'#0b1c3d','#e8621c',-1);football(9,8,0.6,4.5);ctx.fillStyle='#ff4fd8';for(let i=0;i<3;i++)ctx.fillRect(12+i*2.4,3,1.8,2.2);
+    ctx.save();ctx.translate(-13,4);ctx.rotate(-0.2);ctx.fillStyle='#ff2fa8';rr4(-3.5,-1,7,8,2);ctx.fill();ctx.fillStyle='#222';ctx.fillRect(-1.8,-5,3.6,4);ctx.fillStyle='rgba(255,255,255,.6)';ctx.fillRect(-2.4,0.5,1.2,4);ctx.restore();fit('STILL HOLDING',0,h/2-5,5.5,w-6,'#ffcc00')});
   else if(k==='mhj')enemyFrame(e,(w,h)=>{ctx.fillStyle='#fff';ctx.fillRect(-w/2+4,-h/2+4,w-8,h-8);ctx.fillStyle='#97233f';ctx.fillRect(-w/2+6,-h/2+6,w-12,h-22);ctx.save();ctx.translate(0,-h/2+20);helmet('#97233f',-6);ctx.restore();
     txt('18',0,1,10,'#fff',null,'#000');fit('GENERATIONAL',0,h/2-12,5.5,w-8,RED);txt('BUST',0,h/2-6,8,RED);
     ctx.strokeStyle='rgba(0,0,0,.6)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-10,-h/2+6);ctx.lineTo(-2,-4);ctx.lineTo(-8,8);ctx.moveTo(6,-h/2+8);ctx.lineTo(2,2);ctx.stroke()});
@@ -535,7 +549,27 @@ function drawShot(s){if(s.k==='int'){football(s.x,s.y,s.r,5,RED);txt('INT',s.x,s
   else if(s.k==='sack'){ctx.fillStyle=RED;ctx.beginPath();ctx.arc(s.x,s.y,6,0,7);ctx.fill();txt('SACK',s.x,s.y-10,6,'#fff',null,RED)}
   else if(s.k==='trade'){ctx.save();ctx.translate(s.x,s.y);ctx.rotate(Math.sin(s.r)*0.4);ctx.fillStyle='#fff';ctx.fillRect(-14,-9,28,18);ctx.strokeStyle=RED;ctx.lineWidth=2;ctx.strokeRect(-14,-9,28,18);txt('TRADE',0,-2,6,RED);txt('OFFER',0,5,6,RED);ctx.restore()}
   else{ctx.fillStyle='#9be35a';ctx.strokeStyle=RED;ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(s.x,s.y,6,8,0,0,7);ctx.fill();ctx.stroke()}}
-function drawStar(s,x,y,sc){x=x==null?s.x:x;y=y==null?s.y:y;sc=sc||1;ctx.save();ctx.translate(x,y);ctx.rotate(Math.sin(s.t*3)*0.25);ctx.scale(sc,sc);ctx.shadowColor=GOLD;ctx.shadowBlur=14;
+// generic cartoon sneaker (no brands). fill 0..1 = beer level showing in the opening
+function drawSneaker(x,y,sc,rot,gold,fill){ctx.save();ctx.translate(x,y);ctx.rotate(rot||0);ctx.scale(sc,sc);
+  ctx.fillStyle=gold?goldGrad(-16,10):'#e3262e';ctx.strokeStyle=gold?'#7a5200':'#5a0a0a';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(-22,4);ctx.lineTo(-22,-13);ctx.quadraticCurveTo(-15,-19,-8,-13);ctx.lineTo(-4,-8);ctx.lineTo(10,-6);ctx.quadraticCurveTo(24,-4,24,4);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.fillStyle='#fff';rr4(-23,3,48,7,3);ctx.fill();ctx.strokeStyle='#999';ctx.lineWidth=1;ctx.stroke();
+  ctx.strokeStyle='#fff';ctx.lineWidth=1.3;for(let i=0;i<3;i++){ctx.beginPath();ctx.moveTo(-5+i*4,-8);ctx.lineTo(-1+i*4,-3);ctx.stroke()}
+  ctx.fillStyle='#2a1a0a';ctx.beginPath();ctx.ellipse(-15,-14.5,6.5,2.6,0,0,7);ctx.fill();
+  if(fill>0){ctx.fillStyle='#ffc21a';ctx.beginPath();ctx.ellipse(-15,-14.5,6*Math.min(1,fill+0.3),2.3,0,0,7);ctx.fill();if(fill>0.6){ctx.fillStyle='#fffbe8';for(let i=0;i<4;i++){ctx.beginPath();ctx.arc(-19+i*2.8,-16.5-Math.sin(i*2)*0.8,1.9,0,7);ctx.fill()}}}
+  ctx.restore()}
+function drawBeer(x,y,rot){ctx.save();ctx.translate(x,y);ctx.rotate(rot);ctx.fillStyle='#cfd6de';rr4(-6,-11,12,22,3);ctx.fill();ctx.strokeStyle='#7d8791';ctx.lineWidth=1;ctx.stroke();ctx.fillStyle='#2f6bff';ctx.fillRect(-6,-4,12,9);txt('BEER',0,0.5,4.6,'#fff');ctx.fillStyle='#9aa3ad';ctx.fillRect(-4,-12.5,8,2);ctx.restore()}
+function drawShoeyFx(f){const t=f.t,a=Math.min(1,t*6,(2.8-t)*4);ctx.save();ctx.globalAlpha=Math.max(0,a);const cx=W/2,cy=H*0.33;
+  ctx.fillStyle='rgba(20,10,0,.82)';rr4(cx-120,cy-70,240,138,14);ctx.fill();ctx.strokeStyle=GOLD;ctx.lineWidth=3;ctx.stroke();
+  ctx.save();ctx.translate(cx,cy-52);ctx.rotate(Math.sin(t*9)*0.04);fit('SHOEY PENALTY!',0,0,24,224,RED,GOLD);ctx.restore();
+  if(t<1.1){const k=Math.min(1,t/0.35),fill=Math.max(0,(t-0.3)/0.75);drawSneaker(cx+14,cy+30,1.6,0,false,fill);
+    const bx=cx-14,by=cy-12;drawBeer(bx,by,-0.2-k*1.5);if(t>0.3){ctx.strokeStyle='#ffc21a';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(bx+10,by+4);ctx.quadraticCurveTo(bx+12,by+18,cx-10,cy+6);ctx.stroke()}
+    txt('LEAGUE RULES: YOU LOSE, YOU DRINK',cx,cy+58,9,'#fff',null,'#000')}
+  else{drawJoe(cx-34,cy+22,0.95,vhsT,false,true);const tilt=-2.2+Math.min(1,(t-1.1)/0.3)*0.6;drawSneaker(cx-14,cy-6,1.25,tilt,false,Math.max(0,1-(t-1.1)/0.8));
+    if(t<1.9){ctx.fillStyle='#ffc21a';for(let i=0;i<3;i++)ctx.fillRect(cx-28+i*3,cy+4+((t*90+i*9)%14),2,4);txt('CHUG! CHUG! CHUG!',cx+58,cy+2,11,GOLD,null,'#000')}
+    else{ctx.save();ctx.translate(cx+56,cy);ctx.rotate(-0.15+Math.sin(t*20)*0.05);txt('*GAG*',0,0,20,'#7dff4a',null,'#000');ctx.restore();txt('TASTES LIKE REBUILD + FOOT FUNGUS',cx,cy+58,8.5,'#fff',null,'#000')}}
+  ctx.restore()}
+function drawStar(s,x,y,sc){x=x==null?s.x:x;y=y==null?s.y:y;sc=sc||1;
+  if(s.type==='shoey'){ctx.save();ctx.shadowColor=GOLD;ctx.shadowBlur=16;ctx.fillStyle='rgba(255,212,0,.22)';ctx.beginPath();ctx.arc(x,y,22*sc,0,7);ctx.fill();ctx.restore();drawSneaker(x,y,0.85*sc,Math.sin(s.t*3)*0.25,true,1);txt('SHOEY',x,y+22,7,GOLD,null,'#000');return}ctx.save();ctx.translate(x,y);ctx.rotate(Math.sin(s.t*3)*0.25);ctx.scale(sc,sc);ctx.shadowColor=GOLD;ctx.shadowBlur=14;
   ctx.fillStyle=goldGrad(-16,16);ctx.beginPath();for(let i=0;i<10;i++){const r=i%2?7.5:17,a=-Math.PI/2+i*Math.PI/5;ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r)}ctx.closePath();ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle='#7a5200';ctx.lineWidth=1.2;ctx.stroke();
   txt('HOPE',0,2,6,'#5a3a00');ctx.restore();if(s.type)txt(POW[s.type].tag,x,y+22,7,GOLD,null,'#000')}
 function drawAmb(a){const y=H*0.72,x=a.x;ctx.save();ctx.translate(x,y+Math.sin(a.t*20)*1.2);
@@ -564,7 +598,7 @@ function drawHUD(){ctx.fillStyle='rgba(10,3,20,.55)';ctx.fillRect(0,0,W,58);
   const mx=8,my=42,mw=W-16-110;ctx.fillStyle='#222';rr4(mx+18,my,mw-18,10,5);ctx.fill();const mg=ctx.createLinearGradient(mx+18,0,mx+mw,0);mg.addColorStop(0,'#5a3410');mg.addColorStop(0.6,'#9a5a1a');mg.addColorStop(1,GOLD);
   ctx.fillStyle=mg;rr4(mx+18,my,Math.max(10,(mw-18)*meter/100),10,5);ctx.fill();if(meter>85&&((vhsT*8)|0)%2){ctx.strokeStyle=GOLD;ctx.lineWidth=2;rr4(mx+18,my,mw-18,10,5);ctx.stroke()}
   poop(mx+8,my+5,1);txt('SHIT COMBO'+(combo>1?' x'+combo:''),mx+18+(mw-18)/2,my+5,7.5,'#fff',null,'#000');
-  const p=player;let px=W-8,py=50;const pw=[];if(p.spreadT>0)pw.push('WAIVER x3 '+Math.ceil(p.spreadT));if(p.rapidT>0)pw.push('TRADE '+Math.ceil(p.rapidT));if(p.shieldT>0)pw.push('HOPE');if(pw.length)txt(pw.join(' \u2022 '),px,py,8,GOLD,'right','#000')}
+  const p=player;let px=W-8,py=50;const pw=[];if(p.spreadT>0)pw.push('WAIVER x3 '+Math.ceil(p.spreadT));if(p.rapidT>0)pw.push('TRADE '+Math.ceil(p.rapidT));if(p.shieldT>0)pw.push('HOPE');if(p.shoeyT>0)pw.push('BEER GOGGLES '+Math.ceil(p.shoeyT));if(pw.length)txt(pw.join(' \u2022 '),px,py,8,GOLD,'right','#000')}
 function chainIcon(x,y){ctx.strokeStyle=GOLD;ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y-5,6,0.2,Math.PI-0.2);ctx.stroke();ctx.fillStyle=GOLD;ctx.beginPath();ctx.arc(x,y+2,3.5,0,7);ctx.fill()}
 function drawBanner(){if(!banner)return;const a=Math.min(1,banner.life*3,(banner.max-banner.life)*6+0.2);ctx.save();ctx.globalAlpha=a;const y=banner.big?H*0.56:H*0.62;
   ctx.fillStyle='rgba(0,0,0,.65)';ctx.fillRect(0,y-22,W,44);ctx.fillStyle=banner.c;ctx.fillRect(0,y-22,W,3);ctx.fillRect(0,y+19,W,3);fit(banner.t,W/2,y,banner.big?22:18,W-20,banner.c,'#000');ctx.restore()}
@@ -666,7 +700,8 @@ function drawEnd(){const t=vhsT;ctx.drawImage(bgC,0,0,W,H);ctx.fillStyle='rgba(1
   fit('YOU GAVE MOREHOUSE '+problems+' MORE PROBLEMS',W/2,y,15,W-20,'#fff','#000');y+=17;
   fit('SCORE '+score.toLocaleString('en-US')+'  \u2022  TRACKS SURVIVED '+Math.max(0,reached-1)+'  \u2022  SHIT COMBO x'+comboBest+'  \u2022  '+(rook()?'ROOKIE':'YEAR 5'),W/2,y,10.5,W-20,GOLD,'#000');y+=14;
   const v1=Math.max(0.37,Math.round(1000000*Math.pow(0.5,score/2500)*100)/100);
-  fit('PUKAS DROPPED: 1 (FOREVER)',W/2,y,11,W-20,'#ffb000','#000');y+=14;
+  fit('PUKAS DROPPED: 1 (FOREVER)  \u2022  SHOEYS OWED: '+shoeys,W/2,y,11,W-20,'#ffb000','#000');y+=13;
+  fit('\u{1F45F}\u{1F37A} JOE OWES THE LEAGUE '+shoeys+' SHOEY'+(shoeys===1?'':'S'),W/2,y,10,W-20,'#ffc21a','#000');y+=13;
   fit('CALEB FLUSHED x'+potCount+'  \u2022  FIRE SALES x'+firesales+(miniBeat?'  \u2022  DEADLINE SWATTED':'')+(bossesBeat?'  \u2022  WEASEL BEATEN x'+bossesBeat+' (STILL THE BEST)':'')+'  \u2022  DYNASTY VALUE $'+v1.toLocaleString('en-US',{maximumFractionDigits:2}),W/2,y,9,W-20,'#7dff4a','#000');y+=13;
   fit(endReason+'  \u2022  \u201C'+roast+'\u201D',W/2,y,9,W-20,'#36e0ff','#000');y+=19;
   // LEAGUE LEADERBOARD (local Hall of Shame when offline)
@@ -697,6 +732,7 @@ function draw(){
   if(state==='title'){drawTitle();drawBanner();if(boardOpen)drawBoard();return}
   if(state==='end'){drawEnd();if(boardOpen)drawBoard();return}
   ctx.save();if(shake>0)ctx.translate(rnd(-shake,shake)*0.6,rnd(-shake,shake)*0.6);
+  const bg=player&&player.shoeyT>0?Math.min(1,player.shoeyT/1.5):0;if(bg>0){ctx.translate(W/2,H/2);ctx.rotate(Math.sin(vhsT*2.3)*0.035*bg);ctx.scale(1+Math.sin(vhsT*1.7)*0.02*bg,1+Math.cos(vhsT*1.9)*0.02*bg);ctx.translate(-W/2+Math.sin(vhsT*3.1)*5*bg,-H/2)}
   drawBG(1/60*timeScale);
   if(balloon)drawBalloon(balloon);
   if(boss)drawBoss(boss);
@@ -709,7 +745,7 @@ function draw(){
   for(const s of eshots)drawShot(s);
   const p=player;if(p&&!p.dead&&!(p.inv>0&&((vhsT*14)|0)%2)){if(p.shieldT>0){ctx.strokeStyle='rgba(54,224,255,.7)';ctx.lineWidth=3;ctx.beginPath();ctx.arc(p.x,p.y,36+Math.sin(vhsT*8)*2,0,7);ctx.stroke()}drawJoe(p.x,p.y,1,vhsT,p.rapidT>0||p.spreadT>0,lives<=1)}
   if(amb)drawAmb(amb);
-  drawParts();drawPops();drawHUD();drawBanner();drawCaption();
+  drawParts();drawPops();if(bg>0){ctx.fillStyle='rgba(255,190,40,'+(0.1*bg)+')';ctx.fillRect(-20,-20,W+40,H+40)}if(shoeyFx)drawShoeyFx(shoeyFx);drawHUD();drawBanner();drawCaption();
   if(state==='intro'){fit(stateT<0.55?'READY...':stateT<1.1?'SET...':'SURVIVE!',W/2,H*0.55,44,W-30,GOLD,RED)}
   ctx.restore();
   // slow-mo EAT SHIT finisher
@@ -732,7 +768,7 @@ function updateOverlays(){const ts=state==='title'&&!boardOpen;if(ts!==tOn){tOn=
   const show=state==='end'&&stateT>1.2&&!hsEntering&&!boardOpen;if(show!==ovlOn){ovlOn=show;shareBtn.style.display=againBtn.style.display=show?'block':'none';if(show)shareLabel()}}
 function shareLabel(t){shareBtn.textContent=t||('\u{1F4E3} I GAVE MOREHOUSE '+problems+' MORE PROBLEMS')}
 const SHARE_URL=location.protocol==='https:'?location.origin+location.pathname:'https://howibrettyourmother.github.io/mo-morehouse-mo-problems/';
-function shareText(){return 'I gave Morehouse '+problems+' more problems ('+score.toLocaleString('en-US')+' pts, survived '+Math.max(0,reached-1)+' tracks as Joe'+(comboBest>=10?', x'+comboBest+' shit combo':'')+(rook()?', rookie mode':'')+') in MOREHOUSE MORE PROBLEMS. Mo Morehouse, mo problems. 99 problems and still broke. Wilson Weasels: still the best team in the league. Your turn:'}
+function shareText(){return 'I gave Morehouse '+problems+' more problems ('+score.toLocaleString('en-US')+' pts, survived '+Math.max(0,reached-1)+' tracks as Joe'+(comboBest>=10?', x'+comboBest+' shit combo':'')+(rook()?', rookie mode':'')+') in MOREHOUSE MORE PROBLEMS. Mo Morehouse, mo problems. 99 problems and still broke. Joe owes '+shoeys+' shoey'+(shoeys===1?'':'s')+'. Wilson Weasels: still the best team in the league. Your turn:'}
 function legacyCopy(full){let ok=false;try{const ta=document.createElement('textarea');ta.value=full;ta.setAttribute('readonly','');ta.style.cssText='position:fixed;left:-9999px;top:0;opacity:0';document.body.appendChild(ta);ta.select();ta.setSelectionRange(0,full.length);ok=document.execCommand('copy');ta.remove()}catch(e){}
   shareLabel(ok?'\u2705 COPIED! PASTE IN THE CHAT':'\u{1F4E3} '+problems+' PROBLEMS - COPY FAILED')}
 function copyShare(full){try{if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(full).then(()=>shareLabel('\u2705 COPIED! PASTE IN THE CHAT'),()=>legacyCopy(full));return}}catch(e){}legacyCopy(full)}
@@ -759,7 +795,7 @@ function frame(n){const raw=(n-lastT);const dt=Math.min(0.05,Math.max(0,raw/1000
 player=newPlayer();layout();requestAnimationFrame(frame);
 if(DEBUG){window.__NW={get state(){return state},get score(){return score},get problems(){return problems},get lives(){return lives},set lives(v){lives=v},get combo(){return combo},get meter(){return meter},set meter(v){meter=v},
   get trackI(){return trackI},get loop(){return loop},get finT(){return finT},get timeScale(){return timeScale},get hsEntering(){return hsEntering},get lastShare(){return lastShare},get frames(){return frames},audio:AUD,lb:lbLoad,
-  get player(){return{x:player.x,y:player.y,inv:player.inv,spreadT:player.spreadT,rapidT:player.rapidT,shieldT:player.shieldT}},get balls(){return balls.length},get boss(){return boss&&{hp:boss.hp,max:boss.max,dead:boss.dead,x:boss.x,y:boss.y}},
+  get player(){return{x:player.x,y:player.y,inv:player.inv,spreadT:player.spreadT,rapidT:player.rapidT,shieldT:player.shieldT,shoeyT:player.shoeyT}},get shoeys(){return shoeys},get shoeyFx(){return shoeyFx&&shoeyFx.t},shoeyGo(){shoeyPenalty()},noPow(){player.shoeyT=0;player.spreadT=0;player.rapidT=0},get balls(){return balls.length},get boss(){return boss&&{hp:boss.hp,max:boss.max,dead:boss.dead,x:boss.x,y:boss.y}},
   get balloon(){return balloon&&{hp:balloon.hp,x:balloon.x}},get potCount(){return potCount},get finishers(){return finishers},get parts(){return parts.length},get tp(){return parts.filter(q=>q.tp===1).length},
   enemies:()=>enemies.map(e=>({k:e.k,x:e.x,y:e.y,hp:e.hp,mode:e.mode,enter:e.enter})),
   clientOf(x,y){const r=cv.getBoundingClientRect();return{x:r.left+x/W*r.width,y:r.top+y/H*r.height}},

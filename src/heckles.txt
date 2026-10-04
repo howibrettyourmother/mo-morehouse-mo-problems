@@ -1,47 +1,26 @@
 m_mo|Mo Morehouse, mo fucking problems!|Mo Morehouse! Mo fucking problems!|start ambient|
-dream|It was all a dream... Joe used to read Rotoworld magazine!|It was all a dream. Joe used to read Roto World magazine!|start ambient|
-juicy|Juicy? Nah, Joe's roster is dry as shit!|Juicy? Nah! Joe's roster is dry as shit!|ambient end|
-caleb1|Caleb, throw the fucking ball!|Kaleb! Throw the fucking ball!|CALEB|
-caleb2|Sacked into a porta-potty! Holy shit!|Sacked into a porta potty! Holy shit!|CALEB|
-caleb3|Caleb's been holding that shit since Week One!|Kaleb's been holding that shit since week one!|CALEB|
-caleb4|Number one pick, my ass!||CALEB|
+mmp1|Morehouse, more problems, motherfucker!|Morehouse! More problems, mother fucker!|start ambient|
+chant|MO! HOUSE! MO! PROBLEMS!|Mo! House! Mo! Problems!|CHANT|1
+chant2|MORE! HOUSE! MORE! PROBLEMS!|More! House! More! Problems!|CHANT start|1
+amb4|Fraud! Fraud! Fraud!||ambient|1
 caleb5|Sack! Sack! Sack!||CALEB|1
-caleb6|Caleb's taking a dump in the pocket!|Kaleb's taking a dump in the pocket!|CALEB|
-caleb7|Flush him! Flush that bitch-ass pocket presence!|Flush him! Flush that bitch ass pocket presence!|CALEB|
-mhj1|Generational bust! Generational bullshit!||MHJ|
-mhj2|Joe paid a first for this shit!|Joe paid a first round pick for this shit!|MHJ|
-mhj3|M.H.J.: Most Horseshit Jersey!|M H J! Most horse shit jersey!|MHJ|
-mhj4|Generational? Generationally fucked!|Generational? Generationally fucked!|MHJ|
-pitts1|Pitts breakout meter: still fucking loading!|Pitts breakout meter! Still fucking loading!|PITTS|
-pitts2|Year six of the Pitts breakout, dumbass!|Year six of the Pitts breakout, dumb ass!|PITTS|
-pitts3|Ninety-nine percent... aaand it reset. Fuck!|Ninety nine percent! And it reset! Fuck!|PITTS|
-int1|Darnold threw another pick! Dodge that shit!||INT|
-int2|Darnold sees ghosts and throws to 'em!|Darnold sees ghosts and throws to them!|INT|
-int3|Pick six! Jesus fucking Christ, Sam!|Pick six! Jesus fucking Christ, Sam!|INT|
-trade1|Trade rejected! Nobody wants your shit, Joe!||TRADE|
-trade2|Who the fuck accepts that trade?||TRADE|
-trade3|Two fourths for Bijan? Get the fuck outta here!|Two fourths for Bijan? Get the fuck out of here!|TRADE|
-pick1|Another 4th-rounder? Wipe your ass with it!|Another fourth rounder? Wipe your ass with it!|PICK|
-pick2|Fourth-round picks: Joe's retirement plan!|Fourth round picks! Joe's retirement plan!|PICK|
-y4a|Rebuild Year Four! Same shit, new calendar!|Rebuild year four! Same shit! New calendar!|YEAR4|
-y4b|Flip the calendar! Year Five, baby!|Flip the calendar! Year five, baby!|YEAR4|
-bal1|Holy shit, a giant Rebuild Year Five balloon!|Holy shit! A giant rebuild year five balloon!|BALLOON|
-bal2|Pop that fucking balloon!||BALLOON|
-hurt2|Don't let that shit touch you!||HURT|
-hurt3|Dammit! Dodge the red shit!||HURT|
+fax1|Trade deadline! Every fucking offer declined!|Trade deadline! Every fucking offer, declined!|FAX|
+fax2|Declined! Declined! Get that shit outta here!|Declined! Declined! Get that shit out of here!|FAX|
+caleb8|Caleb Williams? That boy ain't right.|Kaleb Williams? That boy ain't right!|CALEB|
+pitts4|Kyle Pitts? More like Kyle SHITS.|Kyle Pitts? More like, Kyle shits!|PITTS|
+nohouse|Morehouse? More like NO house.|Morehouse? More like, no house!|end ambient|
+bitch|What a little bitch!|What a little bitch!|HURT|
 wilson|Wilson is awesome!||WILSON STAR ambient|
 wilson2|Wilson Weasels, motherfucker!|Wilson Weasels, mother fucker!|WILSON STAR|
-amb1|Joe's roster smells like a porta-potty!||ambient|
-amb2|Your bench is a flaming dumpster of shit, Joe!||ambient|
-amb3|Rebuilding since dial-up internet!|Rebuilding since dial up internet!|ambient|
-amb4|Fraud! Fraud! Fraud!||ambient|1
-amb5|SHADYNASTY charity case!|Shady Nasty charity case!|ambient end|
-amb6|Joe couldn't win a fucking bye week!||ambient|
-amb7|Riches to rags, baby! Mostly rags!||ambient end|
-end1|Morehouse: still broke!|Morehouse! Still broke!|end|
-end2|See you in 2031, Joe!|See you in twenty thirty one, Joe!|end|
-end3|Ha ha ha! Eat shit, Morehouse!||end|
-chant|MO! HOUSE! MO! PROBLEMS!|Mo! House! Mo! Problems!|CHANT|1
+bestteam|The Wilson Weasels, motherfucker! Bow to the best team in the league, Joe!|The Wilson Weasels, mother fucker! Bow to the best team in the league, Joe!|BOSS|
+boss8|Power rankings #1, baby!|Power rankings number one, baby!|BOSSHIT WILSON|
+puka1|Joe DROPPED Puka Nacua!|Joe dropped Pooka Nakooah!|PUKA|
+puka2|Puka was on your roster, you dumbass!|Pooka was on your roster, you dumb ass!|PUKA|
+puka3|Worst drop in league history!|Worst drop in league history!|PUKA|
+puka4|Puka says thanks for nothing, Joe!|Pooka says thanks for nothing, Joe!|PUKA|
+puka5|Waived a WR1 for a kicker? Holy shit!|Waived a W R 1 for a kicker? Holy shit!|PUKA|
+nails1|Fresh manicure, still can't find the open man!|Fresh manicure! Still can't find the open man!|CALEB NAILS|
+nails2|Nails done, reads not done!|Nails done! Reads, not done!|CALEB NAILS|
 a_t2|TRACK 2: MO PICKS MO PROBLEMS|Track two! Mo picks! Mo problems!|ANNOUNCE|
 a_t3|TRACK 3: MO BUSTS MO PROBLEMS|Track three! Mo busts! Mo problems!|ANNOUNCE|
 a_remix|THE REMIX! FASTER, MOTHERFUCKER!|The remix! Faster, mother fucker!|ANNOUNCE|
@@ -49,32 +28,7 @@ a_eatshit|EAT. SHIT.|Eat! Shit!|ANNOUNCE|
 a_over|MOREHOUSE: 99 PROBLEMS AND STILL BROKE!|Morehouse! Ninety nine problems, and still broke!|ANNOUNCE|
 a_mmp|MO MOREHOUSE, MO PROBLEMS!|Mo Morehouse! Mo problems!|ANNOUNCE|
 a_potty|SACKED INTO A PORTA-POTTY!|Sacked into a porta potty!|ANNOUNCE|
-chant2|MORE! HOUSE! MORE! PROBLEMS!|More! House! More! Problems!|CHANT start|1
-mmp1|Morehouse, more problems, motherfucker!|Morehouse! More problems, mother fucker!|start ambient|
 a_title|MOREHOUSE MORE PROBLEMS!|Morehouse! More! Problems!|ANNOUNCE|
-poppa|Big Poppa Weasel in the fucking building! Joe's fucked!|Big Poppa Weasel, in the fucking building! Joe's fucked!|BOSS|
-bestteam|The Wilson Weasels, motherfucker! Bow to the best team in the league, Joe!|The Wilson Weasels, mother fucker! Bow to the best team in the league, Joe!|BOSS|
-spread|Spread love, it's the Weasel way! Now eat shit, Joe!|Spread love! It's the Weasel way! Now eat shit, Joe!|ambient end BOSSHIT|
-surv1|Survive, Joe! Oh wait, you can't.|Survive, Joe! Oh wait. You can't.|start ambient|
-surv2|One more season, Joe! You said that last year!||start ambient|
-surv3|Joe's own roster is trying to kill him!||ambient|
-surv4|Year four and you're still dodging your own shit!||start ambient|
-hurt1|That's your own fucking roster hitting you, Joe!||HURT|
-hurt4|Ha! Joe got hit by his own draft pick!||HURT|
-hurt5|Joe can't even survive his own problems!||HURT|
-star1|A waiver wire pickup? That's your hope? Holy shit.|A waiver wire pickup? That's your hope? Holy shit.|STAR|
-star2|Desperate trade offer! Brett said no!||STAR|
-star3|Joe found hope! It won't last.||STAR|
-star4|Enjoy that hope, Joe! The Weasel's coming!||STAR|
-boss1|Here comes the Weasel Dynasty! Joe's fucked!|Here comes the Weasel Dynasty! Joe's fucked!|BOSS|
-boss2|Mahomes is raining on your parade, Joe!||BOSSHIT|
-boss3|The Weasels' bench is better than your starters!|The Weasels bench is better than your starters!|BOSSHIT|
-boss4|Bow to the best team in the league, Morehouse!||BOSSHIT|
-boss5|CeeDee Lamb just dunked on your whole rebuild!|CeeDee Lamb just dunked on your whole rebuild!|BOSSHIT|
-boss6|Lamar's juking your entire roster, Joe!||BOSSHIT|
-boss7|CMC is running through your shit like it's nothing!|C M C is running through your shit like it's nothing!|BOSSHIT|
-bossdie|Joe won one game! Don't get fucking used to it!|Joe won one game! Don't get fucking used to it!|BOSSDIE|
-balpop|BOOM! Joe's rebuild just popped!|Boom! Joe's rebuild just popped!|BALLOONPOP|
 a_go|SURVIVE ONE MORE SEASON, JOE! GOOD FUCKING LUCK!|Survive one more season, Joe! Good fucking luck!|ANNOUNCE|
 a_t1|TRACK 1: YEAR 4 OF THE REBUILD|Track one! Year four of the rebuild!|ANNOUNCE|
 a_t4|TRACK 4: SURVIVE THE TRADE DEADLINE|Track four! Survive the trade deadline!|ANNOUNCE|
@@ -87,19 +41,229 @@ a_hope|FALSE HOPE!|False hope!|ANNOUNCE|
 a_season|ONE MORE SEASON!|One more season!|ANNOUNCE|
 a_phase|THE WEASEL IS PISSED!|The Weasel is pissed!|ANNOUNCE|
 a_joewin|JOE WON A GAME?! THE WEASELS ARE STILL THE BEST.|Joe won a game? The Weasels are still the best.|ANNOUNCE|
-boss8|Power rankings #1, baby!|Power rankings number one, baby!|BOSSHIT WILSON|
-waah|Somebody call a WAAAAHMBULANCE!|Somebody call a waaaah mbulance!|WAAH|
-nohouse|Morehouse? More like NO house.|Morehouse? More like, no house!|end ambient|
-bitch|What a little bitch!|What a little bitch!|HURT|
-pitts4|Kyle Pitts? More like Kyle SHITS.|Kyle Pitts? More like, Kyle shits!|PITTS|
-caleb8|Caleb Williams? That boy ain't right.|Kaleb Williams? That boy ain't right!|CALEB|
-nails1|Fresh manicure, still can't find the open man!|Fresh manicure! Still can't find the open man!|CALEB|
-nails2|Nails done, reads not done!|Nails done! Reads, not done!|CALEB|
-fax1|Trade deadline! Every fucking offer declined!|Trade deadline! Every fucking offer, declined!|FAX|
-fax2|Declined! Declined! Get that shit outta here!|Declined! Declined! Get that shit out of here!|FAX|
 a_dead|MINI-BOSS: THE TRADE DEADLINE!|Mini boss! The trade deadline!|ANNOUNCE|
-puka1|Joe DROPPED Puka Nacua!|Joe dropped Pooka Nakooah!|PUKA|
-puka2|Puka was on your roster, you dumbass!|Pooka was on your roster, you dumb ass!|PUKA|
-puka3|Worst drop in league history!|Worst drop in league history!|PUKA|
-puka4|Puka says thanks for nothing, Joe!|Pooka says thanks for nothing, Joe!|PUKA|
-puka5|Waived a WR1 for a kicker? Holy shit!|Waived a W R 1 for a kicker? Holy shit!|PUKA|
+cal01|Caleb's had more sacks than a grocery store!|Kaleb's had more sacks than a grocery store!|CALEB|
+cal02|Caleb's internal clock is a fucking sundial!|Kaleb's internal clock is a fucking sundial!|CALEB|
+cal03|Throw the ball, Caleb! It's not a goddamn souvenir!|Throw the ball, Kaleb! It's not a goddamn souvenir!|CALEB|
+cal04|Caleb holds the ball longer than Joe holds a grudge!|Kaleb holds the ball longer than Joe holds a grudge!|CALEB|
+cal05|Caleb just took a sack for the team. The other team!|Kaleb just took a sack for the team. The other team!|CALEB|
+cal06|Caleb's pocket presence: porta-potty!|Kaleb's pocket presence: porta-potty!|CALEB|
+cal07|Caleb scrambled right into another fucking sack!|Kaleb scrambled right into another fucking sack!|CALEB|
+cal08|Number one pick? Number one in sacks taken!|Number one pick? Number one in sacks taken!|CALEB|
+cal09|Caleb reads defenses like a menu in a foreign language!|Kaleb reads defenses like a menu in a foreign language!|CALEB|
+cal10|Flush him! Caleb's going down the shitter again!|Flush him! Kaleb's going down the shitter again!|CALEB|
+cal11|Caleb's O-line is a revolving door of shit!|Kaleb's O line is a revolving door of shit!|CALEB|
+cal12|Caleb's checkdown is the turf. Every fucking time!|Kaleb's checkdown is the turf. Every fucking time!|CALEB|
+cal13|Caleb, the play clock is not a suggestion!|Kaleb, the play clock is not a suggestion!|CALEB|
+cal14|Sacked again! Caleb's lying down more than a mattress salesman!|Sacked again! Kaleb's lying down more than a mattress salesman!|CALEB|
+cal15|Caleb Williams: franchise quarterback, fantasy turd!|Kaleb Williams: franchise quarterback, fantasy turd!|CALEB|
+cal16|Caleb's highlight reel is just him getting folded in half!|Kaleb's highlight reel is just him getting folded in half!|CALEB|
+cal17|Caleb's starting for Joe? That's a cry for help!|Kaleb's starting for Joe? That's a cry for help!|CALEB|
+nl01|Caleb spent more time picking a nail color than reading the defense!|Kaleb spent more time picking a nail color than reading the defense!|CALEB NAILS|
+nl02|Nails painted, offense fainted!|Nails painted, offense fainted!|CALEB NAILS|
+nl03|Caleb's polish dries faster than he gets rid of the ball!|Kaleb's polish dries faster than he gets rid of the ball!|CALEB NAILS|
+nl04|Fresh coat of polish, same coat of interceptions!|Fresh coat of polish, same coat of interceptions!|CALEB NAILS|
+nl05|His nails shine brighter than his fucking stat line!|His nails shine brighter than his fucking stat line!|CALEB NAILS|
+nl06|Caleb takes a sack and checks if he chipped a nail!|Kaleb takes a sack and checks if he chipped a nail!|CALEB NAILS|
+nl07|Glossy nails, glossy pick-sixes!|Glossy nails, glossy pick sixes!|CALEB NAILS|
+nl08|Can't grip the ball, the polish is still wet!|Can't grip the ball, the polish is still wet!|CALEB NAILS|
+nl09|Ten painted nails, zero touchdown passes!|Ten painted nails, zero touchdown passes!|CALEB NAILS|
+nl10|Caleb's manicure has better protection than his blind side!|Kaleb's manicure has better protection than his blind side!|CALEB NAILS|
+nl11|Caleb gets his cuticles done and still can't find his fucking checkdown!|Kaleb gets his cuticles done and still can't find his fucking checkdown!|CALEB NAILS|
+mhj01|MHJ ran the wrong route to the wrong fucking stadium!|M H J ran the wrong route to the wrong fucking stadium!|MHJ|
+mhj02|Marvin Harrison Junior? More like Marvin Harrison Junior Varsity!|Marvin Harrison Junior? More like Marvin Harrison Junior Varsity!|MHJ|
+mhj03|MHJ's rookie card is worth less than a used napkin!|M H J's rookie card is worth less than a used napkin!|MHJ|
+mhj04|Generational talent? Generational letdown!|Generational talent? Generational letdown!|MHJ|
+mhj05|Joe paid a first for this bullshit!|Joe paid a first for this bullshit!|MHJ|
+mhj06|MHJ: Most Horseshit Jersey in the league!|M H J: Most Horseshit Jersey in the league!|MHJ|
+mhj07|MHJ gets open less than Joe's trade inbox!|M H J gets open less than Joe's trade inbox!|MHJ|
+mhj08|MHJ's target share is a rounding error!|M H J's target share is a rounding error!|MHJ|
+mhj09|Joe's WR1 is a WR fucking 4!|Joe's W R 1 is a W R fucking 4!|MHJ|
+mhj10|MHJ dropped it! Of course he fucking dropped it!|M H J dropped it! Of course he fucking dropped it!|MHJ|
+mhj11|Somebody tell MHJ the season started!|Somebody tell M H J the season started!|MHJ|
+mhj12|MHJ's ceiling is the floor!|M H J's ceiling is the floor!|MHJ|
+mhj13|Generational? He's not even situational!|Generational? He's not even situational!|MHJ|
+mhj14|MHJ's fantasy points come in fractions!|M H J's fantasy points come in fractions!|MHJ|
+pit01|Pitts has been about to break out since Obama!|Pitts has been about to break out since Obama!|PITTS|
+pit02|Kyle Pitts: the world's most expensive blocking dummy!|Kyle Pitts: the world's most expensive blocking dummy!|PITTS|
+pit03|Pitts' stat line looks like a fucking typo!|Pitts' stat line looks like a fucking typo!|PITTS|
+pit04|Breakout meter at ninety-nine percent... and reset! Classic!|Breakout meter at ninety nine percent... and reset! Classic!|PITTS|
+pit05|Year six of the Pitts breakout. Any decade now!|Year six of the Pitts breakout. Any decade now!|PITTS|
+pit06|Pitts is a tight end with a loose grip on reality!|Pitts is a tight end with a loose grip on reality!|PITTS|
+pit07|Kyle Pitts runs routes like he's looking for his car keys!|Kyle Pitts runs routes like he's looking for his car keys!|PITTS|
+pit08|Joe's waiting on Pitts like a bus that never fucking comes!|Joe's waiting on Pitts like a bus that never fucking comes!|PITTS|
+pit09|The Pitts breakout is the fantasy version of Bigfoot!|The Pitts breakout is the fantasy version of Bigfoot!|PITTS|
+pit10|Two catches, nineteen yards! Lock him in, Joe!|Two catches, nineteen yards! Lock him in, Joe!|PITTS|
+pit11|Pitts is a scratch-off ticket and Joe's still scratching!|Pitts is a scratch-off ticket and Joe's still scratching!|PITTS|
+pit12|The Pitts breakout is loading. Please wait. Forever!|The Pitts breakout is loading. Please wait. Forever!|PITTS|
+pit13|Pitts gets more targets in mock drafts than in real games!|Pitts gets more targets in mock drafts than in real games!|PITTS|
+pit14|Kyle Pitts: the ultimate next-year guy!|Kyle Pitts: the ultimate next-year guy!|PITTS|
+int01|Darnold's throwing to the other team like he's on their payroll!|Darnold's throwing to the other team like he's on their payroll!|INT|
+int02|Darnold threw a pick to a fucking cheerleader!|Darnold threw a pick to a fucking cheerleader!|INT|
+int03|Pick six! Sam's feeding the defense again!|Pick six! Sam's feeding the defense again!|INT|
+int04|Darnold sees ghosts, and he throws to 'em!|Darnold sees ghosts, and he throws to them!|INT|
+int05|Darnold finds the open man. On the wrong fucking team!|Darnold finds the open man. On the wrong fucking team!|INT|
+int06|Interception! Darnold's playing for both teams!|Interception! Darnold's playing for both teams!|INT|
+int07|Darnold threw it straight to the safety! Gift-wrapped!|Darnold threw it straight to the safety! Gift wrapped!|INT|
+int08|Sam's passer rating just went negative, baby!|Sam's passer rating just went negative, baby!|INT|
+int09|Duck! Darnold's throwing again!|Duck! Darnold's throwing again!|INT|
+int10|That pass had more air under it than Joe's trade offers!|That pass had more air under it than Joe's trade offers!|INT|
+int11|Darnold's the defense's favorite offensive player!|Darnold's the defense's favorite offensive player!|INT|
+int12|Another pick! Darnold's going for the record!|Another pick! Darnold's going for the record!|INT|
+int13|Darnold throws picks like he's paid by the turnover!|Darnold throws picks like he's paid by the turnover!|INT|
+int14|Dodge that shit! Darnold doesn't know whose side he's on!|Dodge that shit! Darnold doesn't know whose side he's on!|INT|
+pk01|Joe dropped Puka like a hot bag of shit, and it was gold!|Joe dropped Pooka like a hot bag of shit, and it was gold!|PUKA|
+pk02|Puka's catching touchdowns. Joe's catching feelings!|Pooka's catching touchdowns. Joe's catching feelings!|PUKA|
+pk03|Puka went to the moon and Joe's still on the waiver wire!|Pooka went to the moon and Joe's still on the waiver wire!|PUKA|
+pk04|Joe cut Puka. Puka cut Joe's heart out!|Joe cut Pooka. Pooka cut Joe's heart out!|PUKA|
+pk05|Every Puka touchdown is a fart in Joe's face!|Every Pooka touchdown is a fart in Joe's face!|PUKA|
+pk06|Joe had a WR1 and tossed him out like old milk!|Joe had a W R 1 and tossed him out like old milk!|PUKA|
+pk07|Puka sends his regards, dumbass!|Pooka sends his regards, dumbass!|PUKA|
+trd01|Trade rejected! Nobody wants your shit, Joe!|Trade rejected! Nobody wants your shit, Joe!|TRADE|
+trd02|Joe trades like he's drunk on boxed wine!|Joe trades like he's drunk on boxed wine!|TRADE|
+trd03|Two fourths for Bijan? Get the fuck outta here!|Two fourths for Bijan? Get the fuck out of here!|TRADE|
+trd04|Joe's trade offers come with a laugh track!|Joe's trade offers come with a laugh track!|TRADE|
+trd05|Declined! Declined! Fucking declined!|Declined! Declined! Fucking declined!|TRADE|
+trd06|Joe's trade value is in the toilet, and the toilet's clogged!|Joe's trade value is in the toilet, and the toilet's clogged!|TRADE|
+trd07|That trade offer was an insult to the whole league!|That trade offer was an insult to the whole league!|TRADE|
+trd08|Joe's trade offers should come with a warning label!|Joe's trade offers should come with a warning label!|TRADE|
+trd09|Nobody's accepting that, Joe! Not even the bots!|Nobody's accepting that, Joe! Not even the bots!|TRADE|
+trd10|Joe's trade history is a fucking crime scene!|Joe's trade history is a fucking crime scene!|TRADE|
+trd11|Another lowball? Joe's offering garbage and calling it value!|Another lowball? Joe's offering garbage and calling it value!|TRADE|
+trd12|Veto! Veto! Veto that bullshit!|Veto! Veto! Veto that bullshit!|TRADE|
+trd13|Joe's inbox is just rejection letters!|Joe's inbox is just rejection letters!|TRADE|
+pck01|Another fourth-rounder? Wipe your ass with it!|Another fourth rounder? Wipe your ass with it!|PICK|
+pck02|Fourth-round picks: Joe's retirement plan!|Fourth round picks: Joe's retirement plan!|PICK|
+pck03|Joe's draft board is a fucking Etch A Sketch!|Joe's draft board is a fucking Etch A Sketch!|PICK|
+pck04|Joe's stockpiling picks like coupons for shit!|Joe's stockpiling picks like coupons for shit!|PICK|
+pck05|Future picks! Joe's favorite currency that nobody takes!|Future picks! Joe's favorite currency that nobody takes!|PICK|
+pck06|Joe's picks bust before they're even made!|Joe's picks bust before they're even made!|PICK|
+pck07|That's not draft capital, that's draft confetti!|That's not draft capital, that's draft confetti!|PICK|
+pck08|Joe drafts like he's throwing darts blindfolded!|Joe drafts like he's throwing darts blindfolded!|PICK|
+pck09|A fourth-round pick? That's a participation sticker!|A fourth round pick? That's a participation sticker!|PICK|
+yr01|Rebuild Year Four! Same shit, new calendar!|Rebuild Year Four! Same shit, new calendar!|YEAR4|
+yr02|Flip the calendar! Year Five, baby!|Flip the calendar! Year Five, baby!|YEAR4|
+yr03|Joe's rebuild has a rebuild!|Joe's rebuild has a rebuild!|YEAR4|
+yr04|Joe's been one year away for five fucking years!|Joe's been one year away for five fucking years!|YEAR4|
+yr05|Next year, Joe! Next year! Next fucking year!|Next year, Joe! Next year! Next fucking year!|YEAR4|
+yr06|The rebuild calendar only has one month: never!|The rebuild calendar only has one month: never!|YEAR4|
+yr07|Year Five of the rebuild! Joe's process is a hostage situation!|Year Five of the rebuild! Joe's process is a hostage situation!|YEAR4|
+yr08|Rebuilding? At this point it's a demolition!|Rebuilding? At this point it's a demolition!|YEAR4|
+yr09|Joe's five-year plan is on year five of a ten-year plan!|Joe's five year plan is on year five of a ten year plan!|YEAR4|
+hrt01|Joe got hit by his own draft pick!|Joe got hit by his own draft pick!|HURT|
+hrt02|Your own roster is beating your ass, Joe!|Your own roster is beating your ass, Joe!|HURT|
+hrt03|Joe can't even survive his own problems!|Joe can't even survive his own problems!|HURT|
+hrt04|Dodge the red shit, dumbass!|Dodge the red shit, dumbass!|HURT|
+hrt05|Ouch! That's gonna leave a mark on the standings!|Ouch! That's gonna leave a mark on the standings!|HURT|
+hrt06|Joe's getting bodied by his own bench!|Joe's getting bodied by his own bench!|HURT|
+hrt07|Get up, Joe! Actually, stay down!|Get up, Joe! Actually, stay down!|HURT|
+hrt08|Joe's taking hits like Caleb takes sacks!|Joe's taking hits like Kaleb takes sacks!|HURT|
+hrt09|That one hurt! Just like Joe's whole season!|That one hurt! Just like Joe's whole season!|HURT|
+hrt10|Joe's own players are trying to kill him!|Joe's own players are trying to kill him!|HURT|
+hrt11|Down goes Morehouse! Down goes Morehouse!|Down goes Morehouse! Down goes Morehouse!|HURT|
+hrt12|Joe's season is on life support!|Joe's season is on life support!|HURT|
+hrt13|Somebody check on Joe, he's crying into his cheat sheet!|Somebody check on Joe, he's crying into his cheat sheet!|HURT|
+hrt14|Joe just got dunked on by a fourth-round pick!|Joe just got dunked on by a fourth round pick!|HURT|
+str01|A waiver wire pickup? That's your hope? Holy shit!|A waiver wire pickup? That's your hope? Holy shit!|STAR|
+str02|Joe found hope! It won't last.|Joe found hope! It won't last.|STAR|
+str03|Enjoy that hope, Joe! The Weasels are coming!|Enjoy that hope, Joe! The Weasels are coming!|STAR|
+str04|Joe's waiver claims are a cry for help!|Joe's waiver claims are a cry for help!|STAR|
+str05|False hope! Joe's favorite flavor!|False hope! Joe's favorite flavor!|STAR|
+str06|One more season? Joe says that every season!|One more season? Joe says that every season!|STAR|
+str07|Look at Joe, grabbing scraps off the waiver wire!|Look at Joe, grabbing scraps off the waiver wire!|STAR|
+str08|Desperate trade offer accepted! By nobody!|Desperate trade offer accepted! By nobody!|STAR|
+str09|That power-up is the best player on Joe's roster!|That power up is the best player on Joe's roster!|STAR|
+str10|Joe's hope has a shorter shelf life than milk!|Joe's hope has a shorter shelf life than milk!|STAR|
+bss01|Here come the Wilson Weasels! Joe's fucked!|Here come the Wilson Weasels! Joe's fucked!|BOSS|
+bss02|The best team in the league just walked in! Run, Joe!|The best team in the league just walked in! Run, Joe!|BOSS|
+bss03|Uh oh! The Weasels smell a rebuild!|Uh oh! The Weasels smell a rebuild!|BOSS|
+bss04|Weasel time, bitch! The best team in the league is here!|Weasel time, bitch! The best team in the league is here!|BOSS|
+bss05|Hail to the Weasels, motherfucker!|Hail to the Weasels, mother fucker!|BOSS|
+wsl01|The Weasels don't rebuild. The Weasels reload, bitch!|The Weasels don't rebuild. The Weasels reload, bitch!|BOSSHIT|
+wsl02|Wilson's waiver pickups are better than Joe's first-rounders!|Wilson's waiver pickups are better than Joe's first rounders!|BOSSHIT|
+wsl03|The Weasels are cooking and Joe's eating shit!|The Weasels are cooking and Joe's eating shit!|BOSSHIT|
+wsl04|Weasels on top, Joe on the fucking bottom!|Weasels on top, Joe on the fucking bottom!|BOSSHIT|
+wsl05|Wilson drafts. Joe drools.|Wilson drafts. Joe drools.|BOSSHIT|
+wsl06|The Weasels' bench is better than your starters!|The Weasels bench is better than your starters!|BOSSHIT|
+wsl07|Bow to the best team in the league, Morehouse!|Bow to the best team in the league, Morehouse!|BOSSHIT|
+wsl08|Mahomes is raining on your parade, Joe!|Mahomes is raining on your parade, Joe!|BOSSHIT|
+wsl09|CeeDee Lamb just dunked on your whole rebuild!|CeeDee Lamb just dunked on your whole rebuild!|BOSSHIT|
+wsl10|Lamar's juking your entire roster!|Lamar's juking your entire roster!|BOSSHIT|
+wsl11|CMC is running through your shit like it's nothing!|C M C is running through your shit like it's nothing!|BOSSHIT|
+wsl12|The Weasels' practice squad would start for Joe!|The Weasels practice squad would start for Joe!|BOSSHIT|
+wsl13|Wilson sets his lineup in five minutes and still kicks your ass!|Wilson sets his lineup in five minutes and still kicks your ass!|BOSSHIT|
+wsl14|Best team in the league, Joe! Read the standings!|Best team in the league, Joe! Read the standings!|BOSSHIT|
+wsl15|The Weasels have depth. Joe has debt!|The Weasels have depth. Joe has debt!|BOSSHIT|
+wsl16|Weasels by fifty! Weasels by a hundred!|Weasels by fifty! Weasels by a hundred!|BOSSHIT|
+wsl17|Brett's bye-week fill-ins outscored Joe's whole team!|Brett's bye week fill-ins outscored Joe's whole team!|BOSSHIT|
+wsl18|That's what a real roster looks like, Joe!|That's what a real roster looks like, Joe!|BOSSHIT|
+jsn01|JSN just cooked your whole secondary, Joe!|J S N just cooked your whole secondary, Joe!|BOSSHIT|
+jsn02|Jaxon Smith-Njigba, motherfucker! Weasels eat!|Jaxon Smith Nij-ah, mother fucker! Weasels eat!|BOSSHIT WILSON|
+jsn03|JSN's getting open faster than Joe gets fired!|J S N's getting open faster than Joe gets fired!|BOSSHIT|
+jsn04|JSN is wide open. So is Joe's whole defense!|J S N is wide open. So is Joe's whole defense!|BOSSHIT|
+jsn05|Joe passed on JSN. Of course he fucking did!|Joe passed on J S N. Of course he fucking did!|BOSSHIT STAR|
+jsn06|JSN's got more yards than Joe's got wins!|J S N's got more yards than Joe's got wins!|BOSSHIT|
+wsl19|Wilson is a fantasy genius. Joe is a fantasy accident!||WILSON|
+bd1|Joe won one game! Don't get fucking used to it!||BOSSDIE|
+bd2|Even a broken rebuild is right once a year!||BOSSDIE|
+bd3|Lucky shot, Joe! The Weasels are still the best team in the league!||BOSSDIE|
+bal1|Holy shit, a giant Rebuild Year Five balloon!||BALLOON|
+bal2|Pop that fucking balloon!||BALLOON|
+bal3|Joe's rebuild is full of hot air!||BALLOON|
+bp1|Boom! Joe's rebuild just popped!||BALLOONPOP|
+bp2|There goes the rebuild! Pop goes Morehouse!||BALLOONPOP|
+fx3|Fax machine? Joe's still sending trade offers from 1997!|Fax machine? Joe's still sending trade offers from nineteen ninety seven!|FAX|
+fx4|Every offer declined! The trade deadline hates you, Joe!||FAX|
+amb11|Joe's roster is held together with duct tape and tears!|Joe's roster is held together with duct tape and tears!|ambient|
+amb12|Joe's trophy case is a fucking shoebox!|Joe's trophy case is a fucking shoebox!|ambient|
+amb13|Joe's team is the reason the league has a toilet bowl!|Joe's team is the reason the league has a toilet bowl!|ambient|
+amb14|Joe's bench is a flaming dumpster of shit!|Joe's bench is a flaming dumpster of shit!|ambient|
+amb15|Rebuilding since dial-up internet!|Rebuilding since dial up internet!|ambient|
+amb16|Joe couldn't win a fucking bye week!|Joe couldn't win a fucking bye week!|ambient|
+amb17|SHADYNASTY charity case!|Shady Nasty charity case!|ambient end|
+amb18|Joe's roster smells like a porta-potty!|Joe's roster smells like a porta potty!|ambient|
+amb19|Survive, Joe! Oh wait, you can't.|Survive, Joe! Oh wait, you can't.|start ambient|
+amb20|One more season, Joe! You said that last year!|One more season, Joe! You said that last year!|start ambient|
+amb21|Joe's starting lineup is a hostage note!|Joe's starting lineup is a hostage note!|ambient|
+amb22|Joe's team name should be Rebuilding Forever!|Joe's team name should be Rebuilding Forever!|ambient|
+amb23|Joe's contention window is bricked shut!|Joe's contention window is bricked shut!|ambient|
+amb24|Joe sets his lineup with a Magic 8 Ball!|Joe sets his lineup with a Magic 8 Ball!|ambient|
+amb25|Joe's fantasy team is a tax write-off!|Joe's fantasy team is a tax write off!|ambient|
+amb26|Joe checks the waiver wire like it's a slot machine!|Joe checks the waiver wire like it's a slot machine!|ambient|
+amb27|Joe's dynasty is a dumpster with a logo!|Joe's dynasty is a dumpster with a logo!|ambient|
+amb28|Joe's playoff odds are a rounding error!|Joe's playoff odds are a rounding error!|ambient|
+amb29|Joe's process is just losing, but slower!|Joe's process is just losing, but slower!|ambient|
+amb30|Joe's sleeper picks never wake the fuck up!|Joe's sleeper picks never wake the fuck up!|ambient|
+amb31|The league's only sure thing: Joe in last place!|The league's only sure thing: Joe in last place!|ambient end|
+amb32|Joe's roster is a fire sale nobody shows up to!|Joe's roster is a fire sale nobody shows up to!|ambient|
+amb33|Joe benches his best players and starts his worst! Every week!|Joe benches his best players and starts his worst! Every week!|ambient|
+amb34|Joe's mock drafts go better than his real drafts!|Joe's mock drafts go better than his real drafts!|ambient|
+amb35|Joe's roster has more question marks than a game show!|Joe's roster has more question marks than a game show!|ambient|
+amb36|Year four and Joe's still dodging his own shit!|Year four and Joe's still dodging his own shit!|start ambient|
+amb37|Joe's own roster is trying to kill him!|Joe's own roster is trying to kill him!|start ambient|
+amb38|Joe's dynasty is a dynasty of disappointment!|Joe's dynasty is a dynasty of disappointment!|ambient|
+amb39|Hey Joe! The waiver wire called. It wants its players back!|Hey Joe! The waiver wire called. It wants its players back!|ambient|
+amb40|Joe's rebuild is a timeshare in hell!|Joe's rebuild is a timeshare in hell!|ambient|
+end11|Morehouse: still broke!|Morehouse! still broke!|end|
+end12|See you in 2031, Joe!|See you in twenty thirty one, Joe!|end|
+end13|Ha ha ha! Eat shit, Morehouse!|Ha ha ha! Eat shit, Morehouse!|end|
+end14|Game over, Joe! Same as your season!|Game over, Joe! Same as your season!|end|
+end15|Joe's season is over. Joe's rebuild is not!|Joe's season is over. Joe's rebuild is not!|end|
+end16|Another year, another L for Morehouse!|Another year, another L for Morehouse!|end|
+end17|Put Joe on the trading block! Oh wait, nobody wants him!|Put Joe on the trading block! Oh wait, nobody wants him!|end|
+end18|That's it? That's the whole rebuild?|That's it? That's the whole rebuild?|end|
+end19|Call it! Time of death: Week One!|Call it! Time of death: Week One!|end|
+end20|Rebuild Year Six starts now, dumbass!|Rebuild Year Six starts now, dumbass!|end|
+shoey1|SHOEY! SHOEY! SHOEY!|Shoey! Shoey! Shoey!|SHOEYCHANT|1
+sho01|Joe's drinking out of his own sneaker again!|Joe's drinking out of his own sneaker again!|SHOEY|
+sho02|Pay up, Joe, shoey time!|Pay up, Joe! Shoey time!|SHOEY|
+sho03|That shoey tastes like rebuild and foot fungus!|That shoey tastes like rebuild, and foot fungus!|SHOEY|
+sho04|The league demands a shoey!|The league demands a shoey!|SHOEY|
+sho05|Chug it, Joe! Every drop, you fraud!|Chug it, Joe! Every drop, you fraud!|SHOEY|
+sho06|Joe's running a tab of shoeys longer than his losing streak!|Joe's running a tab of shoeys longer than his losing streak!|SHOEY|
+sho07|Lose the matchup, drink the shoe. League rules, bitch!|Lose the matchup, drink the shoe. League rules, bitch!|SHOEY|
+sho08|That sneaker's seen more action than Joe's starting lineup!|That sneaker's seen more action than Joe's starting lineup!|SHOEY|
+shu01|Liquid courage! Still gonna lose!|Liquid courage! Still gonna lose!|SHOEYUP|
+shu02|Joe's beer goggles say he's a contender!|Joe's beer goggles say he's a contender!|SHOEYUP|
+shu03|One shoey and Joe thinks he's playoff bound!|One shoey and Joe thinks he's playoff bound!|SHOEYUP|
+shu04|Drunk Joe makes better trades than sober Joe!|Drunk Joe makes better trades than sober Joe!|SHOEYUP|

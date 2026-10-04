@@ -2,7 +2,7 @@
 
 **Mo Morehouse, Mo Problems.** A SHADYNASTY Production. A parody vertical arcade shooter inspired by 90s East Coast hip-hop (explicit language).
 
-You are Joe Morehouse, a sad cartoon GM in Year 4 of the rebuild ("Rebuilding Morehouse"), trying to survive one more season against waves of your own problems: Caleb sacks, MHJ busts, Pitts resets, Darnold INTs, rejected trades, 4th-round picks, Rebuild Year calendars. Then the final boss shows up: THE WILSON WEASELS (BEST TEAM IN THE LEAGUE), Brett's crowned juggernaut with #1 foam fingers, stacks of cash and a POWER RANKINGS #1 belt, raining Mahomes, Lamb, Lamar and CMC down on you.
+You are Joe Morehouse, a sad cartoon GM in Year 4 of the rebuild ("Rebuilding Morehouse"), trying to survive one more season against waves of your own problems: Caleb sacks, MHJ busts, Pitts resets, Darnold INTs, rejected trades, 4th-round picks, Rebuild Year calendars. Then the final boss shows up: THE WILSON WEASELS (BEST TEAM IN THE LEAGUE), Brett's crowned juggernaut with #1 foam fingers, stacks of cash and a POWER RANKINGS #1 belt, raining Mahomes, Lamb, Lamar, JSN and CMC down on you.
 
 - Drag to move, footballs auto-fire. RED = incoming problems, shoot them. GOLD stars = rare hope (Waiver Wire Pickup, Desperate Trade Offer...), catch them.
 - When Joe's crying gets bad, somebody calls a WAAAAHMBULANCE.
@@ -13,7 +13,11 @@ You are Joe Morehouse, a sad cartoon GM in Year 4 of the rebuild ("Rebuilding Mo
 - **League Leaderboard** (top 25, names up to 16 chars, score, tracks survived, mode tag) on the title and end screens; your run is highlighted with your rank. Local Hall of Shame is kept as the offline fallback.
 - **Modes:** Rookie (5 seasons, slower problems) or Year 5 of the Rebuild (the real deal). Tap to skip the intro.
 - **Mini-boss: THE TRADE DEADLINE**, a fax machine spitting DECLINED trade offers. Plus the ghost of **PUKA NACUA (DROPPED)**, floating past forever out of reach.
-- End screen: Joe sobbing face-down on a desk of rejected trade offers under his own rain cloud. PUKAS DROPPED: 1 (FOREVER).
+- End screen: Joe sobbing face-down on a desk of rejected trade offers under his own rain cloud. PUKAS DROPPED: 1 (FOREVER). SHOEYS OWED: N, and JOE OWES THE LEAGUE N SHOEYS.
+- **Shoeys (league rules):** lose a life and you sometimes get a SHOEY PENALTY cartoon (beer poured into a sneaker, Joe chugs, gags). Each lost life adds a shoey owed, and the share text says how many. A rare gold **LIQUID COURAGE SHOEY** gives beer goggles (wobbly screen), a burp, triple shots and +1 season.
+- **Weasel stars:** the boss rains Mahomes, Lamb, Lamar, CMC and JSN cards. Caleb's card carries a pink nail-polish bottle.
+- **Voice:** 269 TTS lines (see `heckles-list.md`). Each category is a shuffle-bag, none of the last 15 lines can repeat, and there's a 3.2–5 s heckle cooldown. Lines are lazy-loaded from `vo.json`.
+- **Home-screen icon:** MMP crest (`apple-touch-icon.png`, `icon-192/512.png`, `favicon.ico`, `manifest.webmanifest`). Regenerate it with `python3 src/make_icons.py`, which also rebuilds `og.png`.
 
 ### Leaderboard backend (no accounts, no secrets)
 Browsers POST scores as JSON to a public [ntfy.sh](https://ntfy.sh) topic (`mmp-league-scores-k7q2v9x4`, CORS-open, 12h retention). The game reads the

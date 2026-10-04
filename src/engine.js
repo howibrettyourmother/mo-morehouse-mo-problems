@@ -135,6 +135,14 @@ const AUD=(()=>{
     death:safe(()=>{const t=now();const g=gain(0,sfxBus);env(g,t,0.01,1.1,0.4,0.09);const o=osc('square',700,t,1.5,filt('lowpass',2200,1,g));
       o.frequency.exponentialRampToValueAtTime(70,t+1.4);const l=C.createOscillator(),lg=C.createGain();l.frequency.value=11;lg.gain.value=40;l.connect(lg);lg.connect(o.frequency);l.start(t);l.stop(t+1.5);
       const b=gain(0,sfxBus);env(b,t+1.35,0.005,0.05,0.3,0.25);const bo=osc('sine',120,t+1.35,0.4,b);bo.frequency.exponentialRampToValueAtTime(40,t+1.7)}),
+    // SHOEY: glug-glug chug, retching gag, big beer burp (all synthesized, pre-rendered like every other SFX)
+    glug:safe(()=>{const t=now();for(let i=0;i<5;i++){const s=t+i*0.17,g=gain(0,sfxBus);env(g,s,0.005,0.03,0.09,0.22);const o=osc('sine',rr(330,420),s,0.14,filt('lowpass',900,4,g));o.frequency.exponentialRampToValueAtTime(140,s+0.12)}}),
+    gag:safe(()=>{const t=now(),out=gain(0.9,sfxBus),bank=formantBank('ah',out);
+      [[0,0.32,150],[0.42,0.5,120]].forEach(([d,L,f])=>{const s=t+d,g=C.createGain();g.gain.value=0;g.connect(bank);env(g,s,0.04,L*0.5,L*0.5,0.9);
+        const o=osc('sawtooth',f,s,L+0.1,g);o.frequency.linearRampToValueAtTime(f*0.7,s+L);const l=C.createOscillator(),lg=C.createGain();l.frequency.value=23;lg.gain.value=f*0.25;l.connect(lg);lg.connect(o.frequency);l.start(s);l.stop(s+L+0.1);
+        const ng=gain(0,sfxBus);env(ng,s,0.02,L*0.4,L*0.5,0.12);noiseSrc(s,L+0.1,filt('bandpass',700,1.2,ng))})}),
+    burp:safe(()=>{const t=now(),L=0.75,out=gain(1.1,sfxBus),bank=formantBank('ah',out),g=C.createGain();g.gain.value=0;g.connect(bank);env(g,t,0.03,L*0.6,L*0.4,1);
+      const o=osc('sawtooth',95,t,L+0.1,g);o.frequency.linearRampToValueAtTime(68,t+L);const l=C.createOscillator(),lg=C.createGain();l.frequency.value=31;lg.gain.value=0.6;l.connect(lg);lg.connect(g.gain);l.start(t);l.stop(t+L+0.1)}),
     power:safe(()=>{const t=now();const g=gain(0,sfxBus);env(g,t,0.02,0.35,0.3,0.07);const f=filt('lowpass',400,8,g);f.frequency.exponentialRampToValueAtTime(6000,t+0.5);
       const o=osc('sawtooth',110,t,0.7,f);o.frequency.exponentialRampToValueAtTime(880,t+0.5);
       [523,659,784,1046].forEach(fq=>toneRaw(fq,0.35,'square',0.03,0,0.5))}),
@@ -226,7 +234,7 @@ const AUD=(()=>{
     enqueue(()=>{const sp=60/s.bpm/s.div,L=s.len*sp;return renderJob(L+2.4,2,()=>{let t=0;for(let i=0;i<s.len;i++){playStep(s,i,t,sp);const sw=s.swing||0;t+=sp*(i%2===0?1+sw:1-sw)}},name).then(b=>{
       const n=Math.round(L*b.sampleRate),o=LIVE.createBuffer(2,n,b.sampleRate);for(let c=0;c<2;c++){const a=b.getChannelData(c),x=o.getChannelData(c);x.set(a.subarray(0,n));for(let i=n;i<a.length&&i-n<n;i++)x[i-n]+=a[i]}songBuf[name]=o})},name===pendingName||name===curName)}
   const SYN=Object.assign({},SFXi);
-  const LEN={cheer:4.6,boo:3.9,laugh:4.2,trombone:5.4,sadHorn:4.6,eatShitChant:6.2,mmpChant:6.2,sackChant:4.6,flush:3.6,slowmo:3.9,death:3.8,airhorn:3.1,bossSting:3.7,ohh:3.2,intThrow:2.9,bossHit:3.1,bigPop:2.9,power:2.4,siren:2.6,ghostEat:1.2,scratch:0.8,bonus:0.9,start:1.4,hurt:0.8,stamp:0.6,sniff:0.6};
+  const LEN={cheer:4.6,boo:3.9,laugh:4.2,trombone:5.4,sadHorn:4.6,eatShitChant:6.2,mmpChant:6.2,sackChant:4.6,flush:3.6,slowmo:3.9,death:3.8,airhorn:3.1,bossSting:3.7,ohh:3.2,intThrow:2.9,bossHit:3.1,bigPop:2.9,power:2.4,siren:2.6,ghostEat:1.2,scratch:0.8,bonus:0.9,start:1.4,hurt:0.8,stamp:0.6,sniff:0.6,glug:1.3,gag:1.4,burp:1.2};
   const DARG={trombone:0,sadHorn:0,stamp:0,eatShitChant:0,mmpChant:0,tone:5};
   function sig(k,args){const a=Array.prototype.slice.call(args);let d=0;if(k in DARG){d=+a[DARG[k]]||0;a[DARG[k]]=0}
     if(k==='squeak')a[0]=Math.round((+a[0]||0)*4)/4;if(k==='cheer'||k==='laugh'||k==='boo')a[0]=Math.round((+a[0]||1)*5)/5;if(k==='splat')a[0]=!!a[0];return{key:k+'|'+a.join(','),a,d}}
@@ -242,12 +250,12 @@ const AUD=(()=>{
   function warm(){if(warm.done||!C)return;warm.done=true;
     renderSfx('airhorn',[],'airhorn|',true);requestSong('title');
     [['throwF'],['splat',false],['splat',true],['chomp'],['scratch'],['bonus'],['power'],['intThrow'],['hurt'],['flush'],['bigPop'],['bossHit'],['cheer',1],['cheer',0.6],['cheer',1.2],['laugh',0.8],['laugh',1.2],['laugh',1.4],['ohh'],['trombone',0],
-     ['slowmo'],['eatShitChant',0],['mmpChant',0],['death'],['ghostEat'],['bossSting'],['siren'],['squeak',0],['squeak',0.25],['squeak',0.5],['squeak',0.75],['squeak',1]].forEach(x=>{const g=sig(x[0],x.slice(1));renderSfx(x[0],g.a,g.key)});
+     ['slowmo'],['eatShitChant',0],['mmpChant',0],['death'],['ghostEat'],['bossSting'],['siren'],['glug'],['gag'],['burp'],['squeak',0],['squeak',0.25],['squeak',0.5],['squeak',0.75],['squeak',1]].forEach(x=>{const g=sig(x[0],x.slice(1));renderSfx(x[0],g.a,g.key)});
     requestSong('main');requestSong('boss');requestSong('ending')}
 
   // ---- SFX limiter: per-sound throttles, one BIG sound at a time, max 6 SFX per 150ms ----
   {const TH={airhorn:900,bigPop:450,splat:70,chomp:60,throwF:150,bossHit:250,cheer:1100,boo:1100,laugh:1400,ohh:900,flush:700,scratch:350,slowmo:1200,eatShitChant:1800,mmpChant:1800,sackChant:1800,
-     power:300,bonus:200,ghostEat:300,intThrow:250,squeak:90,sniff:400,hurt:300,death:800,trombone:2000,sadHorn:2000,stamp:200,start:300,bossSting:800,siren:1500};
+     power:300,bonus:200,ghostEat:300,intThrow:250,squeak:90,sniff:400,hurt:300,death:800,trombone:2000,sadHorn:2000,stamp:200,start:300,bossSting:800,siren:1500,glug:1500,gag:1500,burp:1200};
    const BIG={airhorn:1.25,bigPop:0.6,slowmo:1.4,bossHit:0.5,flush:1.3,bossSting:1.3,death:1.4};const last={};let win=[],bigUntil=0;
    for(const k of Object.keys(SFXi)){if(k==='tone')continue;const f=SFXi[k];SFXi[k]=function(){const n=performance.now(),hard=pressure>0;if(n-(last[k]||-1e9)<(TH[k]||60)*(hard?2.2:1)){stats.sfxDrop=(stats.sfxDrop||0)+1;return}
      win=win.filter(x=>n-x<150);if(win.length>=(hard?3:5)){stats.sfxDrop=(stats.sfxDrop||0)+1;return}
@@ -368,12 +376,12 @@ const AUD=(()=>{
   }
   // ---- SINGLE VOICE QUEUE: one line at a time, short gap, 2.5-4s cooldown for random heckles, priorities, stale low-prio lines dropped ----
   const stingLast={};let onSay=null;const Q=[];let busyUntil=0,lastEnd=-1e9,cool=3000,curLine=null;
-  const P3=new Set(['puka1','puka2','puka3','puka4','puka5','pitts4','caleb8','nails1','nails2','waah','bitch','nohouse','wilson','wilson2','bestteam','boss8','a_over','a_best','a_eatshit','a_joewin','poppa','boss1','bossdie']);
-  function prioOf(h,base){if(P3.has(h.k))return 3;if(h.g.split(' ').some(g=>g==='BOSS'||g==='BOSSHIT'||g==='BOSSDIE'||g==='WILSON'||g==='end'))return Math.max(base,2);return base}
+  const P3=new Set(['puka1','puka2','puka3','puka4','puka5','pitts4','caleb8','nails1','nails2','bitch','nohouse','wilson','wilson2','bestteam','boss8','a_over','a_best','a_eatshit','a_joewin']);
+  function prioOf(h,base){if(P3.has(h.k))return 3;if(h.g.split(' ').some(g=>g==='BOSS'||g==='BOSSHIT'||g==='BOSSDIE'||g==='WILSON'||g==='end'||g==='SHOEY'||g==='SHOEYUP'||g==='SHOEYCHANT'))return Math.max(base,2);return base}
   function startLine(e){const h=e.h;let ok=false,dur=1.8;
     if(C&&!muted){try{if('speechSynthesis' in window)speechSynthesis.cancel()}catch(x){}
       if(clips[h.k]){ok=playClip(h.k,!!(e.o.chant||h.chant),0,e.o.vol,e.o.rate);dur=clips[h.k].duration/(e.o.rate||1)}else ok=say(h.s||h.t)}
-    const n=performance.now();busyUntil=n+dur*1000;lastEnd=busyUntil;cool=rr(2500,4000);
+    const n=performance.now();busyUntil=n+dur*1000;lastEnd=busyUntil;cool=rr(3200,5000);recent.push(h.k);while(recent.length>WINDOW)recent.shift();
     stats.n++;const kind=ok?(clips[h.k]?'clip':'speech'):'text';stats[kind]=(stats[kind]||0)+1;if(e.sting)stats.sting=(stats.sting||0)+1;stats[h.k]=(stats[h.k]||0)+1;stats.last=h.t;
     stats.maxQ=Math.max(stats.maxQ||0,Q.length);curLine={k:h.k,t:h.t,until:busyUntil};
     if(onSay)try{onSay(h.t,h.g.includes('ANNOUNCE'),dur)}catch(x){}}
@@ -389,13 +397,19 @@ const AUD=(()=>{
   setInterval(()=>{try{pump()}catch(e){}},40);
   function sting(k,o){try{o=o||{};const n=performance.now();if(n-(stingLast[k]||-1e9)<(o.throttle||0))return false;const h=HECKLES.find(x=>x.k===k);if(!h)return false;
       const ok=request(h,o,o.prio||(P3.has(k)?3:2),true);if(ok)stingLast[k]=n;return ok}catch(e){console.warn('sting',e);return false}}
-  function heckle(ev){try{if(document.hidden)return null;let pool=HECKLES.filter(h=>h.g.split(' ').includes(ev));if(!pool.length)return null;
-      const fresh=pool.filter(h=>!recent.includes(h));if(fresh.length)pool=fresh;const h=pick(pool);
-      if(!request(h,{},prioOf(h,ev==='ambient'?0:1),false))return null;recent.push(h);if(recent.length>10)recent.shift();return h.t}catch(e){console.warn('heckle',e);return null}}
+  // ANTI-REPETITION: a shuffle-bag per category (no line repeats until that category's bag is empty) + a global window: none of the last 15 played lines
+  const bags={},WINDOW=15;function shuffle(a){for(let i=a.length-1;i>0;i--){const j=(R()*(i+1))|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+  function nextFrom(B,ev,rec){let bag=B[ev];
+      if(!bag||!bag.length){const pool=HECKLES.filter(h=>h.g.split(' ').includes(ev));if(!pool.length)return null;bag=B[ev]=shuffle(pool.slice());stats.bagRefill=(stats.bagRefill||0)+1}
+      const i=bag.findIndex(h=>!rec.includes(h.k));if(i<0){stats.repeatSkip=(stats.repeatSkip||0)+1;return null}return{bag,i,h:bag[i]}}
+  // test hook: runs the exact same selection on a private bag set (n picks, each one 'played')
+  function simPicks(ev,n){const B={},rec=[],out=[];for(let j=0;j<n;j++){const r=nextFrom(B,ev,rec);if(!r){out.push(null);continue}r.bag.splice(r.i,1);out.push(r.h.k);rec.push(r.h.k);while(rec.length>WINDOW)rec.shift()}return out}
+  function heckle(ev){try{if(document.hidden)return null;const r=nextFrom(bags,ev,recent);if(!r)return null;
+      const h=r.h;if(!request(h,{},prioOf(h,ev==='ambient'?0:1),false))return null;r.bag.splice(r.bag.indexOf(h),1);return h.t}catch(e){console.warn('heckle',e);return null}}
   function setMuted(m){muted=m;localStorage.setItem('nw_muted',m?'1':'0');if(C){master.gain.setTargetAtTime(m?0:0.9,now(),0.03)}if(m){try{speechSynthesis.cancel()}catch(e){}}}
   function setMusic(on){musicOn=on;if(on&&C&&curName&&!musicSrc)startSong(curName,now()+0.05);localStorage.setItem('nw_music',on?'1':'0');if(C)musicBus.gain.setTargetAtTime(on?0.42:0,now(),0.05)}
   return{unlock,heckle,sting,setTheme,setMuted,setMusic,SFX:SFXi,
     get unlocked(){return unlocked&&!!C},get running(){return !!C&&C.state==='running'},get muted(){return muted},get musicOn(){return musicOn},
-    get theme(){return curName},get queueLen(){return Q.length},get current(){return curLine&&performance.now()<curLine.until?curLine:null},stats:()=>stats,get clipCount(){return Object.keys(clips).length},get errors(){return errors},
+    get theme(){return curName},get queueLen(){return Q.length},get idle(){const n=performance.now();return !Q.length&&n>busyUntil+300&&n>lastEnd+cool},get recent(){return recent.slice()},bagLeft:ev=>bags[ev]?bags[ev].length:-1,simPicks,poolSize:ev=>HECKLES.filter(h=>h.g.split(' ').includes(ev)).length,get current(){return curLine&&performance.now()<curLine.until?curLine:null},stats:()=>stats,get clipCount(){return Object.keys(clips).length},get errors(){return errors},
     set ambience(v){ambTarget=v},set pressure(v){pressure=v},get rendering(){return rqBusy||rq.length>0},get pressure(){return pressure},nodeStats:()=>Object.assign({},nst,{cached:Object.keys(cache).length,songs:Object.keys(songBuf),renderQ:rq.length,music:!!musicSrc}),set onSay(f){onSay=f},unlockAge:()=>performance.now()-unlockedAt,endingDelay(s){startDelay=s},ctx:()=>C};
 })();

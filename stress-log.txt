@@ -1,18 +1,18 @@
-5 {"webaudio": {"liveNodes": 35, "created": 69, "renderCapacity": 0.023, "cbVar": 5.092098906398119e-09}, "lp": true, "ft": 52.47252229737496, "parts": 41, "combo": 39, "fs": 3} oneshot 3 peak 5 capDrop 6
-10 {"webaudio": {"liveNodes": 45, "created": 94, "renderCapacity": 0.019, "cbVar": 5.13322075074445e-09}, "lp": true, "ft": 106.54894862967731, "parts": 220, "combo": 100, "fs": 9} oneshot 3 peak 5 capDrop 10
-15 {"webaudio": {"liveNodes": 38, "created": 129, "renderCapacity": 0.016, "cbVar": 3.4553203312773286e-09}, "lp": true, "ft": 70.77357504234534, "parts": 220, "combo": 157, "fs": 13} oneshot 3 peak 5 capDrop 15
-20 {"webaudio": {"liveNodes": 37, "created": 158, "renderCapacity": 0.021, "cbVar": 4.9675085175892156e-09}, "lp": true, "ft": 72.71154059613096, "parts": 220, "combo": 211, "fs": 18} oneshot 2 peak 5 capDrop 21
-25 {"webaudio": {"liveNodes": 38, "created": 183, "renderCapacity": 0.026, "cbVar": 2.780698788481462e-09}, "lp": true, "ft": 69.51584931567373, "parts": 220, "combo": 256, "fs": 23} oneshot 4 peak 7 capDrop 36
-30 {"webaudio": {"liveNodes": 33, "created": 206, "renderCapacity": 0.024, "cbVar": 3.5819688979751353e-09}, "lp": true, "ft": 69.66580492040151, "parts": 220, "combo": 301, "fs": 28} oneshot 4 peak 7 capDrop 50
-35 {"webaudio": {"liveNodes": 42, "created": 229, "renderCapacity": 0.021, "cbVar": 3.4784544981800247e-09}, "lp": true, "ft": 68.04411941443968, "parts": 151, "combo": 346, "fs": 33} oneshot 4 peak 7 capDrop 59
-40 {"webaudio": {"liveNodes": 36, "created": 252, "renderCapacity": 0.025, "cbVar": 2.1023401521624946e-09}, "lp": true, "ft": 65.99222085855669, "parts": 113, "combo": 385, "fs": 37} oneshot 5 peak 7 capDrop 78
-45 {"webaudio": {"liveNodes": 50, "created": 280, "renderCapacity": 0.022, "cbVar": 3.216849362757603e-09}, "lp": true, "ft": 61.28949773489465, "parts": 84, "combo": 0, "fs": 39} oneshot 5 peak 7 capDrop 97
-50 {"webaudio": {"liveNodes": 41, "created": 303, "renderCapacity": 0.023, "cbVar": 2.742335343113155e-09}, "lp": true, "ft": 77.01852791873121, "parts": 168, "combo": 64, "fs": 45} oneshot 3 peak 7 capDrop 117
-55 {"webaudio": {"liveNodes": 37, "created": 328, "renderCapacity": 0.018, "cbVar": 6.560362745611144e-09}, "lp": true, "ft": 90.07421921983692, "parts": 220, "combo": 111, "fs": 50} oneshot 5 peak 7 capDrop 128
-60 {"webaudio": {"liveNodes": 32, "created": 357, "renderCapacity": 0.027, "cbVar": 4.430246908057023e-09}, "lp": true, "ft": 111.40405622816382, "parts": 220, "combo": 153, "fs": 54} oneshot 3 peak 7 capDrop 136
-peak 7 active max 5 capDrops 136 lowPower True
+5 {"webaudio": {"liveNodes": 33, "created": 71, "renderCapacity": 0.016, "cbVar": 1.1229147211149375e-08}, "lp": true, "ft": 59.55760550228652, "parts": 32, "combo": 8, "fs": 0} oneshot 4 peak 5 capDrop 2
+10 {"webaudio": {"liveNodes": 41, "created": 100, "renderCapacity": 0.018, "cbVar": 7.779670710735276e-09}, "lp": true, "ft": 81.87544402544366, "parts": 141, "combo": 73, "fs": 6} oneshot 3 peak 6 capDrop 13
+15 {"webaudio": {"liveNodes": 37, "created": 125, "renderCapacity": 0.014, "cbVar": 1.7255742743854547e-08}, "lp": true, "ft": 70.73191039862621, "parts": 140, "combo": 122, "fs": 12} oneshot 1 peak 6 capDrop 24
+20 {"webaudio": {"liveNodes": 35, "created": 160, "renderCapacity": 0.024, "cbVar": 8.559988948246548e-09}, "lp": true, "ft": 72.6003181001215, "parts": 220, "combo": 178, "fs": 17} oneshot 2 peak 6 capDrop 27
+25 {"webaudio": {"liveNodes": 38, "created": 191, "renderCapacity": 0.017, "cbVar": 4.472571510211714e-09}, "lp": true, "ft": 80.76094901669532, "parts": 213, "combo": 239, "fs": 24} oneshot 5 peak 6 capDrop 35
+30 {"webaudio": {"liveNodes": 40, "created": 210, "renderCapacity": 0.018, "cbVar": 8.878826391546486e-09}, "lp": true, "ft": 77.2965216889787, "parts": 220, "combo": 285, "fs": 29} oneshot 4 peak 6 capDrop 62
+35 {"webaudio": {"liveNodes": 33, "created": 241, "renderCapacity": 0.017, "cbVar": 1.0185512343329647e-08}, "lp": true, "ft": 154.84448621246133, "parts": 206, "combo": 315, "fs": 32} oneshot 4 peak 6 capDrop 79
+40 {"webaudio": {"liveNodes": 61, "created": 269, "renderCapacity": 0.025, "cbVar": 1.4790109562383282e-08}, "lp": true, "ft": 205.33275020642608, "parts": 213, "combo": 353, "fs": 36} oneshot 4 peak 7 capDrop 94
+45 {"webaudio": {"liveNodes": 59, "created": 297, "renderCapacity": 0.019, "cbVar": 3.9576503783419e-09}, "lp": true, "ft": 219.09358751516558, "parts": 220, "combo": 413, "fs": 42} oneshot 5 peak 8 capDrop 104
+50 {"webaudio": {"liveNodes": 58, "created": 323, "renderCapacity": 0.026, "cbVar": 4.7220122921441894e-09}, "lp": true, "ft": 228.54008197954224, "parts": 220, "combo": 455, "fs": 47} oneshot 6 peak 8 capDrop 115
+55 {"webaudio": {"liveNodes": 46, "created": 343, "renderCapacity": 0.02, "cbVar": 2.664954809554986e-09}, "lp": true, "ft": 228.516113060688, "parts": 237, "combo": 490, "fs": 51} oneshot 4 peak 8 capDrop 136
+60 {"webaudio": {"liveNodes": 47, "created": 371, "renderCapacity": 0.018, "cbVar": 3.108957236879962e-09}, "lp": true, "ft": 233.09345027881125, "parts": 222, "combo": 540, "fs": 57} oneshot 5 peak 8 capDrop 145
+peak 8 active max 6 capDrops 145 lowPower True
 playoutStats start None end None
-WebAudio live nodes per sample [35, 45, 38, 37, 38, 33, 42, 36, 50, 41, 37, 32] max 54
-renderCapacity per sample [0.023, 0.019, 0.016, 0.021, 0.026, 0.024, 0.021, 0.025, 0.022, 0.023, 0.018, 0.027]
+WebAudio live nodes per sample [33, 41, 37, 35, 38, 40, 33, 61, 59, 58, 46, 47] max 62
+renderCapacity per sample [0.016, 0.018, 0.014, 0.024, 0.017, 0.018, 0.017, 0.025, 0.019, 0.026, 0.02, 0.018]
 errors []
 STRESS PASS
