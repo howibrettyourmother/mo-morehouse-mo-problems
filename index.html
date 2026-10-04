@@ -41,6 +41,11 @@ canvas{display:block;touch-action:none;border-radius:6px;box-shadow:0 0 24px rgb
 #shareBtn{background:#c21}
 #againBtn{background:#b8860b}
 #hsPanel{left:50%;top:50%;transform:translate(-50%,-50%);width:90%;padding:14px 8px;border-radius:14px;border:3px solid #ffd400;background:rgba(18,6,31,.97);color:#ffd400;text-align:center;font-size:clamp(14px,4.2vw,19px);box-shadow:0 0 40px rgba(255,212,0,.45);cursor:default}
+#hsInfo{margin:-4px 0 8px;padding:6px 4px 7px;border-radius:10px;background:rgba(255,212,0,.1);border:1px solid rgba(255,212,0,.35)}
+#hsInfo b{display:block;color:#fff;font-size:1.45em;line-height:1.1;letter-spacing:.02em;text-shadow:0 2px 0 #e3262e}
+#hsInfo span{display:block;color:#ffe58a;font-size:.72em;margin-top:3px}
+#hsInfo i{display:block;font-style:normal;color:#7dff4a;font-size:.8em;margin-top:3px}
+#hsInfo .pb{color:#ff6bd6}
 #hsPanel small{display:block;color:#fff;font-size:.7em;margin-top:4px}
 #hsIn{width:min(11em,92%);font:inherit;font-size:1.15em;text-align:center;letter-spacing:.04em;background:#111;color:#fff;border:2px solid #ffd400;border-radius:10px;margin:10px 6px 0;padding:4px 0 4px .2em;-webkit-user-select:text;user-select:text;touch-action:manipulation}
 #hsOk,#hsSkip{font:inherit;font-size:1.15em;min-height:50px;padding:8px 18px;border-radius:10px;border:2px solid #fff;background:#c21;color:#fff;cursor:pointer;vertical-align:bottom;margin:10px 4px 0}
@@ -59,7 +64,7 @@ canvas{display:block;touch-action:none;border-radius:6px;box-shadow:0 0 24px rgb
     <button class="ovl bigbtn" id="againBtn" aria-label="Play again">&#127944; RUN IT BACK</button>
     <button class="ovl tbtn" id="modeBtn" aria-label="Toggle difficulty">MODE</button>
     <button class="ovl tbtn" id="boardBtn" aria-label="Open the league leaderboard">LEAGUE LEADERBOARD</button>
-    <div class="ovl" id="hsPanel" role="dialog" aria-label="Submit score">POST IT TO THE LEAGUE LEADERBOARD
+    <div class="ovl" id="hsPanel" role="dialog" aria-label="Submit score"><div id="hsInfo" aria-live="polite"></div>POST IT TO THE LEAGUE LEADERBOARD
       <small>YOUR NAME (UP TO 16) &bull; SO THE LEAGUE KNOWS WHO GOT SHIT ON</small>
       <input id="hsIn" maxlength="16" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" placeholder="YOUR NAME" aria-label="Your name"><br><button id="hsOk">POST IT</button><button id="hsSkip">SKIP</button>
     </div>
@@ -613,7 +618,7 @@ let state='title',stateT=0,gT=0,score=0,problems=0,lives=3,combo=0,comboBest=0,c
 let player=null,balls=[],enemies=[],eshots=[],stars=[],parts=[],pops=[],potties=[],banner=null,caption=null,boss=null,balloon=null,fireCD=0,starT=8,diveT=3,formX=0,formY=0,formDir=1,nextAmb=10,bossesBeat=0,potCount=0,finishers=0,finMode='weasel',firesales=0,reached=0,hits=0,runId=0,soundAsked=false,endReason='',roast='',lastAir=0,lastHurtHk=0,noSpawn=false,trackCleared=false,ptr=null,mini=null,miniDone=0,miniBeat=0,boardOpen=false,puka=null,pukaSeen=0,pukaOOR=0;
 let shoeys=0,shoeyFx=null,lastShoeyFx=-1e9,lastNails=-1e9,mode='y5';try{mode=localStorage.getItem('nw_mode')==='rookie'?'rookie':'y5'}catch(e){}
 const rook=()=>mode==='rookie';
-let hi=+(localStorage.getItem('nw_hi')||0),lastShare='',hsEntering=false,savedRank=-1,titleConf=[];
+let prevHi=0,hi=+(localStorage.getItem('nw_hi')||0),lastShare='',hsEntering=false,savedRank=-1,titleConf=[];
 function newPlayer(){return{x:W/2,y:H-110,inv:0,spreadT:0,rapidT:0,shieldT:0,shoeyT:0,bob:0,dead:0}}
 function resetRun(){shoeys=0;shoeyFx=null;lastShoeyFx=-1e9;score=0;problems=0;lives=rook()?5:3;mini=null;miniDone=0;miniBeat=0;puka=null;pukaSeen=0;combo=0;comboBest=0;comboT=0;meter=0;trackI=0;loop=0;gT=0;timeScale=1;slowT=0;finT=0;player=newPlayer();balls=[];enemies=[];eshots=[];stars=[];parts=[];pops=[];potties=[];
   boss=null;balloon=null;banner=null;bossesBeat=0;potCount=0;finishers=0;firesales=0;reached=0;finT=0;hits=0;starT=7;savedRank=-1;runId++}
@@ -714,7 +719,7 @@ function spawnBalloon(){balloon={x:-80,y:140,hp:14+loop*6,max:14+loop*6,t:0,sc:1
 function spawnStar(type,x,y){if(!type&&R()<0.06)type='shoey';type=type||pick(['spread','spread','rapid','rapid','shield','life']);if(type==='life'&&lives>=5)type='rapid';stars.push({type,x:x==null?rnd(30,W-30):x,y:y==null?-20:y,t:R()*6,vy:rnd(60,80)})}
 // ---------- start / end ----------
 function startGame(){resetRun();hsEntering=false;hsPanel.style.display='none';go('intro');AUD.SFX.scratch();AUD.sting('a_go',{quiet:true});showBanner('SURVIVE ONE MORE SEASON, JOE',GOLD,true);AUD.setTheme('main');updateOverlays()}
-function endGame(why){if(state==='end')return;endReason=why||'';roast=pick(ROASTS);if(score>hi){hi=score;try{localStorage.setItem('nw_hi',hi)}catch(e){}}
+function endGame(why){if(state==='end')return;endReason=why||'';roast=pick(ROASTS);prevHi=hi;if(score>hi){hi=score;try{localStorage.setItem('nw_hi',hi)}catch(e){}}
   go('end');timeScale=1;slowT=0;AUD.SFX.trombone();AUD.endingDelay(2.2);AUD.setTheme('ending');AUD.sting('a_over',{quiet:true,delay:0.3});setTimeout(()=>{if(state==='end'){AUD.sting('nohouse',{quiet:true});showBanner('MOREHOUSE? MORE LIKE NO HOUSE.',RED,true)}},3500);setTimeout(()=>{if(state==='end')AUD.sting('a_best',{quiet:true})},6600);setTimeout(()=>{if(state==='end')AUD.heckle('end',true)},9800);
   burst(W/2,H*0.3,60,8);lastLeagueId='';league.note='';if(score>0)setTimeout(()=>{if(state==='end'&&!hsEntering)showHS()},1300);fetchLeague();updateOverlays()}
 // ---------- combat ----------
@@ -1211,7 +1216,11 @@ againBtn.addEventListener('click',e=>{e.stopPropagation();AUD.unlock();if(state=
 modeBtn.addEventListener('click',e=>{e.stopPropagation();AUD.unlock();mode=rook()?'y5':'rookie';lsSet('nw_mode',mode);modeLabel();AUD.SFX.scratch();showBanner(rook()?'ROOKIE MODE: 5 SEASONS, SLOWER SHIT':'YEAR 5 OF THE REBUILD: THE REAL DEAL',rook()?'#36e0ff':RED)});
 boardBtn.addEventListener('click',e=>{e.stopPropagation();AUD.unlock();openBoard()});
 [modeBtn,boardBtn].forEach(b=>['pointerdown','touchstart'].forEach(ev=>b.addEventListener(ev,e=>e.stopPropagation())));
-function showHS(){hsEntering=true;const v=lsGet('nw_name','')||lsGet('nw_ini','');hsIn.value=cleanName(v);hsPanel.style.display='block';updateOverlays();if(!isTouch)setTimeout(()=>{try{hsIn.focus();hsIn.select()}catch(e){}},60)}
+function wouldRank(){const online=league.ok&&league.list.length>0;const list=online?league.list:lbLoad().map(e=>({s:e.s}));return{online,r:list.filter(e=>e.s>score).length+1}}
+function fillHSInfo(){const el=document.getElementById('hsInfo');if(!el)return;const w=wouldRank(),pb=score>prevHi&&prevHi>0,first=prevHi<=0;
+  el.innerHTML='<b>YOUR SCORE: '+score.toLocaleString('en-US')+'</b><span>TRACKS SURVIVED '+Math.max(0,reached-1)+' \u2022 '+(rook()?'ROOKIE':'YEAR 5')+' MODE</span>'+
+    '<i>'+(w.online?'THAT\'S #'+w.r+' IN THE LEAGUE':'THAT\'S #'+w.r+' ON THIS DEVICE (LEAGUE OFFLINE)')+'</i>'+(pb?'<i class="pb">\u2B50 NEW PERSONAL BEST! (OLD: '+prevHi.toLocaleString('en-US')+')</i>':first?'<i class="pb">\u2B50 FIRST SCORE ON THIS DEVICE</i>':'<span>PERSONAL BEST: '+prevHi.toLocaleString('en-US')+'</span>')}
+function showHS(){hsEntering=true;fillHSInfo();const v=lsGet('nw_name','')||lsGet('nw_ini','');hsIn.value=cleanName(v);hsPanel.style.display='block';updateOverlays();if(!isTouch)setTimeout(()=>{try{hsIn.focus();hsIn.select()}catch(e){}},60)}
 function saveHS(){if(!hsEntering)return;const nm=cleanName(hsIn.value).trim()||'MYSTERY GM';lsSet('nw_name',nm);if(lbQualifies(score))lbSubmit(nm);leagueSubmit(nm);hsEntering=false;hsPanel.style.display='none';try{hsIn.blur()}catch(e){}AUD.SFX.cheer(1);window.scrollTo(0,0);updateOverlays()}
 hsIn.addEventListener('input',()=>{const c=cleanName(hsIn.value);if(c!==hsIn.value)hsIn.value=c});
 hsIn.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'){e.preventDefault();saveHS()}});
@@ -1227,7 +1236,7 @@ function frame(n){const raw=(n-lastT);const dt=Math.min(0.05,Math.max(0,raw/1000
 player=newPlayer();layout();requestAnimationFrame(frame);
 if(DEBUG){window.__NW={get state(){return state},get score(){return score},get problems(){return problems},get lives(){return lives},set lives(v){lives=v},get combo(){return combo},get meter(){return meter},set meter(v){meter=v},
   get trackI(){return trackI},get loop(){return loop},get finT(){return finT},get timeScale(){return timeScale},get hsEntering(){return hsEntering},get lastShare(){return lastShare},get frames(){return frames},audio:AUD,lb:lbLoad,
-  get player(){return{x:player.x,y:player.y,inv:player.inv,spreadT:player.spreadT,rapidT:player.rapidT,shieldT:player.shieldT,shoeyT:player.shoeyT}},get shoeys(){return shoeys},get lbReposts(){return league.reposts||0},get lbSent(){return league.sent||0},get lbList(){return league.list.map(e=>({id:e.id,n:e.n,s:e.s,dev:e.dev}))},get shoeyFx(){return shoeyFx&&shoeyFx.t},shoeyGo(){shoeyPenalty()},noPow(){player.shoeyT=0;player.spreadT=0;player.rapidT=0},get balls(){return balls.length},get boss(){return boss&&{hp:boss.hp,max:boss.max,dead:boss.dead,x:boss.x,y:boss.y}},
+  get player(){return{x:player.x,y:player.y,inv:player.inv,spreadT:player.spreadT,rapidT:player.rapidT,shieldT:player.shieldT,shoeyT:player.shoeyT}},get shoeys(){return shoeys},get hsInfo(){const el=document.getElementById('hsInfo');return el?el.innerText:''},get hsPanelRect(){const r=hsPanel.getBoundingClientRect();return{top:r.top,bottom:r.bottom,h:innerHeight}},get lbReposts(){return league.reposts||0},get lbSent(){return league.sent||0},get lbList(){return league.list.map(e=>({id:e.id,n:e.n,s:e.s,dev:e.dev}))},get shoeyFx(){return shoeyFx&&shoeyFx.t},shoeyGo(){shoeyPenalty()},noPow(){player.shoeyT=0;player.spreadT=0;player.rapidT=0},get balls(){return balls.length},get boss(){return boss&&{hp:boss.hp,max:boss.max,dead:boss.dead,x:boss.x,y:boss.y}},
   get balloon(){return balloon&&{hp:balloon.hp,x:balloon.x}},get potCount(){return potCount},get finishers(){return finishers},get parts(){return parts.length},get tp(){return parts.filter(q=>q.tp===1).length},
   enemies:()=>enemies.map(e=>({k:e.k,x:e.x,y:e.y,hp:e.hp,mode:e.mode,enter:e.enter})),
   clientOf(x,y){const r=cv.getBoundingClientRect();return{x:r.left+x/W*r.width,y:r.top+y/H*r.height}},

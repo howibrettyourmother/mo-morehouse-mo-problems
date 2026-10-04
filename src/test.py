@@ -198,6 +198,9 @@ async def run(p,b,name,dev,touch,shots):
     # league submission of a legit run -> ntfy relay
     await m.evaluate('__NW.end()');await m.wait_for_timeout(1800)
     chk(f'[{name}] name prefilled with last name',await m.input_value('#hsIn')=='Joe Morehouse 99')
+    hi=await m.evaluate('({t:__NW.hsInfo,r:__NW.hsPanelRect,s:__NW.score})')
+    chk(f'[{name}] post popup shows score, tracks, mode, would-be rank, PB status (fits on screen)',f"YOUR SCORE: {hi['s']:,}" in hi['t'] and 'TRACKS SURVIVED' in hi['t'] and 'MODE' in hi['t'] and re.search(r"THAT'S #\d+",hi['t']) and ('PERSONAL BEST' in hi['t'] or 'FIRST SCORE' in hi['t']) and hi['r']['top']>=0 and hi['r']['bottom']<=hi['r']['h'],str(hi))
+    if shots or name=='iphoneSE': await m.screenshot(path=OUT+f'screenshot-post-{name}.png')
     await m.fill('#hsIn','Test '+name[:10]);await m.click('#hsOk');await m.wait_for_timeout(2500)
     lg=await m.evaluate('__NW.league');chk(f'[{name}] league score posted + own rank highlighted',lg['sent']>=1 and lg['rank']>=1 and lg['last'],str(lg))
     raw=urllib.request.urlopen(f'https://ntfy.sh/{TOPIC}/json?poll=1&since=1h',timeout=20).read().decode()
