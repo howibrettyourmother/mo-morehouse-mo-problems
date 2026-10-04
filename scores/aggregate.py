@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """League leaderboard aggregator for MOREHOUSE MORE PROBLEMS.
 Players' browsers POST score JSON to a public ntfy.sh topic (no login, CORS open, 12h retention).
-This script (run by GitHub Actions every ~5 min) pulls the topic, validates every entry with the
+This script (run by GitHub Actions every ~10 min, best effort) pulls the topic, validates every entry with the
 same rules the game uses, applies per-device rate limits + the manual blocklist, and writes
 scores/leaderboard.json (top 200 kept, game shows top 25)."""
 import json, os, re, time, urllib.request
@@ -34,6 +34,16 @@ def valid(e):
 def clean(e, ts):
     return {k: e[k] for k in ('id', 'n', 's', 't', 'm', 'p', 'd', 'b', 'dev')} | {'ts': int(ts)}
 
+def collapse(entries):
+    """One entry per device+name (the max score, earliest on ties), and the same device+score is never listed
+    twice. Clients re-post their personal best (same id) on load, so duplicates are expected and harmless."""
+    best, seen = {}, set()
+    for e in sorted(entries, key=lambda e: (-e['s'], e['ts'])):
+        k, ks = (e['dev'], e['n'].strip().lower()), (e['dev'], e['s'])
+        if k in best or ks in seen: continue
+        best[k] = e; seen.add(ks)
+    return sorted(best.values(), key=lambda e: (-e['s'], e['ts']))
+
 def main():
     old = {'top': []}
     try: old = json.load(open(OUT))
@@ -58,7 +68,7 @@ def main():
         recent = [x for x in have.values() if x['dev'] == e['dev'] and abs(x['ts'] - e['ts']) < 3600]
         if len(recent) >= MAX_PER_DEV_HOUR: continue          # per-device rate limit
         have[e['id']] = e
-    top = sorted((e for e in have.values() if e['id'] not in blocked), key=lambda e: (-e['s'], e['ts']))[:200]
+    top = collapse(e for e in have.values() if e['id'] not in blocked)[:200]
     new = {'v': 1, 'topic': TOPIC, 'count': len(top), 'blocked': sorted(blocked), 'top': top}
     if json.dumps({k: v for k, v in old.items() if k != 'updated'}, sort_keys=True) != json.dumps(new, sort_keys=True):
         new['updated'] = int(time.time())

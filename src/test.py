@@ -207,6 +207,12 @@ async def run(p,b,name,dev,touch,shots):
         await m.evaluate('__NW.openBoard()');await m.wait_for_timeout(700);await m.screenshot(path=OUT+'screenshot-leaderboard.png');await m.evaluate('__NW.closeBoard()')
     ns=await m.evaluate('__NW.audio.nodeStats()');chk(f'[{name}] audio: pre-rendered SFX + music loops, sources capped',ns['cached']>=25 and len(ns['songs'])==4 and ns['peak']<=8 and ns['live']==0,str(ns))
     chk(f'[{name}] no console errors/warnings',not errs,str(errs[:5]))
+    # personal-best fallback: reload -> device re-posts its best (same id), board shows it once per device+name
+    await m.reload();await m.wait_for_timeout(4500)
+    rp=await m.evaluate('({r:__NW.lbReposts,best:JSON.parse(localStorage.getItem("nw_best")||"{}"),list:__NW.lbList})')
+    raw=urllib.request.urlopen(f'https://ntfy.sh/{TOPIC}/json?poll=1&since=1h',timeout=20).read().decode()
+    mine=[e for e in rp['list'] if e['id']==lg['last']]
+    chk(f'[{name}] personal best remembered + re-posted on load (deduped on the board)',rp['r']>=1 and any(v['id']==lg['last'] for v in rp['best'].values()) and raw.count(lg['last'])>=2 and len(mine)==1,str((rp['r'],raw.count(lg['last']),len(mine))))
     await ctx.close()
 async def main():
     async with async_playwright() as p:

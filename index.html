@@ -632,22 +632,30 @@ function lbPlausible(e){try{const I=Number.isInteger;if(!e||e.v!==1||typeof e.n!
   return s<=2500*d+7500*b*(b+1)+2500*(b+1)*(b+2)+6000*(t+1)}catch(x){return false}}
 let league={ok:false,loading:false,list:[],blocked:new Set(),at:0,note:''},lastLeagueId='';
 let myIds=new Set();try{myIds=new Set(JSON.parse(lsGet('nw_myids','[]')))}catch(e){}
+// same collapse as scores/aggregate.py: one entry per device+name (max score), never the same device+score twice
+function collapseLeague(list){const best=new Set(),seen=new Set(),out=[];for(const e of list.slice().sort((a,b)=>b.s-a.s||(a.ts||0)-(b.ts||0))){const k=e.dev+'|'+e.n.trim().toLowerCase(),ks=e.dev+'|'+e.s;if(best.has(k)||seen.has(ks))continue;best.add(k);seen.add(ks);out.push(e)}return out}
 function mergeLeague(arr){const m=new Map(league.list.map(e=>[e.id,e]));for(const e of arr)if(e&&lbPlausible(e)&&!m.has(e.id))m.set(e.id,e);
-  league.list=[...m.values()].filter(e=>!league.blocked.has(e.id)).sort((a,b)=>b.s-a.s||(a.ts||0)-(b.ts||0))}
+  league.list=collapseLeague([...m.values()].filter(e=>!league.blocked.has(e.id)))}
 function fetchLeague(){if(league.loading)return;league.loading=true;let any=false;
   const raw=fetch(LB_RAW+'?t='+Date.now()).then(r=>r.ok?r.json():Promise.reject(r.status)).then(j=>{if(j&&Array.isArray(j.blocked))j.blocked.forEach(i=>league.blocked.add(i));if(j&&Array.isArray(j.top)){mergeLeague(j.top.map(x=>Object.assign({},x,{v:1})));any=true}});
   const live=fetch(LB_POLL).then(r=>r.ok?r.text():Promise.reject(r.status)).then(t=>{const a=[];for(const l of t.split('\n')){if(!l)continue;try{const m=JSON.parse(l);if(m.event==='message'){const e=JSON.parse(m.message);e.ts=m.time;a.push(e)}}catch(x){}}mergeLeague(a);any=true});
   Promise.allSettled([raw,live]).then(()=>{league.list=league.list.filter(e=>!league.blocked.has(e.id));league.ok=league.ok||any;league.loading=false;league.at=Date.now();if(any)flushPending()})}
 function pendingList(){try{const a=JSON.parse(lsGet('nw_pending','[]'));return Array.isArray(a)?a:[]}catch(e){return[]}}
 function setPending(a){lsSet('nw_pending',JSON.stringify(a.slice(-10)))}
-function postEntry(e){const body=JSON.stringify({v:1,id:e.id,n:e.n,s:e.s,t:e.t,m:e.m,p:e.p,d:e.d,b:e.b,dev:e.dev});
-  return fetch(LB_POST,{method:'POST',body}).then(r=>{if(!r.ok)throw r.status;league.sent=(league.sent||0)+1;setPending(pendingList().filter(x=>x.id!==e.id));league.note='POSTED TO THE LEAGUE'}).catch(()=>{const a=pendingList();if(!a.some(x=>x.id===e.id))a.push(e);setPending(a);league.note='OFFLINE: WILL POST WHEN BACK ONLINE'})}
+function postEntry(e,quiet){const body=JSON.stringify({v:1,id:e.id,n:e.n,s:e.s,t:e.t,m:e.m,p:e.p,d:e.d,b:e.b,dev:e.dev});
+  return fetch(LB_POST,{method:'POST',body}).then(r=>{if(!r.ok)throw r.status;league.sent=(league.sent||0)+1;setPending(pendingList().filter(x=>x.id!==e.id));if(!quiet)league.note='POSTED TO THE LEAGUE'}).catch(()=>{const a=pendingList();if(!a.some(x=>x.id===e.id))a.push(e);setPending(a);if(!quiet)league.note='OFFLINE: WILL POST WHEN BACK ONLINE'})}
 let flushing=false;function flushPending(){if(flushing)return;const a=pendingList();if(!a.length)return;flushing=true;Promise.allSettled(a.map(postEntry)).then(()=>{flushing=false})}
+// BELT + SUSPENDERS: this device remembers its personal best per name and re-posts it (same id, so it dedupes) on load and on every submit.
+// Even if the GitHub merge lags past ntfy's 12h retention, a device's best is never lost from the board.
+function bestMap(){try{const o=JSON.parse(lsGet('nw_best','{}'));return o&&typeof o==='object'?o:{}}catch(e){return{}}}
+function rememberBest(e){const b=bestMap(),k=e.n.trim().toLowerCase();if(!b[k]||e.s>b[k].s){b[k]={v:1,id:e.id,n:e.n,s:e.s,t:e.t,m:e.m,p:e.p,d:e.d,b:e.b,dev:e.dev};
+  const keep=Object.values(b).sort((x,y)=>y.s-x.s).slice(0,3),o={};for(const x of keep)o[x.n.trim().toLowerCase()]=x;lsSet('nw_best',JSON.stringify(o))}}
+function repostBest(skipId){let n=0;for(const e of Object.values(bestMap())){if(e.id===skipId||!lbPlausible(e)||league.blocked.has(e.id))continue;postEntry(e,true);n++}league.reposts=(league.reposts||0)+n;return n}
 function leagueSubmit(name){const e={v:1,id:rid(),n:name,s:score,t:Math.max(0,reached-1),m:mode,p:problems,d:Math.round(gT),b:bossesBeat,dev:DEV};lastLeagueId=e.id;myIds.add(e.id);lsSet('nw_myids',JSON.stringify([...myIds].slice(-60)));
   if(!lbPlausible(e)){league.note=e.d<8?'TOO SHORT FOR THE LEAGUE BOARD (SURVIVE 8+ SEC)':'SCORE NOT ELIGIBLE';return false}
-  e.ts=(Date.now()/1000)|0;mergeLeague([e]);postEntry(e);return true}
+  e.ts=(Date.now()/1000)|0;mergeLeague([e]);postEntry(e);rememberBest(e);repostBest(e.id);return true}
 function leagueRank(id){const i=league.list.findIndex(e=>e.id===id);return i<0?0:i+1}
-setTimeout(fetchLeague,400);setInterval(()=>{if((state==='title'||state==='end'||boardOpen)&&!document.hidden&&Date.now()-league.at>45000)fetchLeague()},5000);
+setTimeout(fetchLeague,400);setTimeout(()=>{if(!document.hidden)repostBest('')},2500);setInterval(()=>{if((state==='title'||state==='end'||boardOpen)&&!document.hidden&&Date.now()-league.at>45000)fetchLeague()},5000);
 function lbLoad(){try{const a=JSON.parse(localStorage.getItem('nw_lb')||'[]');return Array.isArray(a)?a.filter(e=>e&&typeof e.s==='number').slice(0,10):[]}catch(e){return[]}}
 function lbQualifies(s){if(s<=0)return false;const a=lbLoad();return a.length<10||s>a[a.length-1].s}
 const cleanName=v=>(v||'').replace(/[^A-Za-z0-9 .,!?'&_#*$@+-]/g,'').replace(/\s+/g,' ').replace(/^ /,'').slice(0,16);
@@ -1219,7 +1227,7 @@ function frame(n){const raw=(n-lastT);const dt=Math.min(0.05,Math.max(0,raw/1000
 player=newPlayer();layout();requestAnimationFrame(frame);
 if(DEBUG){window.__NW={get state(){return state},get score(){return score},get problems(){return problems},get lives(){return lives},set lives(v){lives=v},get combo(){return combo},get meter(){return meter},set meter(v){meter=v},
   get trackI(){return trackI},get loop(){return loop},get finT(){return finT},get timeScale(){return timeScale},get hsEntering(){return hsEntering},get lastShare(){return lastShare},get frames(){return frames},audio:AUD,lb:lbLoad,
-  get player(){return{x:player.x,y:player.y,inv:player.inv,spreadT:player.spreadT,rapidT:player.rapidT,shieldT:player.shieldT,shoeyT:player.shoeyT}},get shoeys(){return shoeys},get shoeyFx(){return shoeyFx&&shoeyFx.t},shoeyGo(){shoeyPenalty()},noPow(){player.shoeyT=0;player.spreadT=0;player.rapidT=0},get balls(){return balls.length},get boss(){return boss&&{hp:boss.hp,max:boss.max,dead:boss.dead,x:boss.x,y:boss.y}},
+  get player(){return{x:player.x,y:player.y,inv:player.inv,spreadT:player.spreadT,rapidT:player.rapidT,shieldT:player.shieldT,shoeyT:player.shoeyT}},get shoeys(){return shoeys},get lbReposts(){return league.reposts||0},get lbSent(){return league.sent||0},get lbList(){return league.list.map(e=>({id:e.id,n:e.n,s:e.s,dev:e.dev}))},get shoeyFx(){return shoeyFx&&shoeyFx.t},shoeyGo(){shoeyPenalty()},noPow(){player.shoeyT=0;player.spreadT=0;player.rapidT=0},get balls(){return balls.length},get boss(){return boss&&{hp:boss.hp,max:boss.max,dead:boss.dead,x:boss.x,y:boss.y}},
   get balloon(){return balloon&&{hp:balloon.hp,x:balloon.x}},get potCount(){return potCount},get finishers(){return finishers},get parts(){return parts.length},get tp(){return parts.filter(q=>q.tp===1).length},
   enemies:()=>enemies.map(e=>({k:e.k,x:e.x,y:e.y,hp:e.hp,mode:e.mode,enter:e.enter})),
   clientOf(x,y){const r=cv.getBoundingClientRect();return{x:r.left+x/W*r.width,y:r.top+y/H*r.height}},
