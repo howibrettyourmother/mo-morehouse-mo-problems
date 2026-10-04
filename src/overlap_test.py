@@ -8,7 +8,7 @@ OUT='/workspace/notorious-weasel/'
 ok=True
 def chk(n,c,info=''):
     global ok;ok&=bool(c);print(('PASS ' if c else 'FAIL ')+n,'' if c else info)
-BTN=['modeBtn','boardBtn','tankBtn','muteBtn','musicBtn','shareBtn','againBtn','tankEndBtn']
+BTN=['modeBtn','boardBtn','tankBtn','muteBtn','musicBtn','shareBtn','againBtn','tankEndBtn','recapEndBtn']
 SNAP='''(()=>{const c=document.getElementById('c').getBoundingClientRect();
   const btn=%s.map(id=>{const e=document.getElementById(id);if(!e||getComputedStyle(e).display==='none'||!e.offsetWidth)return null;const r=e.getBoundingClientRect();return{id,l:r.left,r:r.right,t:r.top,b:r.bottom}}).filter(Boolean);
   const tb=__NW.textBoxes.map(b=>({s:b.s,l:b.l+c.left,r:b.r+c.left,t:b.t+c.top,b:b.b+c.top}));
@@ -67,7 +67,9 @@ async def one(p,b,name,devname,inset):
 async def main():
     async with async_playwright() as p:
         b=await p.chromium.launch(executable_path='/usr/bin/google-chrome')
+        ONLY=sys.argv[2].split(',') if len(sys.argv)>2 else None
         for name,dev,ins in [('iphoneSE','iPhone SE',False),('iphone13','iPhone 13',False),('iphone13-homescreen','iPhone 13',True),('iphoneSE-homescreen','iPhone SE',True)]:
+            if ONLY and name not in ONLY: continue
             await one(p,b,name,dev,ins)
         await b.close()
     print('ALL PASS' if ok else 'SOME FAIL')

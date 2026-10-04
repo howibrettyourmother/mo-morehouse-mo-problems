@@ -59,7 +59,8 @@ canvas{display:block;touch-action:none;border-radius:6px;box-shadow:0 0 24px rgb
 #modeBtn,#boardBtn,#tankBtn{min-height:44px}
 #tankBtn{border-color:#ff3b3b;background:rgba(60,0,6,.82);padding:3px 4px}
 #tankBtn .tl{display:block}#tankBtn .tt{display:block;font-size:.78em;color:#ffd400;margin-top:1px;min-height:1em}#tankBtn .tt:empty{display:none}
-#tankEndBtn{min-height:44px;border-color:#ff3b3b;background:rgba(60,0,6,.88);font-size:clamp(11px,3.3vw,15px)}
+#tankEndBtn,#recapEndBtn{min-height:44px;border-color:#ff3b3b;background:rgba(60,0,6,.88);font-size:clamp(11px,3.3vw,15px)}
+#recapEndBtn{border-color:#ffd400;background:rgba(40,30,0,.9)}
 </style>
 </head>
 <body>
@@ -75,6 +76,7 @@ canvas{display:block;touch-action:none;border-radius:6px;box-shadow:0 0 24px rgb
     <button class="ovl tbtn" id="boardBtn" aria-label="Open the league leaderboard">LEAGUE LEADERBOARD</button>
     <button class="ovl tbtn" id="tankBtn" aria-label="Open Tank Watch: the live race for the 1.01 rookie pick"><span class="tl">&#128701; TANK WATCH</span><span class="tt" id="tankTease"></span></button>
     <button class="ovl tbtn" id="tankEndBtn" aria-label="See Joe's tank: the live race for the 1.01 rookie pick">&#128701; SEE JOE&rsquo;S TANK &rarr;</button>
+    <button class="ovl tbtn" id="recapEndBtn" aria-label="Weekly recap: this week's SHADYNASTY roasts and awards">&#128240; RECAP</button>
     <div class="ovl" id="hsPanel" role="dialog" aria-label="Submit score"><div id="hsInfo" aria-live="polite"></div>POST IT TO THE LEAGUE LEADERBOARD
       <small>YOUR NAME (UP TO 16) &bull; SO THE LEAGUE KNOWS WHO GOT SHIT ON</small>
       <input id="hsIn" maxlength="16" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" placeholder="YOUR NAME" aria-label="Your name"><br><button id="hsOk">POST IT</button><button id="hsSkip">SKIP</button>
@@ -824,15 +826,15 @@ function draw(){if(DEBUG){if(TB)TBlast=TB;TB=[]}
   drawVHS();if(state==='play'&&TRACKS[trackI].boss)vhsOSD(8,H-90,'BEST TEAM CAM')
 }
 // ---------- overlays ----------
-const tankBtn=document.getElementById('tankBtn'),tankEndBtn=document.getElementById('tankEndBtn'),tankTease=document.getElementById('tankTease'),modeBtn=document.getElementById('modeBtn'),boardBtn=document.getElementById('boardBtn'),shareBtn=document.getElementById('shareBtn'),againBtn=document.getElementById('againBtn'),hsPanel=document.getElementById('hsPanel'),hsIn=document.getElementById('hsIn');
+const tankBtn=document.getElementById('tankBtn'),tankEndBtn=document.getElementById('tankEndBtn'),recapEndBtn=document.getElementById('recapEndBtn'),tankTease=document.getElementById('tankTease'),modeBtn=document.getElementById('modeBtn'),boardBtn=document.getElementById('boardBtn'),shareBtn=document.getElementById('shareBtn'),againBtn=document.getElementById('againBtn'),hsPanel=document.getElementById('hsPanel'),hsIn=document.getElementById('hsIn');
 function placeButtons(){const ty=titleLayout().ty*S;
   modeBtn.style.cssText+=`;left:${10*S}px;top:${ty}px;width:${110*S}px`;boardBtn.style.cssText+=`;left:${125*S}px;top:${ty}px;width:${110*S}px`;tankBtn.style.cssText+=`;left:${240*S}px;top:${ty}px;width:${110*S}px`;
-  tankEndBtn.style.cssText+=`;left:${10*S}px;top:${(H-62)*S-50}px;width:${340*S}px`;
+  tankEndBtn.style.cssText+=`;left:${10*S}px;top:${(H-62)*S-50}px;width:${214*S}px`;recapEndBtn.style.cssText+=`;left:${230*S}px;top:${(H-62)*S-50}px;width:${120*S}px`;
   const y=(H-62)*S;shareBtn.style.cssText+=`;left:${10*S}px;top:${y}px;width:${214*S}px`;againBtn.style.cssText+=`;left:${232*S}px;top:${y}px;width:${118*S}px`}
 let ovlOn=null,tOn=null;
 function modeLabel(){modeBtn.textContent=rook()?'\u{1F476} MODE: ROOKIE':'\u{1F4A9} MODE: YEAR 5'}
 function updateOverlays(){const ts=state==='title'&&!boardOpen;if(ts!==tOn){tOn=ts;modeBtn.style.display=boardBtn.style.display=tankBtn.style.display=ts?'block':'none';if(ts){modeLabel();tankTeaser()}}
-  const show=state==='end'&&stateT>1.2&&!hsEntering&&!boardOpen;if(show!==ovlOn){ovlOn=show;shareBtn.style.display=againBtn.style.display=tankEndBtn.style.display=show?'block':'none';if(show)shareLabel()}}
+  const show=state==='end'&&stateT>1.2&&!hsEntering&&!boardOpen;if(show!==ovlOn){ovlOn=show;shareBtn.style.display=againBtn.style.display=tankEndBtn.style.display=recapEndBtn.style.display=show?'block':'none';if(show)shareLabel()}}
 function shareLabel(t){shareBtn.textContent=t||('\u{1F4F8} SHARE MY SCORE CARD')}
 const SHARE_URL=location.protocol==='https:'?location.origin+location.pathname:'https://howibrettyourmother.github.io/mo-morehouse-mo-problems/';
 function shareText(){return 'I gave Morehouse '+problems+' more problems ('+score.toLocaleString('en-US')+' pts, survived '+Math.max(0,reached-1)+' tracks as Joe'+(comboBest>=10?', x'+comboBest+' shit combo':'')+(rook()?', rookie mode':'')+') in MOREHOUSE MORE PROBLEMS. Mo Morehouse, mo problems. 99 problems and still broke. Joe owes '+shoeys+' shoey'+(shoeys===1?'':'s')+'. Wilson Weasels: still the best team in the league. Your turn:'}
@@ -874,9 +876,10 @@ boardBtn.addEventListener('click',e=>{e.stopPropagation();AUD.unlock();openBoard
 // TANK WATCH: separate live page (same tab, so iOS home-screen mode never strands you; that page has a BACK TO THE GAME button)
 const TANK_URL=(DEBUG&&new URLSearchParams(location.search).get('tank'))||'https://howibrettyourmother.github.io/tank-for-jeremiah-smith/';
 function openTank(src){try{AUD.SFX.scratch()}catch(e){}window.__NW_tankNav=src;if(window.__NW_noNav)return;
-  location.href=TANK_URL+'?from=game&back='+encodeURIComponent(location.origin+location.pathname)}
+  location.href=TANK_URL+'?from=game&back='+encodeURIComponent(location.origin+location.pathname)+(src==='recap'?'#recap':'')}
 tankBtn.addEventListener('click',e=>{e.stopPropagation();openTank('title')});
 tankEndBtn.addEventListener('click',e=>{e.stopPropagation();openTank('end')});
+recapEndBtn.addEventListener('click',e=>{e.stopPropagation();openTank('recap')});
 // tiny live teaser: Sleeper league + rosters only (two small public GETs), quick sim of the rest of the regular season. Fails silently.
 let teaseAt=0;
 function tankTeaser(){if(Date.now()-teaseAt<300000)return;teaseAt=Date.now();
@@ -894,7 +897,7 @@ function tankTeaser(){if(Date.now()-teaseAt<300000)return;teaseAt=Date.now();
         const o=ix.slice().sort(()=>Math.random()-.5);for(let i=0;i+1<o.length;i+=2){W[a[o[i]]>a[o[i+1]]?o[i]:o[i+1]]++}}
       const po=new Set(ix.slice().sort((x,y)=>W[y]-W[x]||PF[y]-PF[x]).slice(0,pt));let lo=-1;for(const i of ix)if(!po.has(i)&&(lo<0||MX[i]<MX[lo]))lo=i;if(lo===ji)hit++}
     const p=hit/N;tankTease.textContent='JOE: '+(p>=.995?'99':p<.01&&p>0?'<1':Math.round(p*100))+'% FOR 1.01';window.__NW_tease=tankTease.textContent}).catch(()=>{})}
-[modeBtn,boardBtn,tankBtn,tankEndBtn].forEach(b=>['pointerdown','touchstart'].forEach(ev=>b.addEventListener(ev,e=>e.stopPropagation())));
+[modeBtn,boardBtn,tankBtn,tankEndBtn,recapEndBtn].forEach(b=>['pointerdown','touchstart'].forEach(ev=>b.addEventListener(ev,e=>e.stopPropagation())));
 function wouldRank(){const online=league.ok;const list=online?league.list:lbLoad().map(e=>({s:e.s}));return{online,r:list.filter(e=>e.s>score).length+1,wr:(league.week||[]).filter(e=>e.s>score).length+1}}
 function fillHSInfo(){const el=document.getElementById('hsInfo');if(!el)return;const w=wouldRank(),pb=score>prevHi&&prevHi>0,first=prevHi<=0;
   el.innerHTML='<b>YOUR SCORE: '+score.toLocaleString('en-US')+'</b><span>TRACKS SURVIVED '+Math.max(0,reached-1)+' \u2022 '+(rook()?'ROOKIE':'YEAR 5')+' MODE</span>'+
